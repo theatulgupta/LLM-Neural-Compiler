@@ -1,0 +1,27 @@
+# ROS2
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Data
+data/logs/
+
+# External repositories
+third_party/PX4-Autopilot/
+third_party/Micro-XRCE-DDS-Agent/
+
+# Models
+models/**/*.onnx
+models/**/*.engine
+models/**/*.pt
