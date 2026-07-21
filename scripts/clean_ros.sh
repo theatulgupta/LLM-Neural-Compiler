@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd ~/thesis_uav/ros2_ws
+cd ~/LLM-Guided-UAV-System/ros2_ws
 
 rm -rf build install log
