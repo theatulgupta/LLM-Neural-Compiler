@@ -2,7 +2,7 @@
 
 source /opt/ros/jazzy/setup.bash
 
-cd ~/LLM-Guided-UAV-System/ros2_ws
+cd ~/LLM-Neural-Compiler/ros2_ws
 
 colcon build --symlink-install
 

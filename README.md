@@ -1,40 +1,26 @@
-# Autonomous UAV Agent
+# LLM-Neural-Compiler
 
-LLM-guided autonomous UAV navigation using Large Language Models, ROS 2, PX4, and Gazebo.
+LLM-guided neural network compilation and optimization framework for real-time edge inference.
 
----
+## Thesis
 
-## Technology Stack
+**LLM-Guided Neural Network Compilation for Real-time UAV Edge Inference**
 
-- Ubuntu 24.04
+### Contributions
+
+- Analyze neural networks using LLMs
+- Generate graph-level optimization strategies
+- Compile optimized models for edge deployment
+- Benchmark against manual optimization techniques
+
+### Tech Stack
+
+- PyTorch
+- ONNX
+- TensorRT
 - ROS 2 Jazzy
-- PX4 Autopilot
-- Gazebo Harmonic
-- Micro XRCE DDS
+- PX4
+- Gazebo
 - Python
 
----
-
-## Repository Structure
-
-configs/        Configuration files
-
-data/           Datasets and flight logs
-
-docs/           Documentation
-
-experiments/    Experimental work
-
-models/         AI models
-
-ros2_ws/        ROS2 workspace
-
-scripts/        Utility scripts
-
-setup/          Setup information
-
-third_party/    External dependencies
-
----
-
-Developed as part of my M.Tech Thesis at IIITDM Jabalpur.
+> Application Domain: Autonomous UAV Edge AI
