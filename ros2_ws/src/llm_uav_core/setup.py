@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'telemetry_node = llm_uav_core.telemetry_node:main',
+            'telemetry_node = llm_uav_core.nodes.telemetry_node:main',
         ],
     },
 )
