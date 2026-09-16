@@ -31,6 +31,11 @@ python scripts/export_yolov8n.py --out experiments/models/yolov8n.onnx --imgsz 6
 | ORT CPU latency | mean 66.2 ms, p50 61.0 ms, p95 93.0 ms (warmup 5, iters 25, aarch64 QEMU CPU) |
 | Throughput | 15.1 IPS |
 
+ROS 2 `inference_node` also loaded this same SHA-256 while PX4 SITL was running:
+latency 78–84 ms, output `1×84×8400`, `fps_claimed=false`
+(`experiments/results/inference_ros_yolov8n.json`). That is a loaded-host
+measurement, not a replacement for the unloaded baseline above.
+
 Compile through ORT CPU:
 
 ```bash
