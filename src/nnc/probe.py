@@ -12,6 +12,8 @@ from typing import Any
 
 from nnc.backends.tensorrt import nvidia_probe
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 def system_env() -> dict[str, str]:
     """Strip the compiler venv so ROS 2 uses /opt/ros Python packages."""
@@ -62,13 +64,16 @@ def _run(argv: list[str], *, timeout: float = 8.0) -> dict[str, Any]:
     return _finished(argv, completed)
 
 
-def run_ros2(args: list[str], *, timeout: float = 8.0) -> dict[str, Any]:
+def run_ros2(args: list[str], *, timeout: float = 8.0, extra_setup: Path | None = None) -> dict[str, Any]:
     distro = os.environ.get("ROS_DISTRO") or "jazzy"
     setup = Path(f"/opt/ros/{distro}/setup.bash")
     argv = ["ros2", *args]
     if not setup.is_file():
         return {"cmd": argv, "ok": False, "skip": f"{setup} not found"}
-    command = f"source {shlex.quote(str(setup))} && {shlex.join(argv)}"
+    prefixes = [f"source {shlex.quote(str(setup))}"]
+    if extra_setup and extra_setup.is_file():
+        prefixes.append(f"source {shlex.quote(str(extra_setup))}")
+    command = " && ".join([*prefixes, shlex.join(argv)])
     try:
         completed = subprocess.run(
             ["bash", "-c", command],
@@ -86,8 +91,12 @@ def run_ros2(args: list[str], *, timeout: float = 8.0) -> dict[str, Any]:
 def probe_host() -> dict[str, Any]:
     gpu_ok, gpu_reason = nvidia_probe()
     px4_home = Path.home() / "PX4-Autopilot"
-    px4_script = Path.home() / "LLM-Neural-Compiler" / "third_party" / "PX4-Autopilot"
-    px4_build = px4_home / "build"
+    px4_script_legacy = REPO_ROOT / "third_party" / "PX4-Autopilot"
+    px4_build = px4_home / "build" / "px4_sitl_default"
+    px4_bin = px4_build / "bin" / "px4"
+    agent = Path.home() / "px4_ros_uxrce_dds_ws" / "install" / "microxrcedds_agent" / "bin" / "MicroXRCEAgent"
+    px4_msgs = Path.home() / "ros2_px4_ws" / "install" / "px4_msgs" / "share" / "px4_msgs" / "package.sh"
+    ros_ws = REPO_ROOT / "ros2_ws" / "install" / "setup.bash"
     ros_distro = os.environ.get("ROS_DISTRO") or "jazzy"
     return {
         "platform": {
@@ -101,6 +110,11 @@ def probe_host() -> dict[str, Any]:
             "distro": ros_distro,
             "ros2_bin": shutil.which("ros2"),
             "probe": run_ros2(["--help"]),
+            "px4_msgs_setup": str(Path.home() / "ros2_px4_ws" / "install" / "setup.bash"),
+            "px4_msgs_present": px4_msgs.is_file()
+            or (Path.home() / "ros2_px4_ws" / "install" / "px4_msgs").is_dir(),
+            "llm_uav_core_setup": str(ros_ws),
+            "llm_uav_core_built": ros_ws.is_file(),
         },
         "gazebo": {
             "gz_bin": shutil.which("gz"),
@@ -111,8 +125,14 @@ def probe_host() -> dict[str, Any]:
         "px4": {
             "tree": str(px4_home),
             "tree_exists": px4_home.is_dir(),
+            "build_dir": str(px4_build),
             "build_exists": px4_build.is_dir(),
-            "script_path_exists": px4_script.is_dir(),
-            "px4_bin": shutil.which("px4"),
+            "px4_bin": str(px4_bin) if px4_bin.is_file() else None,
+            "legacy_third_party_tree": str(px4_script_legacy),
+            "legacy_third_party_exists": px4_script_legacy.is_dir(),
+        },
+        "uxrce_agent": {
+            "bin": str(agent),
+            "present": agent.is_file(),
         },
     }

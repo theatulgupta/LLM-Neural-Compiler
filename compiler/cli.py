@@ -14,7 +14,9 @@ from compiler.llm.recommendation_engine import recommend_strategy
 from compiler.llm.prompts import user_prompt
 from compiler.parsers.tiny_cnn import flatten_features, write_tiny_cnn
 from compiler.pipeline import compile_and_benchmark, get_backend
+from compiler.schema_validate import SchemaError, validate_llm_proposal
 from compiler.strategies import ALLOWED_STRATEGY_NAMES
+from nnc.artifact import benchmark_artifact, load_ort_artifact
 from nnc.probe import probe_host
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -56,10 +58,24 @@ def cmd_recommend(args: argparse.Namespace) -> int:
     summary = summarize_graph(loaded)
     rec = recommend_strategy(summary, override=args.strategy)
     payload = rec.to_dict()
+    validate_llm_proposal(
+        {
+            "strategy": payload["strategy"],
+            "rationale": payload["rationale"],
+            "source": payload["source"],
+        }
+    )
     if args.show_prompt:
         payload["prompt"] = user_prompt(summary)
     _print(payload)
     return 0
+
+
+def cmd_infer(args: argparse.Namespace) -> int:
+    artifact = load_ort_artifact(Path(args.model), graph_opt=args.graph_opt)
+    record = benchmark_artifact(artifact, warmup=args.warmup, iters=args.iters)
+    _print(record)
+    return 0 if record["latency_ms"]["mean"] > 0 else 1
 
 
 def cmd_compile(args: argparse.Namespace) -> int:
@@ -192,6 +208,13 @@ def build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--show-prompt", action="store_true")
     rec.set_defaults(func=cmd_recommend)
 
+    infer = sub.add_parser("infer", help="Load an ORT CPU artifact and measure real latency")
+    infer.add_argument("model")
+    infer.add_argument("--graph-opt", default="extended", choices=("disable", "basic", "extended", "all"))
+    infer.add_argument("--warmup", type=int, default=1)
+    infer.add_argument("--iters", type=int, default=3)
+    infer.set_defaults(func=cmd_infer)
+
     compile_p = sub.add_parser("compile", help="Compile and benchmark")
     compile_p.add_argument("model")
     compile_p.add_argument("--backend", choices=("ort_cpu", "tensorrt"), default="ort_cpu")
@@ -221,6 +244,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return int(args.func(args))
     except UnknownStrategyError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    except SchemaError as exc:
         print(exc, file=sys.stderr)
         return 2
 

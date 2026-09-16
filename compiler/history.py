@@ -6,10 +6,13 @@ import json
 from pathlib import Path
 from typing import Any
 
+from compiler.schema_validate import validate_run_result
 from compiler.utils.timeutil import utc_now_iso
 
 
-def write_run_json(path: Path, record: dict[str, Any]) -> Path:
+def write_run_json(path: Path, record: dict[str, Any], *, validate: bool = True) -> Path:
+    if validate:
+        validate_run_result(record)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

@@ -49,7 +49,6 @@ ALLOWED_STRATEGY_NAMES: tuple[str, ...] = tuple(ALLOWED_STRATEGIES)
 def get_strategy(name: str) -> Strategy:
     from compiler.errors import UnknownStrategyError
 
-    try:
-        return ALLOWED_STRATEGIES[name]
-    except KeyError as exc:
-        raise UnknownStrategyError(name, ALLOWED_STRATEGY_NAMES) from exc
+    if name not in ALLOWED_STRATEGIES:
+        raise UnknownStrategyError(name, ALLOWED_STRATEGY_NAMES)
+    return ALLOWED_STRATEGIES[name]

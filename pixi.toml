@@ -18,6 +18,7 @@ test = "env PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q"
 fixture = "python -m compiler emit-fixture --out fixtures/tiny_cnn.onnx"
 baseline = "python -m compiler baseline --warmup 10 --iters 50"
 probe = "python -m compiler probe"
+infer = "python -m compiler infer fixtures/tiny_cnn.onnx --graph-opt disable --warmup 0 --iters 3"
 
 [environments]
 default = ["dev"]

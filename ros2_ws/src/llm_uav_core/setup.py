@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'telemetry_node = llm_uav_core.nodes.telemetry_node:main',
+            'inference_node = llm_uav_core.nodes.inference_node:main',
         ],
     },
 )

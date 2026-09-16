@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NNCLlmProposal",
+  "type": "object",
+  "required": ["strategy", "rationale", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "strategy": {
+      "type": "string",
+      "enum": ["baseline", "ort_basic", "ort_extended", "ort_all"]
+    },
+    "rationale": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 }
+  }
+}

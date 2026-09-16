@@ -30,5 +30,7 @@ tree treats as a regression.
 
 ## UAV stack
 
-ROS 2 Jazzy telemetry already exists. PX4 SITL / Gazebo are probed, not stubbed.
-Empty `llm_uav_core` planning/control modules are left empty on purpose.
+ROS 2 Jazzy telemetry and an ORT inference node live in `llm_uav_core`.
+PX4 SITL / Gazebo are probed, not stubbed. Empty planning/control modules stay
+empty. Scripts point at `~/PX4-Autopilot` and `~/px4_ros_uxrce_dds_ws`, not
+gitignored `third_party/` checkouts.
