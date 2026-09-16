@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Telemetry against real px4_msgs + this workspace's llm_uav_core.
-set -euo pipefail
+set -eo pipefail
+set +u
 source /opt/ros/jazzy/setup.bash
 if [[ -f "$HOME/ros2_px4_ws/install/setup.bash" ]]; then
   source "$HOME/ros2_px4_ws/install/setup.bash"
@@ -11,4 +12,5 @@ if [[ ! -f "$ROOT/ros2_ws/install/setup.bash" ]]; then
   exit 1
 fi
 source "$ROOT/ros2_ws/install/setup.bash"
+set -u
 exec ros2 run llm_uav_core telemetry_node

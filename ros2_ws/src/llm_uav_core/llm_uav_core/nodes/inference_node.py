@@ -35,6 +35,14 @@ def _ensure_nnc_on_path() -> None:
         sys.path.insert(0, str(src))
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
+    try:
+        import onnxruntime  # noqa: F401
+    except ImportError:
+        version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+        venv_site = root / ".venv" / "lib" / version / "site-packages"
+        if venv_site.is_dir() and str(venv_site) not in sys.path:
+            sys.path.insert(0, str(venv_site))
+
 
 
 class InferenceNode(Node):

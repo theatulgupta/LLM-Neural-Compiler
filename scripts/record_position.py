@@ -25,25 +25,6 @@ def _px4_qos():
     )
 
 
-def _pick_topic(explicit: str | None) -> tuple[str | None, list[str]]:
-    import rclpy
-    from rclpy.node import Node
-
-    rclpy.init()
-    node = Node("nnc_topic_probe")
-    names = node.get_topic_names_and_types()
-    topics = sorted(name for name, _ in names)
-    node.destroy_node()
-    rclpy.shutdown()
-    if explicit:
-        return explicit, topics
-    matches = [name for name in topics if "vehicle_local_position" in name]
-    if not matches:
-        return None, topics
-    preferred = [name for name in matches if name.endswith("_v1")]
-    return (preferred[0] if preferred else matches[0]), topics
-
-
 def record(topic: str, seconds: float) -> dict:
     import rclpy
     from px4_msgs.msg import VehicleLocalPosition
@@ -52,9 +33,9 @@ def record(topic: str, seconds: float) -> dict:
     samples: list[dict] = []
 
     class Recorder(Node):
-        def __init__(self) -> None:
+        def __init__(self, topic_name: str) -> None:
             super().__init__("nnc_position_recorder")
-            self.create_subscription(VehicleLocalPosition, topic, self._cb, _px4_qos())
+            self.create_subscription(VehicleLocalPosition, topic_name, self._cb, _px4_qos())
 
         def _cb(self, msg: VehicleLocalPosition) -> None:
             samples.append(
@@ -69,11 +50,23 @@ def record(topic: str, seconds: float) -> dict:
                 }
             )
 
+        def topics(self) -> list[str]:
+            return sorted(name for name, _ in self.get_topic_names_and_types())
+
     rclpy.init()
-    node = Recorder()
+    node = Recorder(topic)
+    # Graph discovery is not instant on XRCE/FastDDS.
+    deadline = time.time() + min(8.0, seconds)
+    seen: list[str] = []
+    while time.time() < deadline:
+        rclpy.spin_once(node, timeout_sec=0.2)
+        seen = node.topics()
+        if any("vehicle_local_position" in name for name in seen):
+            break
     end = time.time() + seconds
     while time.time() < end:
         rclpy.spin_once(node, timeout_sec=0.2)
+    seen = node.topics()
     node.destroy_node()
     rclpy.shutdown()
 
@@ -82,12 +75,7 @@ def record(topic: str, seconds: float) -> dict:
     zs = [s["z"] for s in samples]
     changed = False
     if len(samples) >= 2:
-        span = max(
-            max(xs) - min(xs),
-            max(ys) - min(ys),
-            max(zs) - min(zs),
-        )
-        # Grounded SITL still jitters; require a real span, not float noise.
+        span = max(max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs))
         changed = span > 1e-4
     return {
         "topic": topic,
@@ -97,6 +85,8 @@ def record(topic: str, seconds: float) -> dict:
         "x": {"min": min(xs) if xs else None, "max": max(xs) if xs else None},
         "y": {"min": min(ys) if ys else None, "max": max(ys) if ys else None},
         "z": {"min": min(zs) if zs else None, "max": max(zs) if zs else None},
+        "ros_topics_head": seen[:40],
+        "topic_count": len(seen),
         "samples_head": samples[:5],
         "samples_tail": samples[-5:],
     }
@@ -104,32 +94,24 @@ def record(topic: str, seconds: float) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Record PX4 local position samples")
-    parser.add_argument("--topic", default="")
+    parser.add_argument("--topic", default="/fmu/out/vehicle_local_position_v1")
     parser.add_argument("--seconds", type=float, default=12.0)
     parser.add_argument("--out", default="")
     args = parser.parse_args()
-    topic, topics = _pick_topic(args.topic or None)
-    result = {
-        "ros_topics_head": topics[:40],
-        "topic_count": len(topics),
-        "selected_topic": topic,
-    }
-    if topic is None:
+    sampled = record(args.topic, args.seconds)
+    result = dict(sampled)
+    if sampled["message_count"] <= 0:
         result["ok"] = False
-        result["reason"] = "no vehicle_local_position topic on the ROS graph"
+        result["reason"] = f"subscribed to {args.topic} but received 0 messages"
+    elif not sampled["changed_xyz"]:
+        result["ok"] = True
+        result["reason"] = (
+            f"received {sampled['message_count']} messages on {args.topic} "
+            "but x,y,z did not change beyond 1e-4 m"
+        )
     else:
-        sampled = record(topic, args.seconds)
-        result.update(sampled)
-        result["ok"] = sampled["message_count"] > 0
-        if not result["ok"]:
-            result["reason"] = f"subscribed to {topic} but received 0 messages"
-        elif not sampled["changed_xyz"]:
-            result["reason"] = (
-                f"received {sampled['message_count']} messages on {topic} "
-                "but x,y,z did not change beyond 1e-4 m"
-            )
-        else:
-            result["reason"] = f"x,y,z changed on {topic}"
+        result["ok"] = True
+        result["reason"] = f"x,y,z changed on {args.topic}"
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     sys.stdout.write(text)
     if args.out:
