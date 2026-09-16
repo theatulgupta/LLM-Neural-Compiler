@@ -1,0 +1,23 @@
+[workspace]
+name = "llm-neural-compiler"
+channels = ["conda-forge"]
+platforms = ["linux-aarch64", "linux-64", "osx-arm64", "osx-64"]
+
+[dependencies]
+python = "3.12.*"
+pip = "*"
+
+[pypi-dependencies]
+llm-neural-compiler = { path = ".", editable = true }
+
+[feature.dev.dependencies]
+pytest = ">=8"
+
+[feature.dev.tasks]
+test = "env PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q"
+fixture = "python -m compiler emit-fixture --out fixtures/tiny_cnn.onnx"
+baseline = "python -m compiler baseline --warmup 10 --iters 50"
+probe = "python -m compiler probe"
+
+[environments]
+default = ["dev"]

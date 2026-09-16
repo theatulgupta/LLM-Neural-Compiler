@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-neural-compiler"
+version = "0.1.0"
+description = "LLM-guided neural compilation for real-time UAV edge inference"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "onnx>=1.16",
+  "onnxruntime>=1.18",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+yolo = ["ultralytics>=8.2"]
+
+[project.scripts]
+nnc = "compiler.cli:main"
+
+[tool.setuptools]
+packages = [
+  "compiler",
+  "compiler.graph",
+  "compiler.llm",
+  "compiler.optimization",
+  "compiler.parsers",
+  "compiler.utils",
+  "nnc",
+  "nnc.backends",
+]
+
+[tool.setuptools.package-dir]
+"" = "."
+"nnc" = "src/nnc"
+"nnc.backends" = "src/nnc/backends"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "src"]
+addopts = "-q"

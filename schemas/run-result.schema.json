@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NNCRunResult",
+  "type": "object",
+  "required": ["schema_version", "run_id", "created_at", "model", "backend", "compile"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "model": {
+      "type": "object",
+      "required": ["path", "kind"],
+      "properties": {
+        "path": { "type": "string" },
+        "kind": { "type": "string" },
+        "sha256": { "type": "string" },
+        "opset": { "type": "integer" }
+      }
+    },
+    "backend": { "type": "string", "enum": ["ort_cpu", "tensorrt"] },
+    "strategy": { "type": "object" },
+    "compile": {
+      "type": "object",
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "ms": { "type": ["number", "null"] },
+        "error": { "type": ["string", "null"] }
+      }
+    },
+    "benchmark": {
+      "type": ["object", "null"],
+      "properties": {
+        "warmup": { "type": "integer" },
+        "iters": { "type": "integer" },
+        "latency_ms": { "type": "object" },
+        "throughput_ips": { "type": "number" }
+      }
+    },
+    "skip": {
+      "type": ["object", "null"],
+      "properties": {
+        "backend": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

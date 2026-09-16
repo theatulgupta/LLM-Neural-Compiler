@@ -48,3 +48,15 @@ data/
 
 third_party/PX4-Autopilot/
 third_party/Micro-XRCE-DDS-Agent/
+
+# ==========================================
+# Local tooling
+# ==========================================
+
+.venv/
+.pixi/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/

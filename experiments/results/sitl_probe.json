@@ -1,0 +1,62 @@
+{
+  "gazebo": {
+    "gz_bin": "/opt/ros/jazzy/opt/gz_tools_vendor/bin/gz",
+    "probe": {
+      "cmd": [
+        "gz",
+        "sim",
+        "--version"
+      ],
+      "ok": true,
+      "returncode": 0,
+      "stderr_head": "",
+      "stdout_head": "Gazebo Sim, version 8.15.0\nCopyright (C) 2018 Open Source Robotics Foundation.\nReleased under the Apache 2.0 License."
+    }
+  },
+  "nvidia": {
+    "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+    "present": false
+  },
+  "platform": {
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "release": "7.0.0-31-generic",
+    "system": "Linux"
+  },
+  "px4": {
+    "build_exists": false,
+    "px4_bin": null,
+    "script_path_exists": false,
+    "tree": "/home/theatulgupta/PX4-Autopilot",
+    "tree_exists": true
+  },
+  "ros2": {
+    "distro": "jazzy",
+    "probe": {
+      "cmd": [
+        "ros2",
+        "--help"
+      ],
+      "ok": true,
+      "returncode": 0,
+      "stderr_head": "",
+      "stdout_head": "usage: ros2 [-h] [--use-python-default-buffering]\n            Call `ros2 <command> -h` for more detailed usage. ...\n\nros2 is an extensible command-line tool for ROS 2.\n\noptions:\n  -h, --help            show this help message and exit\n  --use-python-default-buffering\n                        Do not force line buffering in stdout and instead use\n                        the python default buffering, which might be affected\n                        by PYTHONUNBUFFERED/-u and depends on whatever stdout\n                        is interactive or not\n\nCommands:\n  action     Various action related sub-commands\n  bag        Various rosbag related sub-commands\n  component  Various component related sub-commands\n  daemon     Various daemon related sub-commands\n  doctor     Check ROS setup and other potential issues\n  interface  Show information about ROS interfaces\n  launch     Run a launch file\n  lifecycle  Various lifecycle related sub-commands\n  multicast  Various multicast related sub-commands\n  node       Various node related sub-commands\n  param      Various param related sub-commands\n  pkg        Various package related sub-commands\n  plugin     Various plugin related sub-commands\n  run        Run a package specific executable\n  security   Various security related sub-commands\n  service    Various service related sub-commands\n  topic      Various topic related sub-commands\n  wtf        Use `wtf` as alias to `doctor`\n\n  Call `ros2 <command> -h` for more detailed usage."
+    },
+    "ros2_bin": "/opt/ros/jazzy/bin/ros2"
+  },
+  "ros2_topics": {
+    "has_local_position": false,
+    "ok": true,
+    "returncode": 0,
+    "stderr_head": "",
+    "topic_count": 2,
+    "topics_head": [
+      "/parameter_events",
+      "/rosout"
+    ]
+  },
+  "verdict": {
+    "reason": "PX4 SITL is not built or telemetry topics are not published on this host",
+    "sitl_running_with_telemetry": false
+  }
+}
