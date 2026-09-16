@@ -1,0 +1,20 @@
+{
+  "backend": "tensorrt",
+  "benchmark": null,
+  "compile": {
+    "error": null,
+    "ms": null,
+    "ok": false
+  },
+  "created_at": "2026-09-16T16:33:12.405242+00:00",
+  "model": {
+    "kind": "fixture",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/fixtures/tiny_cnn.onnx"
+  },
+  "run_id": "d0d6ad29-7f28-4464-a05a-9a4bc99cbc1e",
+  "schema_version": 1,
+  "skip": {
+    "backend": "tensorrt",
+    "reason": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)"
+  }
+}

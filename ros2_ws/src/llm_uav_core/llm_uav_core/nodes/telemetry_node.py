@@ -23,35 +23,45 @@ class TelemetryNode(Node):
             depth=10,
         )
 
-        # Latest position
+        self.declare_parameter("topic", "/fmu/out/vehicle_local_position_v1")
+        topic = str(self.get_parameter("topic").value)
+
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
+        self.msg_count = 0
+        self.xy_valid = False
+        self.z_valid = False
+        self.last_timestamp = 0
 
-        # Subscriber
         self.subscription = self.create_subscription(
             VehicleLocalPosition,
-            "/fmu/out/vehicle_local_position_v1",
+            topic,
             self.position_callback,
             qos_profile,
         )
 
-        # Print once every second
         self.timer = self.create_timer(1.0, self.print_position)
-
-        self.get_logger().info("Telemetry node started.")
+        self.get_logger().info(f"Telemetry node started. topic={topic}")
 
     def position_callback(self, msg):
-        self.x = msg.x
-        self.y = msg.y
-        self.z = msg.z
+        self.x = float(msg.x)
+        self.y = float(msg.y)
+        self.z = float(msg.z)
+        self.msg_count += 1
+        self.xy_valid = bool(getattr(msg, "xy_valid", False))
+        self.z_valid = bool(getattr(msg, "z_valid", False))
+        self.last_timestamp = int(getattr(msg, "timestamp", 0))
 
     def print_position(self):
         self.get_logger().info(
             f"Position -> "
-            f"X={self.x:.2f}, "
-            f"Y={self.y:.2f}, "
-            f"Z={self.z:.2f}"
+            f"X={self.x:.4f}, "
+            f"Y={self.y:.4f}, "
+            f"Z={self.z:.4f} "
+            f"msgs={self.msg_count} "
+            f"xy_valid={self.xy_valid} z_valid={self.z_valid} "
+            f"t={self.last_timestamp}"
         )
 
 
