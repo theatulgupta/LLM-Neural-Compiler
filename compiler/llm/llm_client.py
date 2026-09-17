@@ -11,6 +11,7 @@ import json
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Protocol
 
 from compiler.graph.graph_summary import GraphSummary
 from compiler.schema_validate import SchemaError, validate_llm_proposal
@@ -24,6 +25,15 @@ class LlmProposal:
 
     def to_dict(self) -> dict[str, str]:
         return asdict(self)
+
+
+class LlmClient(Protocol):
+    """Any advisor: heuristic, mock, Groq, or a later provider. Same propose() contract."""
+
+    name: str
+
+    def propose(self, summary: GraphSummary) -> LlmProposal:
+        ...
 
 
 def proposal_from_dict(payload: dict[str, object]) -> LlmProposal:
@@ -79,8 +89,11 @@ class MockLlmClient:
         return proposal_from_dict(dict(self._proposal))
 
 
-def build_client() -> HeuristicLlmClient | MockLlmClient:
-    """Factory: NNC_LLM_BACKEND=heuristic|mock. Optional NNC_LLM_PROPOSAL_JSON for the mock."""
+def build_client() -> LlmClient:
+    """Factory: NNC_LLM_BACKEND=heuristic|mock|groq. Tests default to heuristic/mock.
+
+    Groq is opt-in so pytest never hits the network even if ~/.config/nnc/groq.env exists.
+    """
 
     backend = os.environ.get("NNC_LLM_BACKEND", "heuristic").strip().lower()
     if backend in {"", "heuristic"}:
@@ -97,4 +110,8 @@ def build_client() -> HeuristicLlmClient | MockLlmClient:
         if not isinstance(payload, dict):
             raise SchemaError("NNC_LLM_PROPOSAL_JSON must be an object")
         return MockLlmClient(payload)
-    raise SchemaError(f"unknown NNC_LLM_BACKEND {backend!r}; use heuristic or mock")
+    if backend == "groq":
+        from compiler.llm.groq_client import GroqLlmClient
+
+        return GroqLlmClient()
+    raise SchemaError(f"unknown NNC_LLM_BACKEND {backend!r}; use heuristic, mock, or groq")

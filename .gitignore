@@ -50,8 +50,21 @@ third_party/Micro-XRCE-DDS-Agent/
 
 .venv/
 .pixi/
+.env
+.env.*
+groq.env
 .pytest_cache/
 .mypy_cache/
 *.egg-info/
 dist/
 build/
+
+# ==========================================
+# LaTeX build crumbs
+# ==========================================
+
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz

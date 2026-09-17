@@ -15,12 +15,25 @@ class BackendSkip:
 
 
 @dataclass(frozen=True, slots=True)
+class TensorSpec:
+    """Backend-neutral input metadata. Compilers must not poke session objects."""
+
+    name: str
+    shape: tuple[int | None, ...]
+    dtype: str = "float32"
+
+    def numpy_shape(self, fill: int = 1) -> tuple[int, ...]:
+        return tuple(dim if isinstance(dim, int) and dim > 0 else fill for dim in self.shape)
+
+
+@dataclass(frozen=True, slots=True)
 class CompiledModel:
     backend: str
     session: Any
     input_names: tuple[str, ...]
     output_names: tuple[str, ...]
     providers: tuple[str, ...]
+    inputs: tuple[TensorSpec, ...] = ()
 
 
 class Backend(ABC):

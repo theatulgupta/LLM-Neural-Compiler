@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from nnc.backends.base import Backend, CompiledModel
+from nnc.backends.registry import register_backend
 
 
 def nvidia_probe() -> tuple[bool, str]:
@@ -22,6 +23,7 @@ def nvidia_probe() -> tuple[bool, str]:
     return True, f"nvidia-smi={smi} nvidia0={dev.exists()}"
 
 
+@register_backend
 class TensorRtBackend(Backend):
     name = "tensorrt"
 

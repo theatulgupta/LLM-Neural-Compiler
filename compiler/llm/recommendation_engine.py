@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from compiler.graph.graph_summary import GraphSummary
-from compiler.llm.llm_client import HeuristicLlmClient, LlmProposal, MockLlmClient, build_client
+from compiler.llm.llm_client import LlmClient, LlmProposal, build_client
 from compiler.strategies import ALLOWED_STRATEGY_NAMES, Strategy, get_strategy
 
 
@@ -27,7 +27,7 @@ class Recommendation:
 def recommend_strategy(
     summary: GraphSummary,
     *,
-    client: HeuristicLlmClient | MockLlmClient | None = None,
+    client: LlmClient | None = None,
     override: str | None = None,
 ) -> Recommendation:
     if override is not None:

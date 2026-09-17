@@ -7,7 +7,8 @@ from typing import Any
 import numpy as np
 import onnxruntime as ort
 
-from nnc.backends.base import Backend, CompiledModel
+from nnc.backends.base import Backend, CompiledModel, TensorSpec
+from nnc.backends.registry import register_backend
 
 _OPT_LEVELS = {
     "disable": ort.GraphOptimizationLevel.ORT_DISABLE_ALL,
@@ -17,6 +18,18 @@ _OPT_LEVELS = {
 }
 
 
+def _tensor_spec(item: Any) -> TensorSpec:
+    shape: list[int | None] = []
+    for dim in item.shape:
+        if isinstance(dim, int) and dim > 0:
+            shape.append(dim)
+        else:
+            shape.append(None)
+    dtype = "float32" if item.type in {"tensor(float)", "tensor(float32)"} else str(item.type)
+    return TensorSpec(name=item.name, shape=tuple(shape), dtype=dtype)
+
+
+@register_backend
 class OrtCpuBackend(Backend):
     name = "ort_cpu"
 
@@ -39,12 +52,14 @@ class OrtCpuBackend(Backend):
             sess_options=options,
             providers=["CPUExecutionProvider"],
         )
+        specs = tuple(_tensor_spec(item) for item in session.get_inputs())
         return CompiledModel(
             backend=self.name,
             session=session,
-            input_names=tuple(item.name for item in session.get_inputs()),
+            input_names=tuple(spec.name for spec in specs),
             output_names=tuple(item.name for item in session.get_outputs()),
             providers=tuple(session.get_providers()),
+            inputs=specs,
         )
 
     def infer(self, compiled: CompiledModel, feeds: dict[str, Any]) -> list[np.ndarray]:

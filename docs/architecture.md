@@ -34,3 +34,20 @@ ROS 2 Jazzy telemetry and an ORT inference node live in `llm_uav_core`.
 PX4 SITL / Gazebo are probed, not stubbed. Empty planning/control modules stay
 empty. Scripts point at `~/PX4-Autopilot` and `~/px4_ros_uxrce_dds_ws`, not
 gitignored `third_party/` checkouts.
+
+The inference node loads artifacts through `nnc.artifact`, not through Groq or
+the compiler CLI. Telemetry only reads position.
+
+## Extension seams
+
+Runtimes implement `nnc.backends.base.Backend` and register with
+`register_backend`. `compiler.pipeline` asks `get_backend(name)`; it does not
+switch on TensorRT vs ORT. `CompiledModel.inputs` is a `TensorSpec` tuple so
+the compiler never calls `session.get_inputs()`.
+
+LLM providers implement `compiler.llm.llm_client.LlmClient.propose`. Heuristic,
+mock, and Groq already share that contract. `build_client()` is the factory
+(`NNC_LLM_BACKEND=heuristic|mock|groq`).
+
+New models reuse the same allowlist schema and the same JSONL history logger.
+

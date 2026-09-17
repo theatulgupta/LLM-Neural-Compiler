@@ -45,16 +45,6 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _static_shape(meta: Any) -> tuple[int, ...]:
-    shape: list[int] = []
-    for dim in meta.shape:
-        if isinstance(dim, int) and dim > 0:
-            shape.append(dim)
-        else:
-            shape.append(1)
-    return tuple(shape)
-
-
 def load_ort_artifact(path: Path, *, graph_opt: str = "extended") -> LoadedArtifact:
     path = path.expanduser().resolve()
     if not path.is_file():
@@ -65,10 +55,9 @@ def load_ort_artifact(path: Path, *, graph_opt: str = "extended") -> LoadedArtif
     if not ok:
         raise RuntimeError(reason or "ort_cpu unavailable")
     compiled = backend.compile(data, graph_opt=graph_opt)
-    inputs = compiled.session.get_inputs()
-    if not inputs:
+    if not compiled.inputs:
         raise RuntimeError(f"{path} has no graph inputs")
-    first = inputs[0]
+    first = compiled.inputs[0]
     return LoadedArtifact(
         path=path,
         sha256=_sha256(path),
@@ -76,7 +65,7 @@ def load_ort_artifact(path: Path, *, graph_opt: str = "extended") -> LoadedArtif
         graph_opt=graph_opt,
         compiled=compiled,
         input_name=first.name,
-        input_shape=_static_shape(first),
+        input_shape=first.numpy_shape(),
         output_names=tuple(compiled.output_names),
         providers=tuple(compiled.providers),
     )

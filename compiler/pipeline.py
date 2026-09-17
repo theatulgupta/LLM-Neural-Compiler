@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 import onnx
@@ -16,37 +16,26 @@ from compiler.history import append_history, new_run_record, write_run_json
 from compiler.llm.recommendation_engine import recommend_strategy
 from compiler.optimization.optimizer import apply_strategy
 from compiler.utils.timeutil import utc_now_iso
-from nnc.backends.base import Backend, BackendSkip, CompiledModel
-from nnc.backends.ort_cpu import OrtCpuBackend
-from nnc.backends.tensorrt import TensorRtBackend
+from nnc.backends import BackendSkip, CompiledModel, get_backend
 from nnc.probe import probe_host
 
-BackendName = Literal["ort_cpu", "tensorrt"]
 
-
-def get_backend(name: BackendName) -> Backend:
-    if name == "ort_cpu":
-        return OrtCpuBackend()
-    if name == "tensorrt":
-        return TensorRtBackend()
-    raise ValueError(f"unknown backend {name!r}")
+def _numpy_dtype(name: str) -> np.dtype:
+    if name in {"float16", "tensor(float16)"}:
+        return np.float16
+    return np.float32
 
 
 def _input_feeds(compiled: CompiledModel, model: onnx.ModelProto, rng: np.random.Generator) -> dict[str, np.ndarray]:
     inits = {item.name for item in model.graph.initializer}
     feeds: dict[str, np.ndarray] = {}
-    session_inputs = compiled.session.get_inputs()
-    for item in session_inputs:
-        if item.name in inits:
+    specs = compiled.inputs or tuple()
+    if not specs:
+        raise RuntimeError(f"{compiled.backend} compiled model is missing TensorSpec inputs")
+    for spec in specs:
+        if spec.name in inits:
             continue
-        shape = []
-        for dim in item.shape:
-            if isinstance(dim, int) and dim > 0:
-                shape.append(dim)
-            else:
-                shape.append(1)
-        dtype = np.float32 if item.type == "tensor(float)" else np.float32
-        feeds[item.name] = rng.standard_normal(shape, dtype=dtype)
+        feeds[spec.name] = rng.standard_normal(spec.numpy_shape(), dtype=_numpy_dtype(spec.dtype))
     return feeds
 
 
@@ -72,7 +61,7 @@ def _latency_stats(samples_ms: list[float]) -> dict[str, float]:
 def compile_and_benchmark(
     model_path: Path,
     *,
-    backend_name: BackendName = "ort_cpu",
+    backend_name: str = "ort_cpu",
     strategy_name: str | None = None,
     warmup: int = 10,
     iters: int = 50,
