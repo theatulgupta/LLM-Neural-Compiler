@@ -15,6 +15,22 @@ class BackendSkip:
 
 
 @dataclass(frozen=True, slots=True)
+class BackendOptions:
+    graph_opt: str = "disable"
+    intra_op_threads: int | None = None
+    inter_op_threads: int | None = None
+    execution_mode: str = "sequential"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "graph_opt": self.graph_opt,
+            "intra_op_threads": self.intra_op_threads,
+            "inter_op_threads": self.inter_op_threads,
+            "execution_mode": self.execution_mode,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class TensorSpec:
     """Backend-neutral input metadata. Compilers must not poke session objects."""
 
@@ -44,7 +60,7 @@ class Backend(ABC):
         """Return (True, None) or (False, skip reason)."""
 
     @abstractmethod
-    def compile(self, model_bytes: bytes, *, graph_opt: str) -> CompiledModel:
+    def compile(self, model_bytes: bytes, *, options: BackendOptions | None = None, graph_opt: str | None = None) -> CompiledModel:
         """Build an executable. Must raise if available() is False."""
 
     @abstractmethod

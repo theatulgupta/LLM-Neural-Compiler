@@ -22,7 +22,8 @@ class UnknownStrategyError(CompilerError):
         )
 
 
-class BackendSkipped(CompilerError):
+class CalibrationUnavailable(CompilerError):
+    """Static quantization needs frames that are not on disk."""
     """A backend cannot run on this host; callers must record the reason."""
 
     def __init__(self, backend: str, reason: str) -> None:

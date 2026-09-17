@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from nnc.backends.base import Backend, CompiledModel
+from nnc.backends.base import Backend, BackendOptions, CompiledModel
 from nnc.backends.registry import register_backend
 
 
@@ -37,7 +37,7 @@ class TensorRtBackend(Backend):
             return False, f"NVIDIA GPU present ({evidence}) but the tensorrt Python package is not installed"
         return True, None
 
-    def compile(self, model_bytes: bytes, *, graph_opt: str) -> CompiledModel:
+    def compile(self, model_bytes: bytes, *, options: BackendOptions | None = None, graph_opt: str | None = None) -> CompiledModel:
         ok, reason = self.available()
         if not ok:
             raise RuntimeError(reason)

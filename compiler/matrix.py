@@ -177,12 +177,31 @@ def run_zoo_matrix(
     iters: int = 8,
     results_dir: Path | None = None,
     root: Path | None = None,
+    candidates: str | None = None,
 ) -> dict[str, Any]:
     host = probe_host()
     wanted = set(kinds) if kinds else None
     rows = []
     for spec in load_zoo():
         if wanted is not None and spec.kind not in wanted:
+            continue
+        if candidates:
+            from compiler.optimize import optimize_model
+
+            onnx_path = spec.onnx_path(root or REPO_ROOT)
+            if not onnx_path.is_file():
+                rows.append(measure_spec(spec, warmup=warmup, iters=iters, results_dir=results_dir, root=root))
+                continue
+            opt = optimize_model(
+                onnx_path,
+                kind=spec.kind,
+                task=spec.task,
+                mode=candidates,
+                warmup=warmup,
+                iters=iters,
+                results_dir=results_dir,
+            )
+            rows.append(opt)
             continue
         rows.append(
             measure_spec(spec, warmup=warmup, iters=iters, results_dir=results_dir, root=root)

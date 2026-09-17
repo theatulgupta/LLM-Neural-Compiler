@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from compiler.graph.graph_summary import GraphSummary
+from compiler.llm.context_builder import render_user_prompt
 from compiler.llm.llm_client import LlmProposal, proposal_from_dict
 from compiler.llm.prompts import SYSTEM_PROMPT, user_prompt
 from compiler.schema_validate import SchemaError
@@ -129,13 +130,14 @@ class GroqLlmClient:
         self._chat = chat
         self._api_key = api_key
 
-    def propose(self, summary: GraphSummary) -> LlmProposal:
+    def propose(self, summary: GraphSummary, context: dict | None = None) -> LlmProposal:
         key = self._api_key if self._api_key is not None else load_groq_api_key()
         if not key and self._chat is None:
             raise SchemaError("GROQ_API_KEY is not set; refusing to invent a proposal")
+        prompt = render_user_prompt(context) if context is not None else user_prompt(summary)
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt(summary)},
+            {"role": "user", "content": prompt},
         ]
         if self._chat is not None:
             content = self._chat(messages, self.model)
@@ -144,14 +146,30 @@ class GroqLlmClient:
             content = groq_chat(messages, self.model, api_key=key)
         payload = extract_json_object(content)
         payload["source"] = "groq"
+        from compiler.planner.plan import PRESETS
+
+        if payload.get("strategy") and payload["strategy"] not in PRESETS:
+            raise SchemaError(f"strategy {payload['strategy']!r} is not allowlisted")
         rationale = str(payload.get("rationale", ""))
         cleaned, stripped = strip_invented_metrics(rationale)
         payload["rationale"] = cleaned
+        if "plan_id" not in payload and "strategy" in payload:
+            payload["plan_id"] = payload["strategy"]
+        payload.pop("strategy", None)
+        if "steps" not in payload:
+            payload["steps"] = []
+        if "options" not in payload:
+            payload["options"] = {"ort_graph_opt": "disable"}
+        if "confidence" not in payload:
+            payload["confidence"] = 0.5
         proposal = proposal_from_dict(payload)
         if stripped:
+            plan = dict(proposal.plan)
+            plan["rationale"] = cleaned
             proposal = LlmProposal(
                 strategy=proposal.strategy,
                 rationale=cleaned,
                 source="groq",
+                plan=plan,
             )
         return proposal

@@ -7,7 +7,7 @@
   "properties": {
     "strategy": {
       "type": "string",
-      "enum": ["baseline", "graph_simplify", "graph_fuse", "graph_fuse_ort"]
+      "enum": ["baseline", "ort_default", "graph_simplify", "graph_fuse", "graph_fuse_ort", "int8_dynamic", "int8_static"]
     },
     "rationale": { "type": "string", "minLength": 1 },
     "source": { "type": "string", "minLength": 1 }

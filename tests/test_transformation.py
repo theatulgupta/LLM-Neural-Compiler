@@ -9,13 +9,15 @@ from compiler.optimization.optimizer import apply_strategy, prepare_for_ort
 from compiler.optimization.passes import (
     apply_pass,
     eliminate_identity,
-    expand_fused_conv,
     fuse_bn_into_conv,
     fuse_conv_relu,
+    fuse_matmul_add_gemm,
     graph_ir_snapshot,
 )
 from compiler.pipeline import compile_and_benchmark
 from compiler.strategies import get_strategy
+from nnc.backends.base import BackendOptions
+from nnc.backends.ort_cpu import OrtCpuBackend
 
 
 def _conv_relu_model() -> onnx.ModelProto:
@@ -103,11 +105,13 @@ def test_fuse_conv_relu_changes_tiny_cnn(tiny_path) -> None:
     assert after["op_counts"].get("Relu", 0) == 0  # type: ignore[union-attr]
     assert after["op_counts"].get("FusedConv", 0) == 1  # type: ignore[union-attr]
     assert int(after["node_count"]) == int(before["node_count"]) - 1
-    runtime = expand_fused_conv(fused)
-    run_ops = graph_ir_snapshot(runtime)["op_counts"]
-    assert run_ops.get("FusedConv", 0) == 0  # type: ignore[union-attr]
-    assert run_ops.get("Relu", 0) == 1  # type: ignore[union-attr]
-    assert run_ops.get("Conv", 0) == 1  # type: ignore[union-attr]
+    backend = OrtCpuBackend()
+    session = backend.compile(fused.SerializeToString(), graph_opt="disable")
+    x = np.ones((1, 1, 8, 8), dtype=np.float32)
+    native = backend.compile(loaded.model.SerializeToString(), graph_opt="disable")
+    a = backend.infer(native, {native.input_names[0]: x})[0]
+    b = backend.infer(session, {session.input_names[0]: x})[0]
+    assert np.max(np.abs(a - b)) < 1e-5
 
 
 def test_fuse_bn_into_conv_drops_bn() -> None:
@@ -130,11 +134,32 @@ def test_graph_fuse_strategy_on_tiny_cnn_compiles(tiny_path, tmp_path) -> None:
     assert record["compile"]["ok"] is True
     assert record["graph_changed"] is True
     assert record["graph_after"]["op_counts"].get("FusedConv", 0) == 1
+    assert record["graph_runtime"]["op_counts"].get("FusedConv", 0) == 1
     assert record["fps_claimed"] is False
     assert "fuse_conv_relu" in record["passes_applied"]
 
 
-def test_prepare_for_ort_matches_strategy_helper() -> None:
+def test_prepare_for_ort_keeps_fusedconv() -> None:
     fused = apply_strategy(_conv_relu_model(), get_strategy("graph_fuse"))
     runtime = prepare_for_ort(fused)
-    assert graph_ir_snapshot(runtime)["op_counts"].get("FusedConv", 0) == 0  # type: ignore[union-attr]
+    assert graph_ir_snapshot(runtime)["op_counts"].get("FusedConv", 0) == 1  # type: ignore[union-attr]
+
+
+def test_fuse_matmul_add_gemm() -> None:
+    w = np.ones((4, 3), dtype=np.float32)
+    b = np.zeros((3,), dtype=np.float32)
+    graph = helper.make_graph(
+        [
+            helper.make_node("MatMul", ["x", "w"], ["m"]),
+            helper.make_node("Add", ["m", "b"], ["y"]),
+        ],
+        "mm",
+        [helper.make_tensor_value_info("x", TensorProto.FLOAT, [1, 4])],
+        [helper.make_tensor_value_info("y", TensorProto.FLOAT, [1, 3])],
+        [numpy_helper.from_array(w, "w"), numpy_helper.from_array(b, "b")],
+    )
+    model = helper.make_model(graph, opset_imports=[helper.make_opsetid("", 13)], ir_version=8)
+    fused = fuse_matmul_add_gemm(model)
+    ops = graph_ir_snapshot(fused)["op_counts"]
+    assert ops.get("Gemm", 0) == 1
+    assert ops.get("MatMul", 0) == 0

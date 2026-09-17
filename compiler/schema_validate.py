@@ -10,10 +10,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from compiler.strategies import ALLOWED_STRATEGY_NAMES
-
 SCHEMA_DIR = Path(__file__).resolve().parents[1] / "schemas"
 LLM_PROPOSAL_SCHEMA_PATH = SCHEMA_DIR / "llm-proposal.schema.json"
+LLM_PLAN_SCHEMA_PATH = SCHEMA_DIR / "llm-plan.schema.json"
 RUN_RESULT_SCHEMA_PATH = SCHEMA_DIR / "run-result.schema.json"
 
 
@@ -33,7 +32,52 @@ def _try_jsonschema(instance: dict[str, Any], schema: dict[str, Any]) -> None:
     jsonschema.validate(instance=instance, schema=schema)
 
 
+def validate_llm_plan(payload: dict[str, Any]) -> dict[str, Any]:
+    schema = load_schema(LLM_PLAN_SCHEMA_PATH)
+    required = schema.get("required", [])
+    missing = [key for key in required if key not in payload]
+    if missing:
+        raise SchemaError(f"LLM plan missing fields: {missing}")
+    extra = [key for key in payload if key not in schema.get("properties", {})]
+    if extra:
+        raise SchemaError(f"LLM plan has unknown fields: {extra}")
+    if not isinstance(payload.get("plan_id"), str) or not str(payload["plan_id"]).strip():
+        raise SchemaError("plan_id must be a non-empty string")
+    steps = payload.get("steps")
+    if not isinstance(steps, list) or len(steps) > 8:
+        raise SchemaError("steps must be a list of at most 8 items")
+    atom_enum = tuple(schema["properties"]["steps"]["items"]["properties"]["atom"]["enum"])
+    for step in steps:
+        if not isinstance(step, dict) or "atom" not in step:
+            raise SchemaError("each step needs an atom")
+        extra_step = [key for key in step if key not in {"atom", "params"}]
+        if extra_step:
+            raise SchemaError(f"step has unknown fields: {extra_step}")
+        if step["atom"] not in atom_enum:
+            raise SchemaError(f"atom {step['atom']!r} is not allowlisted")
+        if "params" in step and not isinstance(step["params"], dict):
+            raise SchemaError("step.params must be an object")
+    options = payload.get("options")
+    if not isinstance(options, dict):
+        raise SchemaError("options must be an object")
+    extra_opt = [key for key in options if key not in schema["properties"]["options"]["properties"]]
+    if extra_opt:
+        raise SchemaError(f"options has unknown fields: {extra_opt}")
+    rationale = payload.get("rationale")
+    source = payload.get("source")
+    if not isinstance(rationale, str) or not rationale.strip():
+        raise SchemaError("rationale must be a non-empty string")
+    if not isinstance(source, str) or not source.strip():
+        raise SchemaError("source must be a non-empty string")
+    confidence = payload.get("confidence")
+    if not isinstance(confidence, (int, float)) or confidence < 0 or confidence > 1:
+        raise SchemaError("confidence must be in [0, 1]")
+    _try_jsonschema(payload, schema)
+    return payload
+
+
 def validate_llm_proposal(payload: dict[str, Any]) -> dict[str, Any]:
+    from compiler.strategies import ALLOWED_STRATEGY_NAMES
     schema = load_schema(LLM_PROPOSAL_SCHEMA_PATH)
     enum = tuple(schema["properties"]["strategy"]["enum"])
     if enum != ALLOWED_STRATEGY_NAMES:
@@ -68,7 +112,7 @@ def validate_run_result(payload: dict[str, Any]) -> dict[str, Any]:
     missing = [key for key in required if key not in payload]
     if missing:
         raise SchemaError(f"run result missing fields: {missing}")
-    if payload.get("schema_version") != 1:
+    if payload.get("schema_version") not in {1, 2}:
         raise SchemaError(f"unsupported schema_version {payload.get('schema_version')!r}")
     backend = payload.get("backend")
     allowed_backends = schema["properties"]["backend"].get("enum", ["ort_cpu", "tensorrt"])

@@ -18,6 +18,13 @@ from compiler.llm.llm_client import LlmClient
 from compiler.llm.prompts import user_prompt
 from compiler.llm.recommendation_engine import recommend_strategy
 from compiler.matrix import measure_path, run_zoo_matrix
+from compiler.optimize import optimize_model
+from compiler.planner.plan import Plan, get_plan
+from compiler.report.report_generator import write_report
+from compiler.hardware.profile import probe_hardware
+from compiler.llm.context_builder import build_context, render_user_prompt
+from compiler.llm.recommendation_engine import recommend_plan
+from compiler.history import history_for_model
 from compiler.parsers.tiny_cnn import flatten_features, write_tiny_cnn
 from compiler.parsers.tiny_depth import write_tiny_depth
 from compiler.pipeline import compile_and_benchmark, get_backend
@@ -67,6 +74,42 @@ def cmd_emit_fixture(args: argparse.Namespace) -> int:
             "broken": bool(args.broken),
         }
     )
+    return 0
+
+
+def cmd_plan(args: argparse.Namespace) -> int:
+    loaded = load_graph(Path(args.model))
+    summary = summarize_graph(loaded)
+    hardware = probe_hardware()
+    constraints = {}
+    for item in getattr(args, "constraint", []) or []:
+        key, _, value = item.partition("=")
+        constraints[key] = value
+    rec = recommend_plan(summary, hardware, constraints, history=history_for_model(args.kind or loaded.sha256))
+    payload = rec.strategy.to_dict() if hasattr(rec.strategy, "to_dict") else rec.to_dict()
+    if args.show_prompt:
+        payload["prompt"] = render_user_prompt(build_context(summary, hardware, constraints, []))
+    _print(payload)
+    return 0
+
+
+def cmd_optimize(args: argparse.Namespace) -> int:
+    payload = optimize_model(
+        Path(args.model),
+        kind=args.kind,
+        task=args.task,
+        mode=args.candidates,
+        warmup=args.warmup,
+        iters=args.iters,
+        results_dir=Path(args.results),
+    )
+    _print({"wrote": payload.get("wrote"), "chosen": payload.get("chosen"), "fps_claimed": False})
+    return 0 if payload.get("chosen") else 1
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    path = write_report(Path(args.results))
+    _print({"wrote": str(path)})
     return 0
 
 
@@ -362,6 +405,7 @@ def cmd_matrix(args: argparse.Namespace) -> int:
         warmup=args.warmup,
         iters=args.iters,
         results_dir=results,
+        candidates=(args.candidates or None),
     )
     if args.fixture:
         fixture = Path(args.fixture)
@@ -413,6 +457,27 @@ def build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--strategy", default=None, help="Override (must be allowlisted)")
     rec.add_argument("--show-prompt", action="store_true")
     rec.set_defaults(func=cmd_recommend)
+
+    plan_p = sub.add_parser("plan", help="Verified LLM/heuristic plan JSON")
+    plan_p.add_argument("model")
+    plan_p.add_argument("--kind", default="")
+    plan_p.add_argument("--constraint", action="append", default=[])
+    plan_p.add_argument("--show-prompt", action="store_true")
+    plan_p.set_defaults(func=cmd_plan)
+
+    opt_p = sub.add_parser("optimize", help="Compile and rank candidate plans")
+    opt_p.add_argument("model")
+    opt_p.add_argument("--kind", required=True)
+    opt_p.add_argument("--task", default="detect")
+    opt_p.add_argument("--candidates", default="default", choices=("default", "all"))
+    opt_p.add_argument("--warmup", type=int, default=5)
+    opt_p.add_argument("--iters", type=int, default=20)
+    opt_p.add_argument("--results", default=str(DEFAULT_RESULTS))
+    opt_p.set_defaults(func=cmd_optimize)
+
+    report_p = sub.add_parser("report", help="Write report.md from paper_matrix.json")
+    report_p.add_argument("--results", default=str(DEFAULT_RESULTS))
+    report_p.set_defaults(func=cmd_report)
 
     infer = sub.add_parser("infer", help="Load an ORT CPU artifact and measure real latency")
     infer.add_argument("model")
@@ -469,6 +534,7 @@ def build_parser() -> argparse.ArgumentParser:
     matrix.add_argument("--results", default=str(DEFAULT_RESULTS))
     matrix.add_argument("--warmup", type=int, default=3)
     matrix.add_argument("--iters", type=int, default=8)
+    matrix.add_argument("--candidates", default="", help="default|all to run optimize_model per zoo kind")
     matrix.set_defaults(func=cmd_matrix)
     return parser
 

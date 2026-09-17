@@ -29,3 +29,42 @@ def new_run_record(**kwargs: Any) -> dict[str, Any]:
     record = {"schema_version": 1, "created_at": utc_now_iso()}
     record.update(kwargs)
     return record
+
+
+def load_history(history_path: Path) -> list[dict[str, Any]]:
+    if not history_path.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    for line in history_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return rows
+
+
+def history_for_model(kind_or_sha: str, k: int = 5, *, history_path: Path | None = None) -> list[dict[str, Any]]:
+    from compiler.catalog import REPO_ROOT
+
+    path = history_path or (REPO_ROOT / "experiments" / "results" / "history.jsonl")
+    matched: list[dict[str, Any]] = []
+    for row in reversed(load_history(path)):
+        model = row.get("model") or {}
+        kind = str(model.get("kind") or "")
+        sha = str(model.get("sha256") or "")
+        if kind_or_sha not in {kind, sha}:
+            continue
+        bench = (row.get("benchmark") or {}).get("latency_ms") or {}
+        matched.append(
+            {
+                "plan_id": (row.get("plan") or {}).get("plan_id") or (row.get("strategy") or {}).get("strategy"),
+                "p50_ms": bench.get("p50"),
+                "passed": (row.get("verification") or {}).get("passed"),
+                "kind": kind,
+            }
+        )
+        if len(matched) >= k:
+            break
+    return matched

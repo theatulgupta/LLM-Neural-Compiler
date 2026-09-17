@@ -1,0 +1,13 @@
+{
+  "fps_claimed": false,
+  "gz_topics_camera": [
+    "/world/default/model/x500_mono_cam_0/link/camera_link/sensor/camera_imu/imu"
+  ],
+  "ok": false,
+  "reason": "Gazebo camera image topic never appeared on this QEMU Virtio GPU host. ogre2 Sensors thread failed EGL (hardware vs LIBGL_ALWAYS_SOFTWARE). ogre1 still published no /sensor/camera/image. IMU topic /world/default/model/x500_mono_cam_0/link/camera_link/sensor/camera_imu/imu did appear. Calibration falls back to ultralytics assets. fps_claimed: false.",
+  "tried": [
+    "ogre2 --headless-rendering",
+    "ogre --headless-rendering",
+    "GZ_SIM_SERVER_CONFIG_PATH=PX4 server.config"
+  ]
+}

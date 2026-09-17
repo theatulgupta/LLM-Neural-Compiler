@@ -47,7 +47,7 @@ Real paths (do **not** use the gitignored `third_party/` trees):
 
 | Piece | Path |
 | --- | --- |
-| PX4 | `~/PX4-Autopilot` (`make px4_sitl_default`, then `HEADLESS=1 make px4_sitl gz_x500`) |
+| PX4 | `~/PX4-Autopilot` (built `px4_sitl_default` binary; `scripts/start_px4.sh` runs it, does not `make`) |
 | Micro XRCE-DDS Agent | `~/px4_ros_uxrce_dds_ws/install/microxrcedds_agent/bin/MicroXRCEAgent` |
 | px4_msgs | `~/ros2_px4_ws` (source `install/setup.bash` before `colcon` / `ros2`) |
 | llm_uav_core | `ros2_ws/` via `scripts/build_ros.sh` |
@@ -56,8 +56,13 @@ SSH-safe stack (no `gnome-terminal`):
 
 ```bash
 bash scripts/build_ros.sh
-bash scripts/start_all.sh          # agent + PX4 gz_x500 + telemetry, logs in experiments/results/sitl_logs/
+bash scripts/start_all.sh          # agent + gz headless + PX4 gz_x500_mono_cam + camera bridge + telemetry
+/usr/bin/python3 scripts/record_frames.py --n 64
 python scripts/verify_sitl.py      # success only if x,y,z actually change
+NNC_START_INFERENCE=1 bash scripts/start_all.sh
+/usr/bin/python3 scripts/verify_sim_inference.py --seconds 60
+bash scripts/stop_all.sh
+```
 python -m compiler probe
 ```
 

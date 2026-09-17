@@ -21,34 +21,30 @@ not safe and it is not a measurement.
 
 We need a loop that a paper can defend:
 
-1. The LLM may only emit a **schema-valid strategy name** from a small
-   allowlist (`baseline`, `graph_simplify`, `graph_fuse`, `graph_fuse_ort`).
-2. The **transformation engine** applies that named pass set to the ONNX DAG
-   (fusion, constant folding, dead-node elimination). It does not invent ops.
-3. The profiler **measures** real compile time and inference p50/mean.
-4. The decision is taken from those logs (`graph_changed`, node counts, p50),
-   not from the LLM’s adjectives.
+1. The LLM may only emit a **schema-valid plan** (`schemas/llm-plan.schema.json`):
+   ordered allowlisted atoms plus ORT options, with rationale and confidence.
+2. The **verifier** drops atoms the graph or hardware cannot run (e.g. FP16 on
+   ORT CPU, Conv-BN fuse when there is no BN).
+3. The **transformation engine** applies the remaining atoms to the ONNX DAG.
+   `com.microsoft.FusedConv` **runs** on ORT CPU; it is not expanded away.
+4. The profiler **measures** compile time, p50/p95, RSS, CPU. Numerics compare
+   against the native DAG. History feeds the next prompt.
 
 ## Novelty (what is actually true in this repo)
 
-- **Allowlist, not “optimize the net”.** Strategies are named **graph pass
-  sets**: `baseline`, `graph_simplify`, `graph_fuse`, `graph_fuse_ort`
-  (`schemas/llm-proposal.schema.json`). The LLM cannot add quantization,
-  custom ops, or TensorRT tactics in prose.
+- **Allowlist of atoms, not free-form rewrite.** Plans are ordered pass lists
+  (`fuse_conv_relu`, `quantize_dynamic_int8`, …) plus `ort_graph_opt` /
+  `intra_op_threads`. The LLM cannot add custom ops in prose.
 - **Transformation engine owns the DAG.** `compiler/optimization` copies the
-  `ModelProto` and applies shape infer, Identity DCE, constant folding,
-  Conv-BN fuse, Conv-ReLU fuse. Conv-ReLU is logged as `FusedConv`; ORT CPU
-  may not run that op, so `prepare_for_ort` expands it for the session.
-  `graph_after` is the compiler IR; `graph_runtime` is what ORT ran.
-- **Verify → rewrite → measure.** `compile_and_benchmark` writes
-  `experiments/results/runs/<id>.json` with `graph_changed`, node counts,
-  `fps_claimed: false`. Throughput is `1000 / mean_ms` from samples.
+  `ModelProto`. Conv-ReLU becomes `com.microsoft.FusedConv`, which ORT CPU
+  executes. `graph_after` equals `graph_runtime`.
+- **Verify → rewrite → measure → history.** `compile_verify_profile` writes
+  schema v2 run JSON with `verification.passed`, RSS, CPU, `fps_claimed: false`.
 - **Same loop for several real UAV workloads**, not a YOLOv8-only demo.
-  Models are data in `experiments/zoo.yaml`.
 - **Native vs advised on the same machine.** Native = unrewritten ONNX
-  (`baseline`). Advised = heuristic `graph_fuse` on the **same** aarch64 QEMU
-  CPU. YOLO graphs here use SiLU, not Relu, so Conv-ReLU fuse is a **no-op**
-  (`graph_changed: false`). SSDLite / MobileNetV3 / MiDaS **do** shrink.
+  (`baseline`). YOLO graphs here use SiLU, so Conv-ReLU fuse is a **no-op**.
+  INT8 and thread options are the CPU levers. SSDLite / MobileNetV3 / MiDaS
+  can shrink under fuse.
 - **Honest TensorRT.** Virtio GPU only. TensorRT skipped with a reason.
 
 This is **not** a new autopilot, not a Mission Planner plugin, and not an LLM

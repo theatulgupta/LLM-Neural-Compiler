@@ -59,7 +59,7 @@ def _graph_io_rename(graph: onnx.GraphProto, old: str, new: str) -> None:
             item.name = new
 
 
-def onnx_shape_infer(model: onnx.ModelProto) -> onnx.ModelProto:
+def onnx_shape_infer(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
     updated = _copy_model(model)
     try:
         return shape_inference.infer_shapes(updated)
@@ -67,7 +67,7 @@ def onnx_shape_infer(model: onnx.ModelProto) -> onnx.ModelProto:
         return updated
 
 
-def eliminate_identity(model: onnx.ModelProto) -> onnx.ModelProto:
+def eliminate_identity(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
     """Dead-node-lite: drop Identity / nop Dropout and rewire the DAG."""
 
     updated = _copy_model(model)
@@ -92,7 +92,7 @@ def eliminate_identity(model: onnx.ModelProto) -> onnx.ModelProto:
     return updated
 
 
-def constant_folding(model: onnx.ModelProto) -> onnx.ModelProto:
+def constant_folding(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
     """Fold Relu/Identity on initializers into new initializers; drop the node."""
 
     updated = _copy_model(model)
@@ -103,12 +103,19 @@ def constant_folding(model: onnx.ModelProto) -> onnx.ModelProto:
     for node in list(graph.node):
         if node.op_type == "Relu" and node.input and node.input[0] in init:
             folded = np.maximum(init[node.input[0]], 0).astype(init[node.input[0]].dtype, copy=False)
+            if int(folded.nbytes) > 64 * 1024 * 1024:
+                kept.append(node)
+                continue
             extra_inits.append(numpy_helper.from_array(folded, name=node.output[0]))
             init[node.output[0]] = folded
             continue
         if node.op_type in {"Add", "Mul"} and len(node.input) == 2 and node.input[0] in init and node.input[1] in init:
             left, right = init[node.input[0]], init[node.input[1]]
             folded = left + right if node.op_type == "Add" else left * right
+            folded = np.asarray(folded)
+            if int(folded.nbytes) > 64 * 1024 * 1024:
+                kept.append(node)
+                continue
             extra_inits.append(numpy_helper.from_array(np.asarray(folded), name=node.output[0]))
             init[node.output[0]] = np.asarray(folded)
             continue
@@ -119,7 +126,7 @@ def constant_folding(model: onnx.ModelProto) -> onnx.ModelProto:
     return updated
 
 
-def fuse_bn_into_conv(model: onnx.ModelProto) -> onnx.ModelProto:
+def fuse_bn_into_conv(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
     """Conv followed by BatchNormalization becomes one Conv (standard BN fold)."""
 
     updated = _copy_model(model)
@@ -195,12 +202,8 @@ def fuse_bn_into_conv(model: onnx.ModelProto) -> onnx.ModelProto:
     return updated
 
 
-def fuse_conv_relu(model: onnx.ModelProto) -> onnx.ModelProto:
-    """Conv whose only consumer is Relu becomes one FusedConv (compiler IR).
-
-    ORT CPU may not run ``com.microsoft.FusedConv``. ``prepare_for_ort`` expands
-    it back to Conv+Relu before the session so numerics stay the same.
-    """
+def fuse_conv_relu(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
+    """Conv whose only consumer is Relu becomes com.microsoft.FusedConv (ORT CPU runs it)."""
 
     updated = _copy_model(model)
     graph = updated.graph
@@ -293,12 +296,112 @@ def expand_fused_conv(model: onnx.ModelProto) -> onnx.ModelProto:
     return updated
 
 
+def eliminate_dropout(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
+    """Drop Dropout nodes (inference)."""
+
+    updated = _copy_model(model)
+    graph = updated.graph
+    kept: list[onnx.NodeProto] = []
+    for node in list(graph.node):
+        if node.op_type == "Dropout" and len(node.input) >= 1 and len(node.output) >= 1:
+            src, dst = node.input[0], node.output[0]
+            _replace_uses(graph.node, dst, src)
+            _graph_io_rename(graph, dst, src)
+            continue
+        kept.append(node)
+    del graph.node[:]
+    graph.node.extend(kept)
+    return updated
+
+
+def fuse_matmul_add_gemm(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
+    """2-D MatMul (initializer weight) + Add bias -> Gemm."""
+
+    updated = _copy_model(model)
+    graph = updated.graph
+    init = {item.name for item in graph.initializer}
+    consumers: dict[str, list[onnx.NodeProto]] = {}
+    for node in graph.node:
+        for name in node.input:
+            consumers.setdefault(name, []).append(node)
+    skip: set[int] = set()
+    kept: list[onnx.NodeProto] = []
+    nodes = list(graph.node)
+    for index, node in enumerate(nodes):
+        if index in skip:
+            continue
+        if node.op_type != "MatMul" or len(node.input) != 2 or not node.output:
+            kept.append(node)
+            continue
+        weight = node.input[1]
+        if weight not in init:
+            kept.append(node)
+            continue
+        following = [item for item in consumers.get(node.output[0], []) if item is not node]
+        if len(following) != 1 or following[0].op_type != "Add":
+            kept.append(node)
+            continue
+        add = following[0]
+        bias = add.input[0] if add.input[1] == node.output[0] else add.input[1]
+        if bias not in init:
+            kept.append(node)
+            continue
+        gemm = helper.make_node(
+            "Gemm",
+            [node.input[0], weight, bias],
+            list(add.output),
+            name=(node.name or "matmul") + "_gemm",
+            alpha=1.0,
+            beta=1.0,
+            transA=0,
+            transB=0,
+        )
+        kept.append(gemm)
+        skip.add(nodes.index(add))
+    del graph.node[:]
+    graph.node.extend(kept)
+    return updated
+
+
+def convert_fp16(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
+    """Cast initializers to float16. Dropped on ORT CPU by the verifier."""
+
+    updated = _copy_model(model)
+    new_inits = []
+    for item in updated.graph.initializer:
+        array = numpy_helper.to_array(item)
+        if array.dtype == np.float32:
+            new_inits.append(numpy_helper.from_array(array.astype(np.float16), name=item.name))
+        else:
+            new_inits.append(item)
+    del updated.graph.initializer[:]
+    updated.graph.initializer.extend(new_inits)
+    return updated
+
+
+def quantize_dynamic_int8(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
+    from compiler.optimization.quantize import quantize_dynamic_int8 as _q
+
+    return _q(model, params or {})
+
+
+def quantize_static_int8(model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
+    from compiler.optimization.quantize import quantize_static_int8 as _q
+
+    return _q(model, params or {})
+
+
 ALLOWED_PASSES = {
     "onnx_shape_infer": onnx_shape_infer,
     "eliminate_identity": eliminate_identity,
+    "eliminate_dropout": eliminate_dropout,
     "constant_folding": constant_folding,
     "fuse_bn_into_conv": fuse_bn_into_conv,
     "fuse_conv_relu": fuse_conv_relu,
+    "fuse_matmul_add_gemm": fuse_matmul_add_gemm,
+    "quantize_dynamic_int8": quantize_dynamic_int8,
+    "quantize_static_int8": quantize_static_int8,
+    "convert_fp16": convert_fp16,
 }
 
 
@@ -314,9 +417,9 @@ def graph_ir_snapshot(model: onnx.ModelProto) -> dict[str, object]:
     }
 
 
-def apply_pass(name: str, model: onnx.ModelProto) -> onnx.ModelProto:
+def apply_pass(name: str, model: onnx.ModelProto, params: dict | None = None) -> onnx.ModelProto:
     try:
         fn = ALLOWED_PASSES[name]
     except KeyError as exc:
         raise ValueError(f"pass {name!r} is not allowlisted; allowed={sorted(ALLOWED_PASSES)}") from exc
-    return fn(model)
+    return fn(model, params or {})

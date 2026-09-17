@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NNCLlmPlan",
+  "type": "object",
+  "required": ["plan_id", "steps", "options", "rationale", "confidence", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": { "type": "string", "minLength": 1 },
+    "steps": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["atom"],
+        "additionalProperties": false,
+        "properties": {
+          "atom": {
+            "type": "string",
+            "enum": [
+              "onnx_shape_infer",
+              "eliminate_identity",
+              "eliminate_dropout",
+              "constant_folding",
+              "fuse_bn_into_conv",
+              "fuse_conv_relu",
+              "fuse_matmul_add_gemm",
+              "quantize_dynamic_int8",
+              "quantize_static_int8",
+              "convert_fp16"
+            ]
+          },
+          "params": { "type": "object" }
+        }
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ort_graph_opt": { "type": "string", "enum": ["disable", "basic", "extended", "all"] },
+        "intra_op_threads": { "type": "integer", "minimum": 1 },
+        "execution_mode": { "type": "string", "enum": ["sequential", "parallel"] }
+      }
+    },
+    "rationale": { "type": "string", "minLength": 1 },
+    "expected_effects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["fewer_nodes", "smaller_model", "lower_latency", "lower_memory", "none"]
+      }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "source": { "type": "string", "minLength": 1 }
+  }
+}

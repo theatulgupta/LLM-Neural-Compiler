@@ -1,0 +1,18 @@
+{
+  "achieved_hz": 0.5,
+  "artifact": {
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n.onnx",
+    "sha256": "1d883eedafc9024446074d0b642ef8220a0466e3eb27267888c060c5df7a2e87"
+  },
+  "classes_seen": [],
+  "detections_total": 0,
+  "e2e_ms": {},
+  "fps_claimed": false,
+  "frames_rx": 0,
+  "infer_ms": {},
+  "inferences": 3,
+  "ok": true,
+  "position_samples": 0,
+  "seconds": 6.0,
+  "xyz_changed": false
+}

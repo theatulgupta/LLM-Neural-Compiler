@@ -21,6 +21,12 @@ class GraphSummary:
     param_count: int
     initializer_bytes: int
     estimated_flops: int | None
+    flops_total: int
+    flops_by_op: dict[str, int]
+    top_nodes: list[dict[str, Any]]
+    patterns: dict[str, int]
+    memory: dict[str, Any]
+    static_shapes: bool
     inputs: list[dict[str, Any]]
     outputs: list[dict[str, Any]]
     notes: tuple[str, ...]
@@ -43,6 +49,12 @@ def summarize_graph(loaded: LoadedGraph) -> GraphSummary:
         param_count=int(stats["param_count"]),
         initializer_bytes=int(stats["initializer_bytes"]),
         estimated_flops=stats["estimated_flops"],  # type: ignore[arg-type]
+        flops_total=int(stats["flops_total"]),
+        flops_by_op=dict(stats["flops_by_op"]),  # type: ignore[arg-type]
+        top_nodes=list(stats["top_nodes"]),  # type: ignore[arg-type]
+        patterns=dict(stats["patterns"]),  # type: ignore[arg-type]
+        memory=dict(stats["memory"]),  # type: ignore[arg-type]
+        static_shapes=bool(stats["static_shapes"]),
         inputs=list(stats["inputs"]),  # type: ignore[arg-type]
         outputs=list(stats["outputs"]),  # type: ignore[arg-type]
         notes=notes,
@@ -51,12 +63,16 @@ def summarize_graph(loaded: LoadedGraph) -> GraphSummary:
 
 def _notes(stats: dict[str, object]) -> tuple[str, ...]:
     op_counts = stats["op_counts"]
+    patterns = stats["patterns"]
     assert isinstance(op_counts, dict)
+    assert isinstance(patterns, dict)
     notes: list[str] = []
     if op_counts.get("Flatten") and op_counts.get("Gemm"):
         notes.append("classifier head is Flatten+Gemm; Gemm K must match Flatten width")
-    if op_counts.get("Conv") and not op_counts.get("BatchNormalization"):
-        notes.append("conv without BatchNormalization; BN fusion is not applicable")
+    if int(patterns.get("conv_bn", 0)) == 0:
+        notes.append("conv without BatchNormalization; fuse_bn_into_conv not applicable")
+    if int(patterns.get("conv_silu", 0)) > 0:
+        notes.append("no fused CPU SiLU kernel; quantization/threads are the levers")
     if int(stats["param_count"]) < 10_000:  # type: ignore[arg-type]
         notes.append("tiny parameter count; CPU latency is dominated by overhead")
     return tuple(notes)

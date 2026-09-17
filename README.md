@@ -2,13 +2,15 @@
 
 LLM-guided neural compilation for real-time UAV edge inference. The thesis
 contribution lives in `compiler/`: ONNX graph analysis, a schema-bound LLM
-that names an allowlisted **pass set**, a transformation engine that rewrites
-the DAG, and measured compile/latency history. Runtime backends live in
-`src/nnc/backends/` (ONNX Runtime CPU; TensorRT skip-with-reason).
+that names an allowlisted **plan** (graph pass atoms + ORT options), a verifier,
+a transformation engine that rewrites the DAG, and measured compile/latency
+history. Runtime backends live in `src/nnc/backends/` (ONNX Runtime CPU;
+TensorRT skip-with-reason).
 
 This tree does **not** add UAV-agent stubs. The existing ROS 2 telemetry node
-and empty planning/control modules stay as they are. `inference_node` only
-loads an ORT artifact and publishes measured latency.
+and empty planning/control modules stay as they are. `inference_node` loads an
+ORT artifact (sidecar options if present) and, when `source:=camera`, runs on
+`/nnc/camera/image_raw`.
 
 ## Models
 
@@ -35,7 +37,10 @@ pip install -e '.[yolo]'   # ultralytics + torch
 pip install timm           # only for MiDaS
 python -m compiler zoo
 python -m compiler export              # or --kind yolov8n
-python -m compiler matrix --warmup 3 --iters 8
+python -m compiler plan fixtures/tiny_cnn.onnx
+python -m compiler optimize fixtures/tiny_cnn.onnx --kind fixture --task classify --candidates default --warmup 2 --iters 5
+python -m compiler matrix --candidates default --warmup 3 --iters 8
+python -m compiler report
 ```
 
 Native = unrewritten ONNX (`baseline`, ORT graph opt off). Optimized = schema-bound
@@ -66,8 +71,9 @@ pixi run test
 # Correct tiny fixture (Flatten 64, Gemm K=64)
 python -m compiler emit-fixture --out fixtures/tiny_cnn.onnx
 
-# Analyze / recommend (allowlist + schemas/llm-proposal.schema.json)
+# Analyze / plan (allowlist + schemas/llm-plan.schema.json)
 python -m compiler analyze fixtures/tiny_cnn.onnx
+python -m compiler plan fixtures/tiny_cnn.onnx
 python -m compiler recommend fixtures/tiny_cnn.onnx
 
 # Load the ORT artifact and measure real latency (no invented FPS)

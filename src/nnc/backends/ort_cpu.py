@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 import onnxruntime as ort
 
-from nnc.backends.base import Backend, CompiledModel, TensorSpec
+from nnc.backends.base import Backend, BackendOptions, CompiledModel, TensorSpec
 from nnc.backends.registry import register_backend
 
 _OPT_LEVELS = {
@@ -38,18 +38,34 @@ class OrtCpuBackend(Backend):
             return False, "onnxruntime was built without CPUExecutionProvider"
         return True, None
 
-    def compile(self, model_bytes: bytes, *, graph_opt: str) -> CompiledModel:
+    def compile(self, model_bytes: bytes, *, options: BackendOptions | None = None, graph_opt: str | None = None) -> CompiledModel:
         ok, reason = self.available()
         if not ok:
             raise RuntimeError(reason)
-        if graph_opt not in _OPT_LEVELS:
-            raise ValueError(f"unknown ORT graph_opt {graph_opt!r}; allowed={sorted(_OPT_LEVELS)}")
+        opts = options or BackendOptions(graph_opt=graph_opt or "disable")
+        if graph_opt is not None:
+            opts = BackendOptions(
+                graph_opt=graph_opt,
+                intra_op_threads=opts.intra_op_threads,
+                inter_op_threads=opts.inter_op_threads,
+                execution_mode=opts.execution_mode,
+            )
+        if opts.graph_opt not in _OPT_LEVELS:
+            raise ValueError(f"unknown ORT graph_opt {opts.graph_opt!r}; allowed={sorted(_OPT_LEVELS)}")
 
-        options = ort.SessionOptions()
-        options.graph_optimization_level = _OPT_LEVELS[graph_opt]
+        options_ort = ort.SessionOptions()
+        options_ort.graph_optimization_level = _OPT_LEVELS[opts.graph_opt]
+        if opts.intra_op_threads is not None:
+            options_ort.intra_op_num_threads = int(opts.intra_op_threads)
+        if opts.inter_op_threads is not None:
+            options_ort.inter_op_num_threads = int(opts.inter_op_threads)
+        if opts.execution_mode == "parallel":
+            options_ort.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+        else:
+            options_ort.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
         session = ort.InferenceSession(
             model_bytes,
-            sess_options=options,
+            sess_options=options_ort,
             providers=["CPUExecutionProvider"],
         )
         specs = tuple(_tensor_spec(item) for item in session.get_inputs())

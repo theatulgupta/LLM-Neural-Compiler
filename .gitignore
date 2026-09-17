@@ -21,6 +21,9 @@ __pycache__/
 .vscode/
 
 experiments/results/sitl_logs/
+experiments/calib/*.npz
+experiments/artifacts/**
+!experiments/artifacts/.gitkeep
 
 # ==========================================
 # Models
@@ -35,7 +38,8 @@ experiments/results/sitl_logs/
 # Dataset
 # ==========================================
 
-data/
+# Dataset (repo-root only; compiler/data/ is source)
+/data/
 
 # ==========================================
 # External repositories

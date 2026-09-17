@@ -1,0 +1,357 @@
+{
+  "candidates": [
+    {
+      "artifact": {
+        "bytes": 2814,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/baseline.onnx",
+        "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/baseline.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 3,
+        "latency_ms": {
+          "max": 0.015500998415518552,
+          "mean": 0.01066733299618742,
+          "min": 0.007459000698872842,
+          "p50": 0.00904199987417087,
+          "p95": 0.015500998415518552
+        },
+        "measured_at": "2026-09-17T18:58:28.317927+00:00",
+        "throughput_ips": 93744.14395401427,
+        "warmup": 1
+      },
+      "compile_ok": true,
+      "graph_changed": false,
+      "nodes_after": 5,
+      "nodes_before": 5,
+      "origin": "preset:baseline",
+      "p50_ms": 0.00904199987417087,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "none"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "disable"
+        },
+        "plan_id": "baseline",
+        "rationale": "No graph rewrites. ORT graph optimizations disabled (native DAG).",
+        "source": "preset",
+        "steps": []
+      },
+      "plan_id": "baseline",
+      "profile": {
+        "compile_ms": 8.143266999468324,
+        "cpu_percent_mean": 0.0,
+        "model_bytes": 2814,
+        "rss_mb": {
+          "after_compile": 88.49609375,
+          "before": 88.46875,
+          "peak": 88.49609375
+        },
+        "threads": 17
+      },
+      "run_id": "1897b02d-b055-43bc-ac0b-a357eb0eef7f",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "top1_agreement": 1.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9999999999999998,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0000000000000002,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 2814,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/ort_default.onnx",
+        "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/ort_default.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 3,
+        "latency_ms": {
+          "max": 0.007874999937484972,
+          "mean": 0.007153333475192388,
+          "min": 0.00650100082566496,
+          "p50": 0.007083999662427232,
+          "p95": 0.007874999937484972
+        },
+        "measured_at": "2026-09-17T18:58:28.718877+00:00",
+        "throughput_ips": 139794.9646088749,
+        "warmup": 1
+      },
+      "compile_ok": true,
+      "graph_changed": false,
+      "nodes_after": 5,
+      "nodes_before": 5,
+      "origin": "preset:ort_default",
+      "p50_ms": 0.007083999662427232,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "all"
+        },
+        "plan_id": "ort_default",
+        "rationale": "Unrewritten ONNX with ORT graph optimizations enabled.",
+        "source": "preset",
+        "steps": []
+      },
+      "plan_id": "ort_default",
+      "profile": {
+        "compile_ms": 1.8624229996930808,
+        "cpu_percent_mean": 0.0,
+        "model_bytes": 2814,
+        "rss_mb": {
+          "after_compile": 89.8984375,
+          "before": 89.8828125,
+          "peak": 89.8984375
+        },
+        "threads": 17
+      },
+      "run_id": "0c972e65-35c8-4eea-98f0-146568531a10",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "top1_agreement": 1.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9999999999999998,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0000000000000002,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 2966,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/graph_fuse.onnx",
+        "sha256": "c1aaa9cb5ab7240535da27c59e421bce4f4e9c79bab151bbfaf78332821b1cf3",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/graph_fuse.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 3,
+        "latency_ms": {
+          "max": 0.017250999007956125,
+          "mean": 0.014945332926193563,
+          "min": 0.01341800088994205,
+          "p50": 0.014166998880682513,
+          "p95": 0.017250999007956125
+        },
+        "measured_at": "2026-09-17T18:58:29.120324+00:00",
+        "throughput_ips": 66910.52015625393,
+        "warmup": 1
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "nodes_after": 4,
+      "nodes_before": 5,
+      "origin": "preset:graph_fuse",
+      "p50_ms": 0.014166998880682513,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "fewer_nodes",
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "disable"
+        },
+        "plan_id": "graph_fuse",
+        "rationale": "Simplify plus Conv-BN and Conv-ReLU fusion on the ONNX DAG.",
+        "source": "preset",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_identity",
+            "params": {}
+          },
+          {
+            "atom": "constant_folding",
+            "params": {}
+          },
+          {
+            "atom": "fuse_conv_relu",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "graph_fuse",
+      "profile": {
+        "compile_ms": 0.9987150006054435,
+        "cpu_percent_mean": 0.0,
+        "model_bytes": 2966,
+        "rss_mb": {
+          "after_compile": 89.93359375,
+          "before": 89.91796875,
+          "peak": 89.93359375
+        },
+        "threads": 17
+      },
+      "run_id": "94a85f18-e322-4007-94ae-ef7d55562260",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "top1_agreement": 1.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9999999999999998,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0000000000000002,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    }
+  ],
+  "chosen": {
+    "artifact": {
+      "bytes": 2814,
+      "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/ort_default.onnx",
+      "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819",
+      "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/ort_default.onnx.json"
+    },
+    "benchmark": {
+      "fps_claimed": false,
+      "iters": 3,
+      "latency_ms": {
+        "max": 0.007874999937484972,
+        "mean": 0.007153333475192388,
+        "min": 0.00650100082566496,
+        "p50": 0.007083999662427232,
+        "p95": 0.007874999937484972
+      },
+      "measured_at": "2026-09-17T18:58:28.718877+00:00",
+      "throughput_ips": 139794.9646088749,
+      "warmup": 1
+    },
+    "compile_ok": true,
+    "graph_changed": false,
+    "nodes_after": 5,
+    "nodes_before": 5,
+    "origin": "preset:ort_default",
+    "p50_ms": 0.007083999662427232,
+    "passed": true,
+    "plan": {
+      "confidence": 1.0,
+      "expected_effects": [
+        "lower_latency"
+      ],
+      "options": {
+        "execution_mode": "sequential",
+        "ort_graph_opt": "all"
+      },
+      "plan_id": "ort_default",
+      "rationale": "Unrewritten ONNX with ORT graph optimizations enabled.",
+      "source": "preset",
+      "steps": []
+    },
+    "plan_id": "ort_default",
+    "profile": {
+      "compile_ms": 1.8624229996930808,
+      "cpu_percent_mean": 0.0,
+      "model_bytes": 2814,
+      "rss_mb": {
+        "after_compile": 89.8984375,
+        "before": 89.8828125,
+        "peak": 89.8984375
+      },
+      "threads": 17
+    },
+    "run_id": "0c972e65-35c8-4eea-98f0-146568531a10",
+    "verification": {
+      "accepted_plan": true,
+      "agreement": {
+        "top1_agreement": 1.0
+      },
+      "gate_used": "exact_max_abs",
+      "inputs_source": "calib",
+      "numerics": {
+        "cosine_min": 0.9999999999999998,
+        "max_abs": 0.0,
+        "per_output": [
+          {
+            "cosine": 1.0000000000000002,
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "name": "0"
+          }
+        ]
+      },
+      "numerics_kind": "exact",
+      "passed": true,
+      "rejections": []
+    }
+  },
+  "fps_claimed": false,
+  "host": {
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "release": "7.0.0-31-generic",
+    "system": "Linux"
+  },
+  "kind": "fixture",
+  "llm_confidence": null,
+  "llm_rank": null,
+  "llm_vs_oracle_gap_pct": null,
+  "path": "fixtures/tiny_cnn.onnx",
+  "ranking": [
+    "preset:ort_default",
+    "preset:baseline",
+    "preset:graph_fuse"
+  ],
+  "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819",
+  "task": "classify"
+}

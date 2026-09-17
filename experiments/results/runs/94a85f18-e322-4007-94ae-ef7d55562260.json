@@ -1,0 +1,392 @@
+{
+  "artifact": {
+    "bytes": 2966,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/graph_fuse.onnx",
+    "sha256": "c1aaa9cb5ab7240535da27c59e421bce4f4e9c79bab151bbfaf78332821b1cf3",
+    "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/fixture/graph_fuse.onnx.json"
+  },
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 3,
+    "latency_ms": {
+      "max": 0.017250999007956125,
+      "mean": 0.014945332926193563,
+      "min": 0.01341800088994205,
+      "p50": 0.014166998880682513,
+      "p95": 0.017250999007956125
+    },
+    "measured_at": "2026-09-17T18:58:29.120324+00:00",
+    "throughput_ips": 66910.52015625393,
+    "warmup": 1
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "disable",
+    "ms": 0.9987150006054435,
+    "ok": true,
+    "options": {
+      "execution_mode": "sequential",
+      "graph_opt": "disable",
+      "inter_op_threads": null,
+      "intra_op_threads": null
+    },
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_inlined": false
+  },
+  "created_at": "2026-09-17T18:58:29.103369+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 6016,
+    "flops_by_op": {
+      "Conv": 4608,
+      "Flatten": 64,
+      "Gemm": 1024,
+      "MaxPool": 64,
+      "Relu": 256
+    },
+    "flops_total": 6016,
+    "initializer_bytes": 2240,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "input",
+        "shape": [
+          1,
+          1,
+          8,
+          8
+        ]
+      }
+    ],
+    "ir_version": 8,
+    "memory": {
+      "activations_total_bytes": 2848,
+      "largest_tensor": {
+        "bytes": 1024,
+        "name": "conv",
+        "shape": [
+          1,
+          4,
+          8,
+          8
+        ]
+      },
+      "peak_live_bytes": 2048,
+      "weights_bytes": 2240
+    },
+    "node_count": 5,
+    "notes": [
+      "classifier head is Flatten+Gemm; Gemm K must match Flatten width",
+      "conv without BatchNormalization; fuse_bn_into_conv not applicable",
+      "tiny parameter count; CPU latency is dominated by overhead"
+    ],
+    "op_counts": {
+      "Conv": 1,
+      "Flatten": 1,
+      "Gemm": 1,
+      "MaxPool": 1,
+      "Relu": 1
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "logits",
+        "shape": [
+          1,
+          8
+        ]
+      }
+    ],
+    "param_count": 560,
+    "patterns": {
+      "bn_standalone": 0,
+      "concat": 0,
+      "conv_add_residual": 0,
+      "conv_bn": 0,
+      "conv_relu": 1,
+      "conv_silu": 0,
+      "dropout_nodes": 0,
+      "foldable_constant_nodes": 0,
+      "identity_nodes": 0,
+      "matmul_add": 0,
+      "reshape_transpose_chains": 0,
+      "resize": 0
+    },
+    "producer": "llm-neural-compiler",
+    "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819",
+    "source": "fixtures/tiny_cnn.onnx",
+    "static_shapes": true,
+    "top_nodes": [
+      {
+        "flops": 4608,
+        "name": "conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          4,
+          8,
+          8
+        ]
+      },
+      {
+        "flops": 1024,
+        "name": "logits",
+        "op_type": "Gemm",
+        "out_shape": [
+          1,
+          8
+        ]
+      },
+      {
+        "flops": 256,
+        "name": "relu",
+        "op_type": "Relu",
+        "out_shape": [
+          1,
+          4,
+          8,
+          8
+        ]
+      },
+      {
+        "flops": 64,
+        "name": "pool",
+        "op_type": "MaxPool",
+        "out_shape": [
+          1,
+          4,
+          4,
+          4
+        ]
+      },
+      {
+        "flops": 64,
+        "name": "flat",
+        "op_type": "Flatten",
+        "out_shape": [
+          1,
+          64
+        ]
+      }
+    ]
+  },
+  "graph_after": {
+    "node_count": 4,
+    "op_counts": {
+      "Flatten": 1,
+      "FusedConv": 1,
+      "Gemm": 1,
+      "MaxPool": 1
+    },
+    "sha256": "c1aaa9cb5ab7240535da27c59e421bce4f4e9c79bab151bbfaf78332821b1cf3"
+  },
+  "graph_before": {
+    "node_count": 5,
+    "op_counts": {
+      "Conv": 1,
+      "Flatten": 1,
+      "Gemm": 1,
+      "MaxPool": 1,
+      "Relu": 1
+    },
+    "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819"
+  },
+  "graph_changed": true,
+  "graph_runtime": {
+    "node_count": 4,
+    "op_counts": {
+      "Flatten": 1,
+      "FusedConv": 1,
+      "Gemm": 1,
+      "MaxPool": 1
+    },
+    "sha256": "c1aaa9cb5ab7240535da27c59e421bce4f4e9c79bab151bbfaf78332821b1cf3"
+  },
+  "hardware": {
+    "arch": "aarch64",
+    "cpu_count": 6,
+    "cpu_model": "0x000",
+    "features": [
+      "asimd",
+      "asimddp",
+      "bf16",
+      "fphp"
+    ],
+    "fp16_execution": false,
+    "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+    "gpu_present": false,
+    "ort_version": "1.30.0",
+    "os": "Linux 7.0.0-31-generic",
+    "providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "python": "3.12.3",
+    "ram_available_mb": 9771,
+    "ram_total_mb": 11922,
+    "virtualized": true
+  },
+  "host": {
+    "hardware": {
+      "arch": "aarch64",
+      "cpu_count": 6,
+      "cpu_model": "0x000",
+      "features": [
+        "asimd",
+        "asimddp",
+        "bf16",
+        "fphp"
+      ],
+      "fp16_execution": false,
+      "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "gpu_present": false,
+      "ort_version": "1.30.0",
+      "os": "Linux 7.0.0-31-generic",
+      "providers": [
+        "AzureExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "python": "3.12.3",
+      "ram_available_mb": 9772,
+      "ram_total_mb": 11922,
+      "virtualized": true
+    },
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "fixture",
+    "opset": 13,
+    "path": "fixtures/tiny_cnn.onnx",
+    "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819"
+  },
+  "passes_applied": [
+    "onnx_shape_infer",
+    "eliminate_identity",
+    "constant_folding",
+    "fuse_conv_relu"
+  ],
+  "plan": {
+    "confidence": 1.0,
+    "expected_effects": [
+      "fewer_nodes",
+      "lower_latency"
+    ],
+    "options": {
+      "execution_mode": "sequential",
+      "ort_graph_opt": "disable"
+    },
+    "plan_id": "graph_fuse",
+    "rationale": "Simplify plus Conv-BN and Conv-ReLU fusion on the ONNX DAG.",
+    "source": "preset",
+    "steps": [
+      {
+        "atom": "onnx_shape_infer",
+        "params": {}
+      },
+      {
+        "atom": "eliminate_identity",
+        "params": {}
+      },
+      {
+        "atom": "constant_folding",
+        "params": {}
+      },
+      {
+        "atom": "fuse_conv_relu",
+        "params": {}
+      }
+    ]
+  },
+  "profile": {
+    "compile_ms": 0.9987150006054435,
+    "cpu_percent_mean": 0.0,
+    "model_bytes": 2966,
+    "rss_mb": {
+      "after_compile": 89.93359375,
+      "before": 89.91796875,
+      "peak": 89.93359375
+    },
+    "threads": 17
+  },
+  "run_id": "94a85f18-e322-4007-94ae-ef7d55562260",
+  "schema_version": 2,
+  "skip": null,
+  "steps_applied": [
+    {
+      "atom": "onnx_shape_infer",
+      "ms": 0.05321099888533354,
+      "nodes_after": 5,
+      "nodes_before": 5,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "eliminate_identity",
+      "ms": 0.012375001460895874,
+      "nodes_after": 5,
+      "nodes_before": 5,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "constant_folding",
+      "ms": 0.02671000038390048,
+      "nodes_after": 5,
+      "nodes_before": 5,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "fuse_conv_relu",
+      "ms": 0.08146300024236552,
+      "nodes_after": 4,
+      "nodes_before": 5,
+      "op_delta": {
+        "Conv": -1,
+        "FusedConv": 1,
+        "Relu": -1
+      },
+      "params": {}
+    }
+  ],
+  "strategy": {
+    "rationale": "Simplify plus Conv-BN and Conv-ReLU fusion on the ONNX DAG.",
+    "source": "preset",
+    "strategy": "graph_fuse"
+  },
+  "verification": {
+    "accepted_plan": true,
+    "agreement": {
+      "top1_agreement": 1.0
+    },
+    "gate_used": "exact_max_abs",
+    "inputs_source": "calib",
+    "numerics": {
+      "cosine_min": 0.9999999999999998,
+      "max_abs": 0.0,
+      "per_output": [
+        {
+          "cosine": 1.0000000000000002,
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "name": "0"
+        }
+      ]
+    },
+    "numerics_kind": "exact",
+    "passed": true,
+    "rejections": []
+  }
+}
