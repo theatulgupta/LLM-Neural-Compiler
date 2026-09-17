@@ -11,10 +11,36 @@ loads an ORT artifact and publishes measured latency.
 
 ## Models
 
-| Role | Model | Notes |
+The UAV companion zoo lives in `experiments/zoo.yaml` (loaded by `compiler.catalog`).
+The compiler pipeline does not switch on YOLOv8. Each model is a YAML record plus
+an export script; analyze / recommend / compile / matrix use the same CLI.
+
+| Kind | Task | Why a real companion computer runs it |
 | --- | --- | --- |
-| Fixture (tests + CPU baseline) | Tiny CNN, input `1×1×8×8` | Flatten width **64**; Gemm `K` must be 64 (`transB=1`, W is `[8, 64]`). A `K=16` graph is the known-broken regression. |
-| Experiment | YOLOv8n | Export with `scripts/export_yolov8n.py`. ONNX is gitignored. |
+| Fixture: tiny CNN `1×1×8×8` | tests | Flatten width **64**; Gemm `K` must be 64. `K=16` is the known-broken regression. |
+| Fixture: tiny depth `1×3×8×8` | tests | RGB-like map to 1-channel depth. No download. |
+| `yolov8n` | detect | People/vehicle detect on Jetson and Pi-class PX4 companions. |
+| `yolo11n` | detect | Newer Ultralytics nano detector (not a second copy of YOLOv8). |
+| `yolov8n-pose` | pose | Person keypoints for search-and-rescue / follow-me. |
+| `yolov8n-seg` | segment | Masks for landing-zone / trail. |
+| `ssdlite_mobilenetv3` | detect-lite | Classic 320² SSD-MobileNet stack on Raspberry Pi / older Jetson. |
+| `mobilenetv3_small` | classify | Landing-pad / gate / sign ID. Smaller than ResNet18. |
+| `midas_small` | depth | Monocular depth cue for sense-and-avoid when stereo is not on the companion. |
+
+ONNX weights are gitignored. Reproduce:
+
+```bash
+pip install -e '.[yolo]'   # ultralytics + torch
+pip install timm           # only for MiDaS
+python -m compiler zoo
+python -m compiler export              # or --kind yolov8n
+python -m compiler matrix --warmup 3 --iters 8
+```
+
+Native = allowlisted `baseline` (ORT graph opt off). Optimized = schema-bound
+advisor strategy, compiled and measured on the **same** aarch64 host.
+`docs/paper_proposal.md` is the proposal write-up. Numbers come only from
+`experiments/results/paper_matrix.json`. Do not compare this QEMU box to cloud x86.
 
 ## Setup
 
@@ -49,19 +75,20 @@ python -m compiler infer fixtures/tiny_cnn.onnx --graph-opt disable
 # ORT CPU compile + benchmark (writes experiments/results/)
 python -m compiler compile fixtures/tiny_cnn.onnx --backend ort_cpu --strategy baseline
 
-# Full baseline JSON: ORT CPU always; TensorRT only if an NVIDIA GPU exists
+# Full baseline JSON: fixture + every zoo ONNX that exists; TensorRT skip-with-reason
 python -m compiler baseline --warmup 10 --iters 50
 
 # Host / ROS / PX4 / Gazebo / NVIDIA facts (no fake success)
 python -m compiler probe
 
 # Tests (disable ROS launch_testing plugin autoload)
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests
 # or: bash scripts/run_tests.sh
 
-# YOLOv8n ONNX (optional extra deps)
-pip install '.[yolo]'
-python scripts/export_yolov8n.py
+# UAV zoo ONNX (optional extra deps). Failures write skip JSON, not invented latency.
+pip install -e '.[yolo]'
+python -m compiler export --kind yolov8n
+python -m compiler matrix --kind yolov8n --warmup 3 --iters 8
 ```
 
 ## SITL (this machine)

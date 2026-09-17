@@ -10,7 +10,8 @@ LLM recommendations, pass application, and JSON run history.
 
 ## Data flow
 
-1. `compiler.parsers` loads ONNX (tiny fixture or YOLOv8n).
+1. `compiler.parsers` loads ONNX (tiny CNN, tiny depth, or any zoo model from
+   `experiments/zoo.yaml`). `compiler.pipeline` does not switch on YOLOv8.
 2. `compiler.graph` infers shapes, counts ops, estimates coarse FLOPs.
 3. `compiler.llm.recommendation_engine` maps the summary onto
    `compiler.strategies.ALLOWED_STRATEGIES`. Unknown names raise
@@ -49,5 +50,7 @@ LLM providers implement `compiler.llm.llm_client.LlmClient.propose`. Heuristic,
 mock, and Groq already share that contract. `build_client()` is the factory
 (`NNC_LLM_BACKEND=heuristic|mock|groq`).
 
-New models reuse the same allowlist schema and the same JSONL history logger.
+New models are YAML records in `experiments/zoo.yaml` plus an export script.
+They reuse the same allowlist schema, the same `compile` CLI, and the same
+JSONL history logger. Native vs allowlisted pairs are `python -m compiler matrix`.
 

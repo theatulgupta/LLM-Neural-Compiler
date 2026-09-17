@@ -21,16 +21,25 @@ pixi install
 pixi run test
 ```
 
-## YOLOv8n
+## UAV model zoo
 
 ```bash
-pip install '.[yolo]'
-python scripts/export_yolov8n.py --out experiments/models/yolov8n.onnx
-python -m compiler infer experiments/models/yolov8n.onnx --graph-opt extended --warmup 0 --iters 1
+pip install -e '.[yolo]'
+pip install timm          # MiDaS only
+python -m compiler zoo
+python -m compiler export --kind yolov8n
+python -m compiler export --kind yolo11n
+python -m compiler export --kind yolov8n-pose
+python -m compiler export --kind yolov8n-seg
+python scripts/export_ssdlite.py
+python scripts/export_mobilenetv3_small.py
+python scripts/export_midas_small.py
+python -m compiler matrix --warmup 3 --iters 8
 ```
 
-Weights and ONNX are gitignored (`*.pt`, `*.onnx`). The export script prints
-the command and SHA-256 when it succeeds.
+Weights and ONNX are gitignored (`*.pt`, `*.onnx`). Export prints SHA-256 on
+success, or writes `experiments/results/skip_<kind>.json` on failure. Do not
+invent latency. See `docs/paper_proposal.md`.
 
 ## ROS 2 / PX4 / Gazebo (this Ubuntu 24 aarch64 host)
 

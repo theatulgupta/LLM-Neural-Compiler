@@ -1,6 +1,9 @@
 # YOLOv8n experiment model
 
-Chosen experiment model: **YOLOv8n** (Ultralytics, detect, 640²).
+YOLOv8n is one model in the companion zoo (`experiments/zoo.yaml`). The paper
+table is native vs allowlisted ORT on this host: `docs/paper_proposal.md` and
+`experiments/results/paper_matrix.json`. The numbers below are an earlier
+unloaded YOLOv8n-only run and are **not** mixed with cloud x86.
 
 ## Export (this host)
 

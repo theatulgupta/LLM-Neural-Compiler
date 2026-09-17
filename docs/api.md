@@ -4,13 +4,17 @@ Unknown names are rejected. LLM advisor JSON must match
 
 API surface:
 
-- `python -m compiler emit-fixture`
+- `python -m compiler emit-fixture` (`--kind cnn|depth`)
 - `python -m compiler analyze <model.onnx>`
 - `python -m compiler recommend <model.onnx>`
 - `python -m compiler infer <model.onnx>` (ORT CPU load + measured latency)
 - `python -m compiler compile <model.onnx> --backend ort_cpu|tensorrt`
+- `python -m compiler zoo`
+- `python -m compiler export [--kind KIND]`
+- `python -m compiler matrix` (native `baseline` vs allowlisted strategy, same host)
 - `python -m compiler baseline`
 - `python -m compiler probe`
+- `python -m compiler live` (Groq advisor if `~/.config/nnc/groq.env` exists; key is never printed)
 
 ROS 2 (after `scripts/build_ros.sh`):
 

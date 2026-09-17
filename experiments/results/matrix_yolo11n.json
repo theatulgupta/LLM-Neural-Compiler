@@ -1,0 +1,96 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 8,
+    "latency_ms": {
+      "max": 47.498764000920346,
+      "mean": 43.9009927506504,
+      "min": 42.81981300118787,
+      "p50": 43.74798700155225,
+      "p95": 47.498764000920346
+    },
+    "measured_at": "2026-09-17T17:19:26.720896+00:00",
+    "throughput_ips": 22.778528168595567,
+    "warmup": 3
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "extended",
+    "ms": 83.24960899881262,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "created_at": "2026-09-17T17:19:25.175692+00:00",
+  "fps_claimed": false,
+  "host": {
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "yolo11n",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolo11n.onnx",
+    "sha256": "e10750011884429adb64490541150230896c3aa9f1c8ea4b41673bebe0d3d1ca"
+  },
+  "pair": {
+    "compile_ms_optimized": 83.24960899881262,
+    "fps_claimed": false,
+    "kind": "yolo11n",
+    "native": {
+      "compile_error": null,
+      "compile_ms": 82.93485699869052,
+      "compile_ok": true,
+      "fps_claimed": false,
+      "iters": 8,
+      "mean_ms": 45.37220162478661,
+      "p50_ms": 45.450498999343836,
+      "p95_ms": 47.51664000104938,
+      "run_id": "5299aec1-034c-4629-8ecc-1d1cabd5a2c4",
+      "skip": null,
+      "strategy": "baseline",
+      "strategy_source": "override",
+      "throughput_ips": 22.039926743464548,
+      "warmup": 3
+    },
+    "note": "aarch64 QEMU ORT CPU only. Not TensorRT. Not cloud x86. throughput_ips is 1000/mean_ms from measured samples.",
+    "opset": 13,
+    "optimized": {
+      "compile_error": null,
+      "compile_ms": 83.24960899881262,
+      "compile_ok": true,
+      "fps_claimed": false,
+      "iters": 8,
+      "mean_ms": 43.9009927506504,
+      "p50_ms": 43.74798700155225,
+      "p95_ms": 47.498764000920346,
+      "run_id": "4fdbb990-3d52-4118-8623-a87212e31cde",
+      "skip": null,
+      "strategy": "ort_extended",
+      "strategy_source": "override",
+      "throughput_ips": 22.778528168595567,
+      "warmup": 3
+    },
+    "p50_speedup_native_over_optimized": 1.0389163505450247,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolo11n.onnx",
+    "recommend": {
+      "rationale": "Convolutional graph benefits from extended ORT fusions on CPU.",
+      "source": "heuristic",
+      "strategy": "ort_extended"
+    },
+    "same_host": true,
+    "sha256": "e10750011884429adb64490541150230896c3aa9f1c8ea4b41673bebe0d3d1ca",
+    "task": "detect"
+  },
+  "run_id": "matrix-yolo11n",
+  "schema_version": 1,
+  "skip": null
+}

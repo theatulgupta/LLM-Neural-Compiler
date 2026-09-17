@@ -9,3 +9,7 @@ UAV agent. Empty `llm_uav_core` planning/control modules stay empty.
 Application domain remains PX4 / ROS 2 / Gazebo edge inference. On this host,
 PX4 SITL `gz_x500` published `/fmu/out/vehicle_local_position_v1` with changing
 x,y,z (`experiments/results/sitl_probe.json`, `xyz_changed: true`).
+
+The compile loop is now the same for a companion-computer model zoo (detect,
+pose, seg, SSD-lite, classify, depth). See `docs/paper_proposal.md`. Empty
+planning/control modules stay empty.

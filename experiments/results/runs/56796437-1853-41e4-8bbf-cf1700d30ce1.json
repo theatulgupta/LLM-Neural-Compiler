@@ -1,0 +1,112 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 8,
+    "latency_ms": {
+      "max": 12.208755000756355,
+      "mean": 11.366963000455144,
+      "min": 10.779037000247627,
+      "p50": 11.389791001420235,
+      "p95": 12.208755000756355
+    },
+    "measured_at": "2026-09-17T17:19:32.563610+00:00",
+    "throughput_ips": 87.97424606378671,
+    "warmup": 3
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "extended",
+    "ms": 37.30489699955797,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "created_at": "2026-09-17T17:19:32.397643+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 6799632,
+    "initializer_bytes": 13694352,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          320,
+          320
+        ]
+      }
+    ],
+    "ir_version": 7,
+    "node_count": 325,
+    "notes": [
+      "conv without BatchNormalization; BN fusion is not applicable"
+    ],
+    "op_counts": {
+      "Add": 10,
+      "Clip": 24,
+      "Concat": 2,
+      "Constant": 72,
+      "Conv": 98,
+      "GlobalAveragePool": 8,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 19,
+      "Reshape": 24,
+      "Transpose": 12
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "bbox_regression",
+        "shape": [
+          1,
+          3234,
+          4
+        ]
+      },
+      {
+        "dtype": "float",
+        "name": "cls_logits",
+        "shape": [
+          1,
+          3234,
+          91
+        ]
+      }
+    ],
+    "param_count": 3423588,
+    "producer": "pytorch",
+    "sha256": "e721d20872df4ad56a7e49093586aac647802f9f971066533936142b9002fa59",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/ssdlite_mobilenetv3.onnx"
+  },
+  "host": {
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "ssdlite_mobilenetv3",
+    "opset": 13,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/ssdlite_mobilenetv3.onnx",
+    "sha256": "e721d20872df4ad56a7e49093586aac647802f9f971066533936142b9002fa59"
+  },
+  "run_id": "56796437-1853-41e4-8bbf-cf1700d30ce1",
+  "schema_version": 1,
+  "skip": null,
+  "strategy": {
+    "rationale": "caller override",
+    "source": "override",
+    "strategy": "ort_extended"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 8,
+    "latency_ms": {
+      "max": 2.2867249990667915,
+      "mean": 2.158776124815631,
+      "min": 1.99089000125241,
+      "p50": 2.1954329986328958,
+      "p95": 2.2867249990667915
+    },
+    "measured_at": "2026-09-17T17:19:33.462358+00:00",
+    "throughput_ips": 463.2254306061516,
+    "warmup": 3
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "extended",
+    "ms": 10.768287000246346,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "created_at": "2026-09-17T17:19:32.994535+00:00",
+  "fps_claimed": false,
+  "host": {
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "mobilenetv3_small",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx",
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "pair": {
+    "compile_ms_optimized": 10.768287000246346,
+    "fps_claimed": false,
+    "kind": "mobilenetv3_small",
+    "native": {
+      "compile_error": null,
+      "compile_ms": 10.539451999648008,
+      "compile_ok": true,
+      "fps_claimed": false,
+      "iters": 8,
+      "mean_ms": 2.31500625022818,
+      "p50_ms": 2.30843400095182,
+      "p95_ms": 2.7064359983342,
+      "run_id": "0cb81811-9457-46ab-a93d-80419dd16e3b",
+      "skip": null,
+      "strategy": "baseline",
+      "strategy_source": "override",
+      "throughput_ips": 431.9642765117522,
+      "warmup": 3
+    },
+    "note": "aarch64 QEMU ORT CPU only. Not TensorRT. Not cloud x86. throughput_ips is 1000/mean_ms from measured samples.",
+    "opset": 13,
+    "optimized": {
+      "compile_error": null,
+      "compile_ms": 10.768287000246346,
+      "compile_ok": true,
+      "fps_claimed": false,
+      "iters": 8,
+      "mean_ms": 2.158776124815631,
+      "p50_ms": 2.1954329986328958,
+      "p95_ms": 2.2867249990667915,
+      "run_id": "3b144787-29a2-429f-99f3-2a02cd0cafb7",
+      "skip": null,
+      "strategy": "ort_extended",
+      "strategy_source": "override",
+      "throughput_ips": 463.2254306061516,
+      "warmup": 3
+    },
+    "p50_speedup_native_over_optimized": 1.0514709409894496,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx",
+    "recommend": {
+      "rationale": "Convolutional graph benefits from extended ORT fusions on CPU.",
+      "source": "heuristic",
+      "strategy": "ort_extended"
+    },
+    "same_host": true,
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae",
+    "task": "classify"
+  },
+  "run_id": "matrix-mobilenetv3_small",
+  "schema_version": 1,
+  "skip": null
+}

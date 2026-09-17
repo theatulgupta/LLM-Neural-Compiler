@@ -1,0 +1,113 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 8,
+    "latency_ms": {
+      "max": 52.69071600014286,
+      "mean": 51.49288437473842,
+      "min": 48.67672799991851,
+      "p50": 52.02200299936521,
+      "p95": 52.69071600014286
+    },
+    "measured_at": "2026-09-17T17:19:36.089665+00:00",
+    "throughput_ips": 19.42015896259608,
+    "warmup": 3
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "extended",
+    "ms": 85.05045099991548,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "created_at": "2026-09-17T17:19:35.435750+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 33046848,
+    "initializer_bytes": 66255492,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "image",
+        "shape": [
+          1,
+          3,
+          256,
+          256
+        ]
+      }
+    ],
+    "ir_version": 7,
+    "node_count": 645,
+    "notes": [
+      "conv without BatchNormalization; BN fusion is not applicable"
+    ],
+    "op_counts": {
+      "Add": 43,
+      "Cast": 41,
+      "Clip": 48,
+      "Concat": 13,
+      "Constant": 235,
+      "ConstantOfShape": 5,
+      "Conv": 97,
+      "Div": 16,
+      "Gather": 12,
+      "Mul": 8,
+      "Neg": 8,
+      "Pad": 5,
+      "Relu": 16,
+      "Reshape": 10,
+      "Resize": 5,
+      "Shape": 12,
+      "Slice": 5,
+      "Squeeze": 1,
+      "Sub": 28,
+      "Transpose": 5,
+      "Unsqueeze": 32
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "depth",
+        "shape": [
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "param_count": 16563873,
+    "producer": "pytorch",
+    "sha256": "f0fefe6e32058a6bbbf9d971d6e4f9281d3260bef76497dbf4c1b55c5ace4578",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/midas_small.onnx"
+  },
+  "host": {
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "midas_small",
+    "opset": 13,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/midas_small.onnx",
+    "sha256": "f0fefe6e32058a6bbbf9d971d6e4f9281d3260bef76497dbf4c1b55c5ace4578"
+  },
+  "run_id": "a25d70a4-2c3b-44c1-bec1-098c29db402b",
+  "schema_version": 1,
+  "skip": null,
+  "strategy": {
+    "rationale": "caller override",
+    "source": "override",
+    "strategy": "ort_extended"
+  }
+}
