@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from compiler.schema_validate import validate_run_result
+from compiler.schema import validate_run_result
 from compiler.utils.timeutil import utc_now_iso
 
 

@@ -11,7 +11,7 @@ from compiler.llm.context_builder import build_context
 from compiler.llm.llm_client import LlmClient, LlmProposal, build_client
 from compiler.planner.plan import Plan, Strategy, get_strategy
 from compiler.planner.verifier import VerifiedPlan, verify_plan
-from compiler.strategies import ALLOWED_STRATEGY_NAMES
+from compiler.planner import ALLOWED_STRATEGY_NAMES
 
 
 @dataclass(frozen=True, slots=True)

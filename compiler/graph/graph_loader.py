@@ -1,4 +1,4 @@
-"""Load an ONNX graph into a thin wrapper used by analysis and compile."""
+"""Load a model into GraphIR (ONNX today)."""
 
 from __future__ import annotations
 
@@ -17,6 +17,8 @@ class LoadedGraph:
     source: str
     sha256: str
     bytes: bytes
+    origin_format: str = "onnx"
+    ir: str = "onnx"
 
     @property
     def opset(self) -> int:
@@ -30,12 +32,40 @@ class LoadedGraph:
         return int(self.model.ir_version)
 
 
+def from_onnx_bytes(
+    model: onnx.ModelProto,
+    data: bytes,
+    *,
+    source: str,
+    origin_format: str = "onnx",
+    sha256: str | None = None,
+) -> LoadedGraph:
+    return LoadedGraph(
+        model=model,
+        source=source,
+        sha256=sha256 or sha256_bytes(data),
+        bytes=data,
+        origin_format=origin_format,
+        ir="onnx",
+    )
+
+
 def load_graph(path: Path, *, check: bool = True) -> LoadedGraph:
-    data = path.read_bytes()
-    model = parse_onnx_path(path, check=check)
-    return LoadedGraph(model=model, source=str(path), sha256=sha256_file(path), bytes=data)
+    """Ingest any registered source format into GraphIR."""
+
+    from compiler.frontends import ingest
+
+    return ingest(path, check=check)
 
 
 def load_graph_bytes(data: bytes, *, source: str = "<bytes>", check: bool = True) -> LoadedGraph:
     model = parse_onnx_bytes(data, check=check)
-    return LoadedGraph(model=model, source=source, sha256=sha256_bytes(data), bytes=data)
+    return from_onnx_bytes(model, data, source=source, origin_format="onnx")
+
+
+def load_onnx_path(path: Path, *, check: bool = True) -> LoadedGraph:
+    """Direct ONNX load used by the onnx frontend (avoids ingest recursion)."""
+
+    data = path.read_bytes()
+    model = parse_onnx_path(path, check=check)
+    return from_onnx_bytes(model, data, source=str(path), origin_format="onnx", sha256=sha256_file(path))

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from compiler.catalog import get_model, load_zoo, zoo_kinds, zoo_tasks
-from compiler.strategies import ALLOWED_STRATEGY_NAMES
+from compiler.planner import ALLOWED_STRATEGY_NAMES
 
 
 def test_zoo_has_distinct_uav_tasks() -> None:

@@ -50,6 +50,8 @@ def build_context(
             "outputs": summary.outputs,
             "notes": list(summary.notes),
             "static_shapes": summary.static_shapes,
+            "origin_format": summary.origin_format,
+            "ir": summary.ir,
         },
         "hardware": hardware.to_dict(),
         "constraints": dict(constraints or {}),

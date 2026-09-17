@@ -15,7 +15,7 @@ from compiler.optimization.passes import (
     graph_ir_snapshot,
 )
 from compiler.pipeline import compile_and_benchmark
-from compiler.strategies import get_strategy
+from compiler.planner import get_strategy
 from nnc.backends.base import BackendOptions
 from nnc.backends.ort_cpu import OrtCpuBackend
 

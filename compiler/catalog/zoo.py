@@ -9,9 +9,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from compiler.strategies import ALLOWED_STRATEGY_NAMES, get_strategy
+from compiler.planner import ALLOWED_STRATEGY_NAMES, get_strategy
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 ZOO_PATH = REPO_ROOT / "experiments" / "zoo.yaml"
 
 

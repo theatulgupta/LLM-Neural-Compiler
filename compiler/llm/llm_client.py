@@ -9,7 +9,7 @@ from compiler.graph.graph_summary import GraphSummary
 from compiler.hardware.profile import HardwareProfile, probe_hardware
 from compiler.llm.context_builder import build_context
 from compiler.planner.plan import Plan
-from compiler.schema_validate import SchemaError, validate_llm_plan
+from compiler.schema import SchemaError, validate_llm_plan
 
 
 class LlmProposal:

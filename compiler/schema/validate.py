@@ -1,4 +1,4 @@
-"""Validate compiler JSON against the checked-in schemas.
+"""JSON schema checks for LLM plans, proposals, and run records.
 
 jsonschema is optional. The allowlist and required fields are enforced here
 even when the extra package is missing, so tests stay honest on a bare venv.
@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-SCHEMA_DIR = Path(__file__).resolve().parents[1] / "schemas"
+SCHEMA_DIR = Path(__file__).resolve().parents[2] / "schemas"
 LLM_PROPOSAL_SCHEMA_PATH = SCHEMA_DIR / "llm-proposal.schema.json"
 LLM_PLAN_SCHEMA_PATH = SCHEMA_DIR / "llm-plan.schema.json"
 RUN_RESULT_SCHEMA_PATH = SCHEMA_DIR / "run-result.schema.json"
@@ -77,7 +77,7 @@ def validate_llm_plan(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def validate_llm_proposal(payload: dict[str, Any]) -> dict[str, Any]:
-    from compiler.strategies import ALLOWED_STRATEGY_NAMES
+    from compiler.planner import ALLOWED_STRATEGY_NAMES
     schema = load_schema(LLM_PROPOSAL_SCHEMA_PATH)
     enum = tuple(schema["properties"]["strategy"]["enum"])
     if enum != ALLOWED_STRATEGY_NAMES:

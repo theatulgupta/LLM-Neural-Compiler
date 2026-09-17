@@ -8,8 +8,7 @@ from typing import Any
 import onnx
 
 from compiler.optimization.passes import apply_pass, graph_ir_snapshot
-from compiler.planner.plan import Plan
-from compiler.strategies import Strategy
+from compiler.planner.plan import Plan, Strategy
 
 
 def apply_strategy(model: onnx.ModelProto, strategy: Strategy) -> onnx.ModelProto:

@@ -19,6 +19,7 @@ API surface:
 - `python -m compiler report`
 - `python -m compiler baseline`
 - `python -m compiler probe`
+- `python -m compiler formats` (frontends / backends / IR)
 - `python -m compiler live` (Groq if `~/.config/nnc/groq.env`; key never printed)
 
 ROS 2 (after `scripts/build_ros.sh`):

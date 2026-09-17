@@ -22,15 +22,15 @@ DAG is what we optimize. ROS 2 / PX4 is only where the compiled model runs.
 ## Phase 7 modules
 
 ```
-PyTorch weights
-  → Exporter          scripts/export_*.py + experiments/zoo.yaml
-  → ONNX parser       compiler/parsers, compiler/graph/graph_loader.py
-  → Graph analyzer    compiler/graph (FLOPs, patterns, memory)
-  → Context builder   compiler/llm/context_builder.py
-  → LLM interface     compiler/llm (heuristic / groq / mock)
+PyTorch / TFLite / ONNX
+  → Frontend          compiler/frontends (ONNX works; others skip-with-reason)
+  → GraphIR           LoadedGraph (ONNX ModelProto today)
+  → Graph analyzer    compiler/graph
+  → Prompt builder    compiler/llm/prompting.py
+  → LLM client        heuristic / groq / mock
   → Candidates        compiler/planner/candidates.py
   → Verifier          compiler/planner/verifier.py
-  → Transformation    compiler/optimization (mutate ModelProto)
+  → Passes            compiler/optimization
   → Backend           src/nnc/backends (ORT now; TensorRT later)
   → Profiler          compiler/profiling
   → Numerics          compiler/verification
@@ -73,5 +73,6 @@ Empty planning/control stay empty. Inference loads artifacts through
 
 - New **pass**: function + allowlist in `compiler/optimization/passes.py` and `compiler/planner/atoms.py`.
 - New **preset**: `compiler/planner/plan.py` PRESETS + proposal schema enum.
-- New **backend**: `register_backend`.
+- New **backend**: `register_backend` in `src/nnc/backends`.
+- New **source format**: register a frontend in `compiler/frontends` (or add a skip suffix).
 - New **model**: YAML row in `experiments/zoo.yaml`.

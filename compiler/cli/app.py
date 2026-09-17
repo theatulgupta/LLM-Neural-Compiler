@@ -8,28 +8,23 @@ import sys
 from pathlib import Path
 
 from compiler.catalog import REPO_ROOT, get_model, load_zoo, zoo_kinds
-from compiler.errors import UnknownStrategyError
+from compiler.errors import FrontendSkip, UnknownFrontendError, UnknownStrategyError
 from compiler.exporters import skip_run_record
 from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
-from compiler.history import append_history, write_run_json
+from compiler.history import append_history, history_for_model, write_run_json
 from compiler.llm.groq_client import GroqLlmClient, DEFAULT_GROQ_MODEL, load_groq_api_key
 from compiler.llm.llm_client import LlmClient
-from compiler.llm.prompts import user_prompt
-from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.matrix import measure_path, run_zoo_matrix
-from compiler.optimize import optimize_model
-from compiler.planner.plan import Plan, get_plan
+from compiler.llm.prompting import build_messages, user_prompt
+from compiler.llm.recommendation_engine import recommend_plan, recommend_strategy
+from compiler.pipeline import compile_and_benchmark, get_backend, measure_path, optimize_model, run_zoo_matrix
 from compiler.report.report_generator import write_report
 from compiler.hardware.profile import probe_hardware
-from compiler.llm.context_builder import build_context, render_user_prompt
-from compiler.llm.recommendation_engine import recommend_plan
-from compiler.history import history_for_model
 from compiler.parsers.tiny_cnn import flatten_features, write_tiny_cnn
 from compiler.parsers.tiny_depth import write_tiny_depth
-from compiler.pipeline import compile_and_benchmark, get_backend
-from compiler.schema_validate import SchemaError, validate_llm_proposal
-from compiler.strategies import ALLOWED_STRATEGY_NAMES
+from compiler.planner import ALLOWED_STRATEGY_NAMES
+from compiler.schema import SchemaError, validate_llm_proposal
+from compiler.frontends import frontend_catalog
 from nnc.artifact import benchmark_artifact, load_ort_artifact
 from nnc.backends import known_backends
 from nnc.probe import probe_host
@@ -88,7 +83,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
     rec = recommend_plan(summary, hardware, constraints, history=history_for_model(args.kind or loaded.sha256))
     payload = rec.strategy.to_dict() if hasattr(rec.strategy, "to_dict") else rec.to_dict()
     if args.show_prompt:
-        payload["prompt"] = render_user_prompt(build_context(summary, hardware, constraints, []))
+        payload["prompt"] = build_messages(summary, hardware=hardware, constraints=constraints)[1]["content"]
     _print(payload)
     return 0
 
@@ -247,6 +242,18 @@ def cmd_baseline(args: argparse.Namespace) -> int:
 
 def cmd_probe(args: argparse.Namespace) -> int:
     _print(probe_host())
+    return 0
+
+
+def cmd_formats(args: argparse.Namespace) -> int:
+    _print(
+        {
+            "frontends": frontend_catalog(),
+            "backends": list(known_backends()),
+            "ir": ["onnx"],
+            "fps_claimed": False,
+        }
+    )
     return 0
 
 
@@ -507,6 +514,9 @@ def build_parser() -> argparse.ArgumentParser:
     probe = sub.add_parser("probe", help="Print host/PX4/ROS/Gazebo/NVIDIA facts")
     probe.set_defaults(func=cmd_probe)
 
+    formats = sub.add_parser("formats", help="List frontends, backends, prompt engines, and GraphIR")
+    formats.set_defaults(func=cmd_formats)
+
     live = sub.add_parser("live", help="Groq advisor then ORT compile/profile (requires GROQ_API_KEY)")
     live.add_argument("onnx")
     live.add_argument("--kind", default="onnx")
@@ -547,7 +557,7 @@ def main(argv: list[str] | None = None) -> int:
     except UnknownStrategyError as exc:
         print(exc, file=sys.stderr)
         return 2
-    except SchemaError as exc:
+    except (SchemaError, FrontendSkip, UnknownFrontendError) as exc:
         print(exc, file=sys.stderr)
         return 2
 

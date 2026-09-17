@@ -24,9 +24,23 @@ class UnknownStrategyError(CompilerError):
 
 class CalibrationUnavailable(CompilerError):
     """Static quantization needs frames that are not on disk."""
-    """A backend cannot run on this host; callers must record the reason."""
 
-    def __init__(self, backend: str, reason: str) -> None:
-        self.backend = backend
+
+class FrontendSkip(CompilerError):
+    """Source format is recognized but not imported into GraphIR on this host."""
+
+    def __init__(self, frontend: str, reason: str) -> None:
+        self.frontend = frontend
         self.reason = reason
-        super().__init__(f"{backend} skipped: {reason}")
+        super().__init__(f"{frontend} skipped: {reason}")
+
+
+class UnknownFrontendError(CompilerError):
+    """No registered frontend claims this file suffix."""
+
+    def __init__(self, suffix: str, known: tuple[str, ...]) -> None:
+        self.suffix = suffix
+        self.known = known
+        super().__init__(
+            f"no frontend for suffix {suffix!r}; known={list(known)}"
+        )

@@ -13,6 +13,8 @@ from compiler.graph.graph_loader import LoadedGraph
 class GraphSummary:
     source: str
     sha256: str
+    origin_format: str
+    ir: str
     opset: int
     ir_version: int
     producer: str
@@ -41,6 +43,8 @@ def summarize_graph(loaded: LoadedGraph) -> GraphSummary:
     return GraphSummary(
         source=loaded.source,
         sha256=loaded.sha256,
+        origin_format=loaded.origin_format,
+        ir=loaded.ir,
         opset=int(stats["opset"]),
         ir_version=int(stats["ir_version"]),
         producer=str(stats["producer"]),

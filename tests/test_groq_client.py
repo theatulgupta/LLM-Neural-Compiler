@@ -8,7 +8,7 @@ from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
 from compiler.llm.groq_client import GroqLlmClient, extract_json_object, strip_invented_metrics
 from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.schema_validate import SchemaError
+from compiler.schema import SchemaError
 
 
 def test_extract_json_object_from_fences() -> None:

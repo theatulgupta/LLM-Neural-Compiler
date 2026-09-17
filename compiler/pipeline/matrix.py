@@ -12,7 +12,7 @@ from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
 from compiler.history import write_run_json
 from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.pipeline import compile_and_benchmark
+from compiler.pipeline.compile import compile_and_benchmark
 from nnc.probe import probe_host
 
 PAPER_MATRIX_NAME = "paper_matrix.json"
@@ -186,7 +186,7 @@ def run_zoo_matrix(
         if wanted is not None and spec.kind not in wanted:
             continue
         if candidates:
-            from compiler.optimize import optimize_model
+            from compiler.pipeline.optimize import optimize_model
 
             onnx_path = spec.onnx_path(root or REPO_ROOT)
             if not onnx_path.is_file():

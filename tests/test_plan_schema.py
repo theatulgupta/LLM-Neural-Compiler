@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from compiler.hardware.profile import probe_hardware
 from compiler.planner.plan import Plan
-from compiler.schema_validate import SchemaError, validate_llm_plan
+from compiler.schema import SchemaError, validate_llm_plan
 import pytest
 
 

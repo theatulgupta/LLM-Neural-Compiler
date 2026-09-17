@@ -12,14 +12,16 @@ import numpy as np
 import onnx
 
 from compiler.catalog import REPO_ROOT
+from compiler.errors import FrontendSkip
+from compiler.exporters import skip_run_record
 from compiler.graph.graph_loader import LoadedGraph, load_graph
 from compiler.graph.graph_summary import GraphSummary, summarize_graph
 from compiler.hardware.profile import probe_hardware
 from compiler.history import append_history, new_run_record, write_run_json
 from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.optimization.optimizer import apply_plan, apply_strategy
+from compiler.optimization.engine import apply_plan_on_graph, apply_strategy_on_graph
 from compiler.optimization.passes import graph_ir_snapshot
-from compiler.planner.plan import Plan, get_plan
+from compiler.planner.plan import Plan
 from compiler.planner.verifier import verify_plan
 from compiler.profiling.profiler import profile_session
 from compiler.utils.hashing import sha256_bytes
@@ -132,6 +134,31 @@ def _verification_feeds(
         return [_input_feeds(compiled, model, rng)], "random"
 
 
+def _frontend_skip_record(
+    model_path: Path,
+    exc: FrontendSkip,
+    *,
+    backend_name: str,
+    kind: str,
+    results_dir: Path | None,
+) -> dict[str, Any]:
+    record = skip_run_record(
+        kind=kind,
+        path=str(model_path),
+        reason=exc.reason,
+        backend=backend_name,
+    )
+    skip = dict(record.get("skip") or {})
+    skip["frontend"] = exc.frontend
+    record["skip"] = skip
+    model = dict(record.get("model") or {})
+    model["origin_format"] = exc.frontend
+    model["ir"] = None
+    record["model"] = model
+    _persist(record, results_dir)
+    return record
+
+
 def compile_verify_profile(
     model_path: Path,
     *,
@@ -146,7 +173,12 @@ def compile_verify_profile(
     verify_plan_first: bool = True,
 ) -> dict[str, Any]:
     hardware = probe_hardware()
-    loaded = load_graph(model_path, check=False)
+    try:
+        loaded = load_graph(model_path, check=False)
+    except FrontendSkip as exc:
+        return _frontend_skip_record(
+            model_path, exc, backend_name=backend_name, kind=kind, results_dir=results_dir
+        )
     summary = summarize_graph(loaded)
     verified = verify_plan(plan, summary, hardware, backend_name=backend_name) if verify_plan_first else None
     active = verified.plan if verified and verified.accepted else plan
@@ -154,12 +186,13 @@ def compile_verify_profile(
 
     before_ir = graph_ir_snapshot(loaded.model)
     try:
-        optimized, steps_applied = apply_plan(loaded.model, active)
+        optimized_graph, steps_applied = apply_plan_on_graph(loaded, active)
         apply_error = None
     except Exception as exc:  # noqa: BLE001
-        optimized = loaded.model
+        optimized_graph = loaded
         steps_applied = []
         apply_error = f"{type(exc).__name__}: {exc}"
+    optimized = optimized_graph.model
     after_ir = graph_ir_snapshot(optimized)
     graph_changed = before_ir["node_count"] != after_ir["node_count"] or before_ir["op_counts"] != after_ir["op_counts"]
     runtime_bytes = optimized.SerializeToString()
@@ -171,7 +204,7 @@ def compile_verify_profile(
     record: dict[str, Any] = new_run_record(
         schema_version=2,
         run_id=run_id,
-        model={"path": str(model_path), "sha256": loaded.sha256, "kind": kind, "opset": loaded.opset},
+        model={"path": str(model_path), "sha256": loaded.sha256, "kind": kind, "opset": loaded.opset, "origin_format": loaded.origin_format, "ir": loaded.ir},
         graph=summary.to_dict(),
         graph_before=before_ir,
         graph_after=after_ir,
@@ -338,8 +371,17 @@ def compile_and_benchmark(
 ) -> dict[str, Any]:
     try:
         loaded = load_graph(model_path, check=True)
+    except FrontendSkip as exc:
+        return _frontend_skip_record(
+            model_path, exc, backend_name=backend_name, kind=model_kind, results_dir=results_dir
+        )
     except Exception as exc:  # noqa: BLE001 — invalid graphs are compile failures
-        loaded = load_graph(model_path, check=False)
+        try:
+            loaded = load_graph(model_path, check=False)
+        except FrontendSkip as skip_exc:
+            return _frontend_skip_record(
+                model_path, skip_exc, backend_name=backend_name, kind=model_kind, results_dir=results_dir
+            )
         summary = summarize_graph(loaded)
         record = new_run_record(
             run_id=str(uuid.uuid4()),
@@ -348,6 +390,8 @@ def compile_and_benchmark(
                 "sha256": loaded.sha256,
                 "kind": model_kind,
                 "opset": loaded.opset,
+                "origin_format": loaded.origin_format,
+                "ir": loaded.ir,
             },
             graph=summary.to_dict(),
             backend=backend_name,
@@ -365,7 +409,8 @@ def compile_and_benchmark(
     strategy = recommendation.strategy
 
     before_ir = graph_ir_snapshot(loaded.model)
-    optimized = apply_strategy(loaded.model, strategy)
+    optimized_graph = apply_strategy_on_graph(loaded, strategy)
+    optimized = optimized_graph.model
     after_ir = graph_ir_snapshot(optimized)
     runtime = optimized
     runtime_ir = graph_ir_snapshot(runtime)
@@ -383,6 +428,8 @@ def compile_and_benchmark(
             "sha256": loaded.sha256,
             "kind": model_kind,
             "opset": loaded.opset,
+            "origin_format": loaded.origin_format,
+            "ir": loaded.ir,
         },
         graph=summary.to_dict(),
         graph_before=before_ir,

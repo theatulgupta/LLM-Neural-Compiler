@@ -6,13 +6,15 @@ import json
 from pathlib import Path
 from typing import Any
 
-from compiler.catalog import REPO_ROOT, ModelSpec, get_model, load_zoo
+from compiler.catalog import REPO_ROOT
+from compiler.errors import FrontendSkip
+from compiler.exporters import skip_run_record
 from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
 from compiler.hardware.profile import probe_hardware
-from compiler.history import history_for_model, write_run_json
+from compiler.history import history_for_model
 from compiler.llm.llm_client import build_client
-from compiler.pipeline import compile_verify_profile
+from compiler.pipeline.compile import compile_verify_profile
 from compiler.planner.candidates import generate_candidates
 from nnc.probe import probe_host
 
@@ -30,7 +32,22 @@ def optimize_model(
     results_dir: Path | None = None,
 ) -> dict[str, Any]:
     results = results_dir or DEFAULT_RESULTS
-    loaded = load_graph(model_path)
+    try:
+        loaded = load_graph(model_path)
+    except FrontendSkip as exc:
+        record = skip_run_record(
+            kind=kind, path=str(model_path), reason=exc.reason, backend="ort_cpu"
+        )
+        skip = dict(record.get("skip") or {})
+        skip["frontend"] = exc.frontend
+        record["skip"] = skip
+        out = results / f"optimize_{kind.replace('/', '_')}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(record, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+        record["wrote"] = str(out)
+        record["chosen"] = None
+        record["fps_claimed"] = False
+        return record
     summary = summarize_graph(loaded)
     hardware = probe_hardware()
     history = history_for_model(kind)

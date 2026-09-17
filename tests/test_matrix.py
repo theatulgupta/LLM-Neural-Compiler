@@ -8,8 +8,8 @@ import pytest
 
 from compiler.cli import main
 from compiler.exporters import write_skip
-from compiler.matrix import measure_path
-from compiler.schema_validate import validate_run_result
+from compiler.pipeline import measure_path
+from compiler.schema import validate_run_result
 
 
 def test_write_skip_is_schema_valid(tmp_path) -> None:

@@ -13,7 +13,7 @@ CPU-only aarch64 QEMU. Do not install the default PyPI CUDA torch wheel.
 source .venv/bin/activate
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install ultralytics
-python scripts/export_yolov8n.py --out experiments/models/yolov8n.onnx --imgsz 640 --opset 13
+python -m compiler export --kind yolov8n
 ```
 
 ## Artifact measured here

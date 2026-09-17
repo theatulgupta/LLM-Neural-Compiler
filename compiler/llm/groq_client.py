@@ -11,10 +11,10 @@ from pathlib import Path
 from typing import Any, Callable
 
 from compiler.graph.graph_summary import GraphSummary
-from compiler.llm.context_builder import render_user_prompt
 from compiler.llm.llm_client import LlmProposal, proposal_from_dict
-from compiler.llm.prompts import SYSTEM_PROMPT, user_prompt
-from compiler.schema_validate import SchemaError
+from compiler.llm.prompting import build_messages
+from compiler.planner.plan import PRESETS
+from compiler.schema import SchemaError
 
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
@@ -134,11 +134,7 @@ class GroqLlmClient:
         key = self._api_key if self._api_key is not None else load_groq_api_key()
         if not key and self._chat is None:
             raise SchemaError("GROQ_API_KEY is not set; refusing to invent a proposal")
-        prompt = render_user_prompt(context) if context is not None else user_prompt(summary)
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ]
+        messages = build_messages(summary, context)
         if self._chat is not None:
             content = self._chat(messages, self.model)
         else:
@@ -146,8 +142,6 @@ class GroqLlmClient:
             content = groq_chat(messages, self.model, api_key=key)
         payload = extract_json_object(content)
         payload["source"] = "groq"
-        from compiler.planner.plan import PRESETS
-
         if payload.get("strategy") and payload["strategy"] not in PRESETS:
             raise SchemaError(f"strategy {payload['strategy']!r} is not allowlisted")
         rationale = str(payload.get("rationale", ""))

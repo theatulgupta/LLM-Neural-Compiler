@@ -9,7 +9,7 @@ from compiler.graph.graph_summary import GraphSummary
 from compiler.hardware.profile import HardwareProfile
 from compiler.planner.atoms import ATOMS, PASS_ATOMS
 from compiler.planner.plan import Plan
-from compiler.schema_validate import SchemaError, validate_llm_plan
+from compiler.schema import SchemaError, validate_llm_plan
 
 _STRUCTURAL = {
     "eliminate_identity",
