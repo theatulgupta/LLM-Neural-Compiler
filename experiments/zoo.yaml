@@ -1,0 +1,104 @@
+# UAV companion model zoo. Source of truth for compiler.catalog.
+# Native strategy is always ORT graph-opt disable (baseline) on this host.
+# Optimized strategy is allowlisted (usually ort_extended) after analyze/recommend.
+# Weights and ONNX are gitignored. Export scripts download legally from
+# Ultralytics or torchvision; they write a skip JSON instead of inventing latency.
+
+models:
+  - kind: yolov8n
+    task: detect
+    family: ultralytics
+    weights: yolov8n.pt
+    onnx: experiments/models/yolov8n.onnx
+    export_script: scripts/export_ultralytics.py
+    export_args: --kind yolov8n
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 640
+    opset: 13
+    uav_role: people and vehicle detection on a PX4 companion computer
+    justification: Nano YOLO is the usual camera detector on Jetson and Raspberry-class companions. The flight controller does not run it. Already measured in this tree.
+
+  - kind: yolo11n
+    task: detect
+    family: ultralytics
+    weights: yolo11n.pt
+    onnx: experiments/models/yolo11n.onnx
+    export_script: scripts/export_ultralytics.py
+    export_args: --kind yolo11n
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 640
+    opset: 13
+    uav_role: newer people and vehicle detection (2024 Ultralytics default)
+    justification: YOLO11n is the current Ultralytics nano detector (C3k2/C2PSA), not a second copy of YOLOv8. Same UAV job, newer graph. Picked over YOLOv8s because nano fits this QEMU VM.
+
+  - kind: yolov8n-pose
+    task: pose
+    family: ultralytics
+    weights: yolov8n-pose.pt
+    onnx: experiments/models/yolov8n-pose.onnx
+    export_script: scripts/export_ultralytics.py
+    export_args: --kind yolov8n-pose
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 640
+    opset: 13
+    uav_role: person keypoints for search-and-rescue and follow-me
+    justification: A box is not enough to follow or count people. Pose is the usual companion-computer task for SAR and human-aware flight. Official Ultralytics ONNX export.
+
+  - kind: yolov8n-seg
+    task: segment
+    family: ultralytics
+    weights: yolov8n-seg.pt
+    onnx: experiments/models/yolov8n-seg.onnx
+    export_script: scripts/export_ultralytics.py
+    export_args: --kind yolov8n-seg
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 640
+    opset: 13
+    uav_role: masks for landing-zone, trail, or traversable ground
+    justification: Segmentation tells the companion which pixels are landing pad or path, not only that an object exists. Skip with JSON if this VM runs out of RAM.
+
+  - kind: ssdlite_mobilenetv3
+    task: detect-lite
+    family: torchvision
+    weights: SSDLite320_MobileNet_V3_Large_Weights.COCO_V1
+    onnx: experiments/models/ssdlite_mobilenetv3.onnx
+    export_script: scripts/export_ssdlite.py
+    export_args: ""
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 320
+    opset: 13
+    uav_role: lighter COCO detection on Pi-class companions
+    justification: Raspberry Pi and older Jetson Nano stacks often ran SSD-MobileNet at 320, not YOLO at 640. Different architecture (SSD + MobileNet). The ONNX graph is backbone plus heads; NMS stays off-graph like default YOLO export.
+
+  - kind: mobilenetv3_small
+    task: classify
+    family: torchvision
+    weights: MobileNet_V3_Small_Weights.IMAGENET1K_V1
+    onnx: experiments/models/mobilenetv3_small.onnx
+    export_script: scripts/export_mobilenetv3_small.py
+    export_args: ""
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 224
+    opset: 13
+    uav_role: landing-pad, gate, or sign classification
+    justification: Drones also classify a pad or gate instead of detecting every object. MobileNetV3-small is the tiny ImageNet net used on Pi-class boards. Picked over ResNet18 because it is smaller on this VM.
+
+  - kind: midas_small
+    task: depth
+    family: torchhub
+    weights: intel-isl/MiDaS MiDaS_small
+    onnx: experiments/models/midas_small.onnx
+    export_script: scripts/export_midas_small.py
+    export_args: ""
+    default_strategy: ort_extended
+    native_strategy: baseline
+    imgsz: 256
+    opset: 13
+    uav_role: monocular depth cue for sense-and-avoid
+    justification: When the companion has one camera, MiDaS-small is a common relative-depth net for obstacle awareness. Not stereo PX4 firmware. If ONNX export is messy, skip with JSON and do not invent latency.

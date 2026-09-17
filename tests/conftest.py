@@ -4,13 +4,21 @@ from pathlib import Path
 
 import pytest
 
-from compiler.parsers.tiny_cnn import flatten_features, write_tiny_cnn
+from compiler.parsers.tiny_cnn import write_tiny_cnn
+from compiler.parsers.tiny_depth import write_tiny_depth
 
 
 @pytest.fixture
 def tiny_path(tmp_path: Path) -> Path:
     path = tmp_path / "tiny_cnn.onnx"
     write_tiny_cnn(path)
+    return path
+
+
+@pytest.fixture
+def tiny_depth_path(tmp_path: Path) -> Path:
+    path = tmp_path / "tiny_depth.onnx"
+    write_tiny_depth(path)
     return path
 
 

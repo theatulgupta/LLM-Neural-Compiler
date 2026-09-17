@@ -15,6 +15,15 @@ from nnc.backends.tensorrt import nvidia_probe
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def probe_machine_id() -> str | None:
+    path = Path("/etc/machine-id")
+    try:
+        text = path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return text or None
+
+
 def system_env() -> dict[str, str]:
     """Strip the compiler venv so ROS 2 uses /opt/ros Python packages."""
 
@@ -99,6 +108,8 @@ def probe_host() -> dict[str, Any]:
     ros_ws = REPO_ROOT / "ros2_ws" / "install" / "setup.bash"
     ros_distro = os.environ.get("ROS_DISTRO") or "jazzy"
     return {
+        "machine_id": probe_machine_id(),
+        "uname_m": platform.machine(),
         "platform": {
             "system": platform.system(),
             "machine": platform.machine(),

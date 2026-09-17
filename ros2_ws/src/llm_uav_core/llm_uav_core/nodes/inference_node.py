@@ -49,6 +49,7 @@ class InferenceNode(Node):
     def __init__(self) -> None:
         super().__init__("inference_node")
         self.declare_parameter("model_path", str(_repo_root() / "experiments" / "models" / "yolov8n.onnx"))
+        self.declare_parameter("model_kind", "yolov8n")
         self.declare_parameter("graph_opt", "extended")
         self.declare_parameter("period_sec", 2.0)
         self.declare_parameter("source", "synthetic")
@@ -109,6 +110,7 @@ class InferenceNode(Node):
                     "path": str(self._artifact.path),
                     "sha256": self._artifact.sha256,
                     "bytes": self._artifact.bytes_len,
+                    "kind": str(self.get_parameter("model_kind").value),
                 },
                 "providers": list(self._artifact.providers),
                 "graph_opt": self._artifact.graph_opt,

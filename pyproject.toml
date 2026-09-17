@@ -17,6 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 yolo = ["ultralytics>=8.2"]
+vision = ["ultralytics>=8.2", "timm"]
 
 [project.scripts]
 nnc = "compiler.cli:main"
@@ -42,3 +43,6 @@ packages = [
 testpaths = ["tests"]
 pythonpath = [".", "src"]
 addopts = "-q"
+markers = [
+  "integration: optional large ONNX zoo tests; skipped unless NNC_RUN_ZOO=1",
+]

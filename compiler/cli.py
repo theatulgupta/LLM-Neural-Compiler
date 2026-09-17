@@ -7,14 +7,19 @@ import json
 import sys
 from pathlib import Path
 
+from compiler.catalog import REPO_ROOT, get_model, load_zoo, zoo_kinds
 from compiler.errors import UnknownStrategyError
+from compiler.exporters import skip_run_record
 from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
+from compiler.history import append_history, write_run_json
 from compiler.llm.groq_client import GroqLlmClient, DEFAULT_GROQ_MODEL, load_groq_api_key
 from compiler.llm.llm_client import LlmClient
 from compiler.llm.prompts import user_prompt
 from compiler.llm.recommendation_engine import recommend_strategy
+from compiler.matrix import measure_path, run_zoo_matrix
 from compiler.parsers.tiny_cnn import flatten_features, write_tiny_cnn
+from compiler.parsers.tiny_depth import write_tiny_depth
 from compiler.pipeline import compile_and_benchmark, get_backend
 from compiler.schema_validate import SchemaError, validate_llm_proposal
 from compiler.strategies import ALLOWED_STRATEGY_NAMES
@@ -22,8 +27,8 @@ from nnc.artifact import benchmark_artifact, load_ort_artifact
 from nnc.backends import known_backends
 from nnc.probe import probe_host
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FIXTURE = REPO_ROOT / "fixtures" / "tiny_cnn.onnx"
+DEFAULT_DEPTH_FIXTURE = REPO_ROOT / "fixtures" / "tiny_depth.onnx"
 DEFAULT_RESULTS = REPO_ROOT / "experiments" / "results"
 
 
@@ -40,6 +45,14 @@ def _print(data: object) -> None:
 
 
 def cmd_emit_fixture(args: argparse.Namespace) -> int:
+    kind = str(args.kind)
+    if kind == "depth":
+        out = Path(args.out)
+        if Path(args.out) == DEFAULT_FIXTURE:
+            out = DEFAULT_DEPTH_FIXTURE
+        path = write_tiny_depth(out)
+        _print({"path": str(path), "kind": "tiny_depth", "input": [1, 3, 8, 8]})
+        return 0
     path = write_tiny_cnn(
         Path(args.out),
         gemm_k=args.gemm_k,
@@ -48,6 +61,7 @@ def cmd_emit_fixture(args: argparse.Namespace) -> int:
     _print(
         {
             "path": str(path),
+            "kind": "fixture",
             "flatten_k": flatten_features(),
             "gemm_k": args.gemm_k or flatten_features(),
             "broken": bool(args.broken),
@@ -108,7 +122,7 @@ def cmd_baseline(args: argparse.Namespace) -> int:
     if not fixture.exists():
         write_tiny_cnn(fixture)
 
-    records = []
+    records: list[dict] = []
     records.append(
         compile_and_benchmark(
             fixture,
@@ -136,47 +150,40 @@ def cmd_baseline(args: argparse.Namespace) -> int:
             )
         )
     else:
-        skip_record = {
-            "schema_version": 1,
-            "backend": "tensorrt",
-            "model": {"path": str(fixture), "kind": "fixture"},
-            "compile": {"ok": False, "ms": None, "error": None},
-            "benchmark": None,
-            "skip": {"backend": "tensorrt", "reason": reason},
-        }
-        from compiler.history import append_history, write_run_json
-        from compiler.utils.timeutil import utc_now_iso
-        import uuid
-
-        skip_record["run_id"] = str(uuid.uuid4())
-        skip_record["created_at"] = utc_now_iso()
+        skip_record = skip_run_record(
+            kind="fixture",
+            path=str(fixture),
+            reason=reason or "tensorrt unavailable",
+            backend="tensorrt",
+        )
         write_run_json(results / "runs" / f"{skip_record['run_id']}.json", skip_record)
         append_history(results / "history.jsonl", skip_record)
         records.append(skip_record)
 
-    yolo = Path(args.yolo) if args.yolo else REPO_ROOT / "experiments" / "models" / "yolov8n.onnx"
-    if yolo.exists():
+    for spec in load_zoo():
+        onnx_path = spec.onnx_path()
+        if args.kind and spec.kind != args.kind:
+            continue
+        if not onnx_path.exists():
+            skip_record = skip_run_record(
+                kind=spec.kind,
+                path=str(onnx_path),
+                reason=f"{spec.kind} ONNX not present at {onnx_path}; run {' '.join(spec.export_cmd())}",
+            )
+            write_run_json(results / "runs" / f"{skip_record['run_id']}.json", skip_record)
+            append_history(results / "history.jsonl", skip_record)
+            records.append(skip_record)
+            continue
         records.append(
             compile_and_benchmark(
-                yolo,
+                onnx_path,
                 backend_name="ort_cpu",
-                strategy_name="ort_extended",
+                strategy_name=spec.default_strategy,
                 warmup=max(3, args.warmup // 2),
                 iters=max(5, args.iters // 2),
                 results_dir=results,
-                model_kind="yolov8n",
+                model_kind=spec.kind,
             )
-        )
-    else:
-        records.append(
-            {
-                "backend": "ort_cpu",
-                "model": {"path": str(yolo), "kind": "yolov8n"},
-                "skip": {
-                    "backend": "ort_cpu",
-                    "reason": f"YOLOv8n ONNX not present at {yolo}; run scripts/export_yolov8n.py",
-                },
-            }
         )
 
     host = probe_host()
@@ -184,6 +191,8 @@ def cmd_baseline(args: argparse.Namespace) -> int:
         "host": host,
         "runs": records,
         "flatten_k": flatten_features(),
+        "zoo_kinds": list(zoo_kinds()),
+        "fps_claimed": False,
     }
     out = results / "baseline_summary.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -239,23 +248,30 @@ def _advise_one(model: Path, client: LlmClient, *, kind: str, results: Path, war
         "run_id": compile_record.get("run_id"),
         "strategy": rec.strategy.name,
     }
-    if kind == "yolov8n" and rec.strategy.name != "ort_extended":
-        baseline = compile_and_benchmark(
-            model,
-            backend_name="ort_cpu",
-            strategy_name="ort_extended",
-            warmup=warmup,
-            iters=iters,
-            results_dir=results,
-            model_kind=kind,
-        )
-        entry["compare_baseline"] = {
-            "strategy": "ort_extended",
-            "ok": baseline.get("compile", {}).get("ok"),
-            "benchmark": baseline.get("benchmark"),
-            "run_id": baseline.get("run_id"),
-            "error": baseline.get("compile", {}).get("error"),
-        }
+    if rec.strategy.name != "ort_extended":
+        # Compare against the catalog default when the advisor picked something else.
+        compare_name = "ort_extended"
+        try:
+            compare_name = get_model(kind).default_strategy
+        except KeyError:
+            compare_name = "ort_extended"
+        if rec.strategy.name != compare_name:
+            baseline = compile_and_benchmark(
+                model,
+                backend_name="ort_cpu",
+                strategy_name=compare_name,
+                warmup=warmup,
+                iters=iters,
+                results_dir=results,
+                model_kind=kind,
+            )
+            entry["compare_baseline"] = {
+                "strategy": compare_name,
+                "ok": baseline.get("compile", {}).get("ok"),
+                "benchmark": baseline.get("benchmark"),
+                "run_id": baseline.get("run_id"),
+                "error": baseline.get("compile", {}).get("error"),
+            }
     return entry
 
 
@@ -299,12 +315,91 @@ def cmd_live(args: argparse.Namespace) -> int:
     return 0 if compile_ok else 1
 
 
+def cmd_zoo(args: argparse.Namespace) -> int:
+    rows = []
+    for spec in load_zoo():
+        onnx_path = spec.onnx_path()
+        rows.append(
+            {
+                "kind": spec.kind,
+                "task": spec.task,
+                "family": spec.family,
+                "onnx": spec.onnx,
+                "onnx_present": onnx_path.is_file(),
+                "export": " ".join(spec.export_cmd()),
+                "native_strategy": spec.native_strategy,
+                "default_strategy": spec.default_strategy,
+                "uav_role": spec.uav_role,
+                "justification": spec.justification,
+            }
+        )
+    _print({"models": rows, "count": len(rows)})
+    return 0
+
+
+def cmd_export(args: argparse.Namespace) -> int:
+    import subprocess
+
+    kinds = [args.kind] if args.kind else list(zoo_kinds())
+    codes = []
+    for kind in kinds:
+        spec = get_model(kind)
+        cmd = spec.export_cmd(python=sys.executable)
+        print("+", " ".join(cmd), file=sys.stderr)
+        completed = subprocess.run(cmd, cwd=str(REPO_ROOT), check=False)
+        codes.append(completed.returncode)
+    # 0 if any export succeeded; 2 if all skipped/failed
+    if any(code == 0 for code in codes):
+        return 0
+    return 2 if codes else 1
+
+
+def cmd_matrix(args: argparse.Namespace) -> int:
+    results = Path(args.results)
+    kinds = [args.kind] if args.kind else None
+    summary = run_zoo_matrix(
+        kinds=kinds,
+        warmup=args.warmup,
+        iters=args.iters,
+        results_dir=results,
+    )
+    if args.fixture:
+        fixture = Path(args.fixture)
+        if fixture.is_file():
+            summary.setdefault("models", []).insert(
+                0,
+                measure_path(
+                    fixture,
+                    kind="fixture",
+                    task="fixture",
+                    native_strategy="baseline",
+                    warmup=args.warmup,
+                    iters=args.iters,
+                    results_dir=results,
+                ),
+            )
+            wrote = results / "paper_matrix.json"
+            wrote.write_text(json.dumps(summary, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+            summary["wrote"] = str(wrote)
+    _print(
+        {
+            "wrote": summary.get("wrote"),
+            "model_count": len(summary.get("models", [])),
+            "kinds": [row.get("kind") for row in summary.get("models", [])],
+            "fps_claimed": False,
+        }
+    )
+    measured = [row for row in summary.get("models", []) if row.get("native") and row["native"].get("compile_ok")]
+    return 0 if measured else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nnc", description="LLM-guided neural compiler")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     emit = sub.add_parser("emit-fixture", help="Write the tiny CNN ONNX fixture")
     emit.add_argument("--out", default=str(DEFAULT_FIXTURE))
+    emit.add_argument("--kind", choices=("cnn", "depth"), default="cnn")
     emit.add_argument("--gemm-k", type=int, default=None, help="Override Gemm K (default: Flatten width 64)")
     emit.add_argument("--broken", action="store_true", help="Allow Gemm K != Flatten width (regression case)")
     emit.set_defaults(func=cmd_emit_fixture)
@@ -339,7 +434,7 @@ def build_parser() -> argparse.ArgumentParser:
     baseline = sub.add_parser("baseline", help="ORT CPU baseline JSON; TensorRT skipped unless NVIDIA exists")
     baseline.add_argument("--fixture", default=str(DEFAULT_FIXTURE))
     baseline.add_argument("--results", default=str(DEFAULT_RESULTS))
-    baseline.add_argument("--yolo", default="")
+    baseline.add_argument("--kind", default="", help="If set, only this zoo kind plus the fixture")
     baseline.add_argument("--warmup", type=int, default=10)
     baseline.add_argument("--iters", type=int, default=50)
     baseline.set_defaults(func=cmd_baseline)
@@ -349,7 +444,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     live = sub.add_parser("live", help="Groq advisor then ORT compile/profile (requires GROQ_API_KEY)")
     live.add_argument("onnx")
-    live.add_argument("--kind", default="yolov8n")
+    live.add_argument("--kind", default="onnx")
     live.add_argument("--fixture", default=str(DEFAULT_FIXTURE), help="Also advise+compile the tiny fixture")
     live.add_argument("--no-fixture", action="store_true")
     live.add_argument("--model-name", default=DEFAULT_GROQ_MODEL)
@@ -357,6 +452,24 @@ def build_parser() -> argparse.ArgumentParser:
     live.add_argument("--warmup", type=int, default=3)
     live.add_argument("--iters", type=int, default=8)
     live.set_defaults(func=cmd_live)
+
+    zoo = sub.add_parser("zoo", help="List UAV companion models from experiments/zoo.yaml")
+    zoo.set_defaults(func=cmd_zoo)
+
+    export_p = sub.add_parser("export", help="Run the per-model ONNX export script (skip JSON on failure)")
+    export_p.add_argument("--kind", default="", help="Zoo kind; omit to export every kind")
+    export_p.set_defaults(func=cmd_export)
+
+    matrix = sub.add_parser(
+        "matrix",
+        help="Native ORT baseline vs allowlisted strategy on each zoo ONNX (same host)",
+    )
+    matrix.add_argument("--kind", default="", help="Single zoo kind; omit for the full zoo")
+    matrix.add_argument("--fixture", default="", help="Also measure a local ONNX fixture")
+    matrix.add_argument("--results", default=str(DEFAULT_RESULTS))
+    matrix.add_argument("--warmup", type=int, default=3)
+    matrix.add_argument("--iters", type=int, default=8)
+    matrix.set_defaults(func=cmd_matrix)
     return parser
 
 

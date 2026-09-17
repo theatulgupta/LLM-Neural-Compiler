@@ -17,7 +17,7 @@ from compiler.llm.recommendation_engine import recommend_strategy
 from compiler.optimization.optimizer import apply_strategy
 from compiler.utils.timeutil import utc_now_iso
 from nnc.backends import BackendSkip, CompiledModel, get_backend
-from nnc.probe import probe_host
+from nnc.probe import probe_host, probe_machine_id
 
 
 def _numpy_dtype(name: str) -> np.dtype:
@@ -37,6 +37,18 @@ def _input_feeds(compiled: CompiledModel, model: onnx.ModelProto, rng: np.random
             continue
         feeds[spec.name] = rng.standard_normal(spec.numpy_shape(), dtype=_numpy_dtype(spec.dtype))
     return feeds
+
+
+def _host_block() -> dict[str, Any]:
+    host = probe_host()
+    return {
+        "machine": host["platform"]["machine"],
+        "uname_m": host.get("uname_m") or host["platform"]["machine"],
+        "machine_id": host.get("machine_id") or probe_machine_id(),
+        "python": host["platform"]["python"],
+        "system": host["platform"]["system"],
+        "nvidia": host["nvidia"],
+    }
 
 
 def _latency_stats(samples_ms: list[float]) -> dict[str, float]:
@@ -88,6 +100,8 @@ def compile_and_benchmark(
             compile={"ok": False, "ms": None, "error": f"{type(exc).__name__}: {exc}"},
             benchmark=None,
             skip=None,
+            host=_host_block(),
+            fps_claimed=False,
         )
         _persist(record, results_dir)
         return record
@@ -101,7 +115,6 @@ def compile_and_benchmark(
     backend = get_backend(backend_name)
     available, skip_reason = backend.available()
     run_id = str(uuid.uuid4())
-    host = probe_host()
 
     record: dict[str, Any] = new_run_record(
         run_id=run_id,
@@ -114,11 +127,8 @@ def compile_and_benchmark(
         graph=summary.to_dict(),
         backend=backend_name,
         strategy=recommendation.to_dict(),
-        host={
-            "machine": host["platform"]["machine"],
-            "python": host["platform"]["python"],
-            "nvidia": host["nvidia"],
-        },
+        host=_host_block(),
+        fps_claimed=False,
     )
 
     if not available:
@@ -177,6 +187,7 @@ def compile_and_benchmark(
         "latency_ms": latency,
         "throughput_ips": throughput,
         "measured_at": utc_now_iso(),
+        "fps_claimed": False,
     }
     record["skip"] = None
     _persist(record, results_dir)
