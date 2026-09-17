@@ -1,4 +1,8 @@
-"""Allowlisted compile strategies. LLM output is rejected if it leaves this set."""
+"""Allowlisted compile strategies. LLM output is rejected if it leaves this set.
+
+A strategy is a named **graph pass set** plus an ORT session graph-opt level.
+The LLM may only pick the name. The transformation engine applies the passes.
+"""
 
 from __future__ import annotations
 
@@ -19,27 +23,39 @@ class Strategy:
 ALLOWED_STRATEGIES: dict[str, Strategy] = {
     "baseline": Strategy(
         name="baseline",
-        description="ORT CPU with graph optimizations disabled (correctness baseline).",
+        description="No graph rewrites. ORT graph optimizations disabled (native DAG).",
         ort_graph_opt="disable",
         passes=(),
     ),
-    "ort_basic": Strategy(
-        name="ort_basic",
-        description="ORT CPU with basic graph optimizations (fuse, constant folding).",
-        ort_graph_opt="basic",
-        passes=("onnx_shape_infer",),
+    "graph_simplify": Strategy(
+        name="graph_simplify",
+        description="Shape infer, drop Identity/nop Dropout, constant-fold. ORT opts off.",
+        ort_graph_opt="disable",
+        passes=("onnx_shape_infer", "eliminate_identity", "constant_folding"),
     ),
-    "ort_extended": Strategy(
-        name="ort_extended",
-        description="ORT CPU with extended graph optimizations.",
+    "graph_fuse": Strategy(
+        name="graph_fuse",
+        description="Simplify plus Conv-BN and Conv-ReLU fusion on the ONNX DAG. ORT opts off.",
+        ort_graph_opt="disable",
+        passes=(
+            "onnx_shape_infer",
+            "eliminate_identity",
+            "constant_folding",
+            "fuse_bn_into_conv",
+            "fuse_conv_relu",
+        ),
+    ),
+    "graph_fuse_ort": Strategy(
+        name="graph_fuse_ort",
+        description="Same DAG fusions as graph_fuse, then ORT extended (ablation vs our passes).",
         ort_graph_opt="extended",
-        passes=("onnx_shape_infer",),
-    ),
-    "ort_all": Strategy(
-        name="ort_all",
-        description="ORT CPU with all graph optimizations enabled.",
-        ort_graph_opt="all",
-        passes=("onnx_shape_infer",),
+        passes=(
+            "onnx_shape_infer",
+            "eliminate_identity",
+            "constant_folding",
+            "fuse_bn_into_conv",
+            "fuse_conv_relu",
+        ),
     ),
 }
 

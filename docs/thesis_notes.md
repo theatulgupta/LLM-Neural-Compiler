@@ -2,14 +2,15 @@
 
 Working title: LLM-Guided Neural Network Compilation for Real-time UAV Edge Inference.
 
-Contribution is graph analysis + allowlisted strategy selection (schema-bound
-advisor, mock or heuristic) + measured compile and latency history, not a new
-UAV agent. Empty `llm_uav_core` planning/control modules stay empty.
+ML engineers see layers. This thesis sees a **computational graph**. The LLM
+may only name an allowlisted pass set. The transformation engine rewrites the
+ONNX DAG (fusion, folding, dead-node elim). The profiler measures compile and
+inference time. UAV (ROS 2 / PX4 SITL) is the deployment box, not the
+contribution. Empty `llm_uav_core` planning/control modules stay empty.
 
 Application domain remains PX4 / ROS 2 / Gazebo edge inference. On this host,
-PX4 SITL `gz_x500` published `/fmu/out/vehicle_local_position_v1` with changing
-x,y,z (`experiments/results/sitl_probe.json`, `xyz_changed: true`).
+PX4 SITL `gz_x500` published changing x,y,z
+(`experiments/results/sitl_probe.json`).
 
-The compile loop is now the same for a companion-computer model zoo (detect,
-pose, seg, SSD-lite, classify, depth). See `docs/paper_proposal.md`. Empty
-planning/control modules stay empty.
+Zoo models share one compile loop (`experiments/zoo.yaml`). See
+`docs/architecture.md` and `docs/paper_proposal.md`.

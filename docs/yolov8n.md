@@ -30,7 +30,7 @@ python scripts/export_yolov8n.py --out experiments/models/yolov8n.onnx --imgsz 6
 | Output | `1×84×8400` |
 | Params (fused) | 3,151,904 |
 | GFLOPs (Ultralytics) | 8.7 |
-| ORT CPU compile | 85.0 ms (`ort_extended`, `CPUExecutionProvider`) |
+| ORT CPU compile (prior ORT-knob run, not `graph_fuse`) | 85.0 ms (`CPUExecutionProvider`) |
 | ORT CPU latency | mean 66.2 ms, p50 61.0 ms, p95 93.0 ms (warmup 5, iters 25, aarch64 QEMU CPU) |
 | Throughput | 15.1 IPS |
 
@@ -43,5 +43,5 @@ Compile through ORT CPU:
 
 ```bash
 python -m compiler compile experiments/models/yolov8n.onnx \
-  --backend ort_cpu --strategy ort_extended --kind yolov8n
+  --backend ort_cpu --strategy graph_fuse --kind yolov8n
 ```

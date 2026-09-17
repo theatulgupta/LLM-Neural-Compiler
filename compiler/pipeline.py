@@ -14,7 +14,8 @@ from compiler.graph.graph_loader import LoadedGraph, load_graph
 from compiler.graph.graph_summary import GraphSummary, summarize_graph
 from compiler.history import append_history, new_run_record, write_run_json
 from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.optimization.optimizer import apply_strategy
+from compiler.optimization.optimizer import apply_strategy, prepare_for_ort
+from compiler.optimization.passes import graph_ir_snapshot
 from compiler.utils.timeutil import utc_now_iso
 from nnc.backends import BackendSkip, CompiledModel, get_backend
 from nnc.probe import probe_host, probe_machine_id
@@ -109,8 +110,13 @@ def compile_and_benchmark(
     recommendation = recommend_strategy(summary, override=strategy_name)
     strategy = recommendation.strategy
 
+    before_ir = graph_ir_snapshot(loaded.model)
     optimized = apply_strategy(loaded.model, strategy)
-    optimized_bytes = optimized.SerializeToString()
+    after_ir = graph_ir_snapshot(optimized)
+    runtime = prepare_for_ort(optimized)
+    runtime_ir = graph_ir_snapshot(runtime)
+    graph_changed = before_ir["node_count"] != after_ir["node_count"] or before_ir["op_counts"] != after_ir["op_counts"]
+    runtime_bytes = runtime.SerializeToString()
 
     backend = get_backend(backend_name)
     available, skip_reason = backend.available()
@@ -125,6 +131,11 @@ def compile_and_benchmark(
             "opset": loaded.opset,
         },
         graph=summary.to_dict(),
+        graph_before=before_ir,
+        graph_after=after_ir,
+        graph_runtime=runtime_ir,
+        graph_changed=bool(graph_changed),
+        passes_applied=list(strategy.passes),
         backend=backend_name,
         strategy=recommendation.to_dict(),
         host=_host_block(),
@@ -143,10 +154,10 @@ def compile_and_benchmark(
     compiled: CompiledModel | None = None
     t0 = time.perf_counter()
     try:
-        compiled = backend.compile(optimized_bytes, graph_opt=strategy.ort_graph_opt)
+        compiled = backend.compile(runtime_bytes, graph_opt=strategy.ort_graph_opt)
         # Shape mismatches (e.g. Gemm K vs Flatten) may surface on the first run.
         trial_rng = np.random.default_rng(seed)
-        trial_feeds = _input_feeds(compiled, optimized, trial_rng)
+        trial_feeds = _input_feeds(compiled, runtime, trial_rng)
         backend.infer(compiled, trial_feeds)
     except Exception as exc:  # noqa: BLE001 — persist the failure, do not fake success
         compile_error = f"{type(exc).__name__}: {exc}"
@@ -161,7 +172,7 @@ def compile_and_benchmark(
         return record
 
     rng = np.random.default_rng(seed)
-    feeds = _input_feeds(compiled, optimized, rng)
+    feeds = _input_feeds(compiled, runtime, rng)
     for _ in range(max(0, warmup)):
         backend.infer(compiled, feeds)
 
@@ -180,6 +191,7 @@ def compile_and_benchmark(
         "error": None,
         "providers": list(compiled.providers),
         "graph_opt": strategy.ort_graph_opt,
+        "runtime_inlined": after_ir.get("op_counts") != runtime_ir.get("op_counts"),
     }
     record["benchmark"] = {
         "warmup": warmup,

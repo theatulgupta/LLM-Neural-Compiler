@@ -1,9 +1,10 @@
 # LLM-Neural-Compiler
 
 LLM-guided neural compilation for real-time UAV edge inference. The thesis
-contribution lives in `compiler/`: ONNX graph analysis, an allowlisted
-schema-bound strategy advisor, and compile/benchmark history. Runtime backends
-live in `src/nnc/backends/` (ONNX Runtime CPU and TensorRT).
+contribution lives in `compiler/`: ONNX graph analysis, a schema-bound LLM
+that names an allowlisted **pass set**, a transformation engine that rewrites
+the DAG, and measured compile/latency history. Runtime backends live in
+`src/nnc/backends/` (ONNX Runtime CPU; TensorRT skip-with-reason).
 
 This tree does **not** add UAV-agent stubs. The existing ROS 2 telemetry node
 and empty planning/control modules stay as they are. `inference_node` only
@@ -37,8 +38,8 @@ python -m compiler export              # or --kind yolov8n
 python -m compiler matrix --warmup 3 --iters 8
 ```
 
-Native = allowlisted `baseline` (ORT graph opt off). Optimized = schema-bound
-advisor strategy, compiled and measured on the **same** aarch64 host.
+Native = unrewritten ONNX (`baseline`, ORT graph opt off). Optimized = schema-bound
+advisor **graph pass set**, compiled and measured on the **same** aarch64 host.
 `docs/paper_proposal.md` is the proposal write-up. Numbers come only from
 `experiments/results/paper_matrix.json`. Do not compare this QEMU box to cloud x86.
 

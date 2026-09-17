@@ -39,7 +39,7 @@ def test_matrix_native_vs_optimized_on_tiny_depth(tiny_depth_path, tmp_path) -> 
         results_dir=tmp_path,
     )
     assert pair["native"]["strategy"] == "baseline"
-    assert pair["optimized"]["strategy"] == "ort_extended"
+    assert pair["optimized"]["strategy"] == "graph_fuse"
     assert pair["native"]["compile_ok"] is True
     assert pair["optimized"]["compile_ok"] is True
     assert pair["native"]["p50_ms"] > 0

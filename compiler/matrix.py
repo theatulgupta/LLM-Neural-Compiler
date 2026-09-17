@@ -37,6 +37,10 @@ def _slice(record: dict[str, Any]) -> dict[str, Any]:
         "warmup": bench.get("warmup"),
         "iters": bench.get("iters"),
         "fps_claimed": False,
+        "graph_changed": record.get("graph_changed"),
+        "graph_before_nodes": (record.get("graph_before") or {}).get("node_count"),
+        "graph_after_nodes": (record.get("graph_after") or {}).get("node_count"),
+        "passes_applied": record.get("passes_applied"),
     }
 
 
@@ -196,8 +200,9 @@ def run_zoo_matrix(
         "warmup": warmup,
         "iters": iters,
         "note": (
-            "Native = allowlisted strategy baseline (ORT graph opt disable). "
-            "Optimized = schema-bound advisor strategy compiled and measured on the same host. "
+            "Native = unrewritten ONNX (strategy baseline, ORT graph opt disable). "
+            "Optimized = schema-bound advisor pass set on the same host. "
+            "graph_changed is node_count/op_counts on the compiler IR. "
             "Do not compare these numbers to cloud x86 or TensorRT."
         ),
         "models": rows,

@@ -17,7 +17,7 @@ def test_tiny_depth_input_is_rgb(tiny_depth_path) -> None:
 
 def test_tiny_depth_recommend_is_not_yolo_hardcoded(tiny_depth_path) -> None:
     rec = recommend_strategy(summarize_graph(load_graph(tiny_depth_path)))
-    assert rec.strategy.name == "ort_extended"
+    assert rec.strategy.name == "graph_fuse"
     assert rec.source == "heuristic"
 
 

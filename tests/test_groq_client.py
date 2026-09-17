@@ -13,9 +13,9 @@ from compiler.schema_validate import SchemaError
 
 def test_extract_json_object_from_fences() -> None:
     payload = extract_json_object(
-        'noise\n```json\n{"strategy": "ort_extended", "rationale": "conv graph", "source": "groq"}\n```\n'
+        'noise\n```json\n{"strategy": "graph_fuse", "rationale": "conv graph", "source": "groq"}\n```\n'
     )
-    assert payload["strategy"] == "ort_extended"
+    assert payload["strategy"] == "graph_fuse"
 
 
 def test_extract_json_rejects_non_object() -> None:
@@ -34,14 +34,14 @@ def test_groq_client_uses_injected_chat(tiny_path) -> None:
         assert messages[0]["role"] == "system"
         assert "allowlist" in messages[1]["content"].lower() or "Allowlisted" in messages[1]["content"]
         return json.dumps(
-            {"strategy": "ort_extended", "rationale": "many convs; no numbers", "source": "ignored"}
+            {"strategy": "graph_fuse", "rationale": "many convs; no numbers", "source": "ignored"}
         )
 
     client = GroqLlmClient(chat=fake_chat, api_key="unused")
     summary = summarize_graph(load_graph(tiny_path))
     rec = recommend_strategy(summary, client=client)
     assert rec.source == "groq"
-    assert rec.strategy.name == "ort_extended"
+    assert rec.strategy.name == "graph_fuse"
 
 
 def test_groq_client_rejects_unknown_strategy(tiny_path) -> None:

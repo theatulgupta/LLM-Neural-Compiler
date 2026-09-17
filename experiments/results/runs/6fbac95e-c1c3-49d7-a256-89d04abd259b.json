@@ -1,0 +1,151 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 8,
+    "latency_ms": {
+      "max": 2.7023759994335705,
+      "mean": 2.4307967498771177,
+      "min": 2.1376349995989585,
+      "p50": 2.3518809994129697,
+      "p95": 2.7023759994335705
+    },
+    "measured_at": "2026-09-17T18:13:13.999275+00:00",
+    "throughput_ips": 411.38774768007744,
+    "warmup": 3
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "disable",
+    "ms": 11.986030000116443,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_inlined": true
+  },
+  "created_at": "2026-09-17T18:13:13.960020+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 5051664,
+    "initializer_bytes": 10147200,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          224,
+          224
+        ]
+      }
+    ],
+    "ir_version": 7,
+    "node_count": 141,
+    "notes": [
+      "classifier head is Flatten+Gemm; Gemm K must match Flatten width",
+      "conv without BatchNormalization; BN fusion is not applicable"
+    ],
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "logits",
+        "shape": [
+          1,
+          1000
+        ]
+      }
+    ],
+    "param_count": 2536800,
+    "producer": "pytorch",
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx"
+  },
+  "graph_after": {
+    "node_count": 127,
+    "op_counts": {
+      "Add": 6,
+      "Conv": 38,
+      "Flatten": 1,
+      "FusedConv": 14,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28
+    },
+    "sha256": "3c66ccdb042b40514273e227f4a36e244a82107677ba64a35d6837c870ba1e9f"
+  },
+  "graph_before": {
+    "node_count": 141,
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "graph_changed": true,
+  "graph_runtime": {
+    "node_count": 141,
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "sha256": "e4c0a2e7b1a061c0cf321aafd4a5d85730c4efcda317ca5b83ee2cf4b18d567e"
+  },
+  "host": {
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "mobilenetv3_small",
+    "opset": 13,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx",
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "passes_applied": [
+    "onnx_shape_infer",
+    "eliminate_identity",
+    "constant_folding",
+    "fuse_bn_into_conv",
+    "fuse_conv_relu"
+  ],
+  "run_id": "6fbac95e-c1c3-49d7-a256-89d04abd259b",
+  "schema_version": 1,
+  "skip": null,
+  "strategy": {
+    "rationale": "caller override",
+    "source": "override",
+    "strategy": "graph_fuse"
+  }
+}

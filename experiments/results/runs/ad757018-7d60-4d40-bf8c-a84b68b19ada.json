@@ -1,0 +1,195 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 8,
+    "latency_ms": {
+      "max": 76.62014700144937,
+      "mean": 68.89401262492356,
+      "min": 65.188942999157,
+      "p50": 67.90965199979837,
+      "p95": 76.62014700144937
+    },
+    "measured_at": "2026-09-17T18:13:10.763636+00:00",
+    "throughput_ips": 14.515049449133599,
+    "warmup": 3
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "disable",
+    "ms": 81.78419499927259,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_inlined": false
+  },
+  "created_at": "2026-09-17T18:13:09.917142+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 6763392,
+    "initializer_bytes": 13617280,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          640,
+          640
+        ]
+      }
+    ],
+    "ir_version": 7,
+    "node_count": 301,
+    "notes": [
+      "conv without BatchNormalization; BN fusion is not applicable"
+    ],
+    "op_counts": {
+      "Add": 9,
+      "Concat": 18,
+      "Constant": 27,
+      "Conv": 76,
+      "ConvTranspose": 1,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 69,
+      "Reshape": 11,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 67,
+      "Slice": 2,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "output0",
+        "shape": [
+          1,
+          116,
+          8400
+        ]
+      },
+      {
+        "dtype": "float",
+        "name": "output1",
+        "shape": [
+          1,
+          32,
+          160,
+          160
+        ]
+      }
+    ],
+    "param_count": 3404320,
+    "producer": "pytorch",
+    "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-seg.onnx"
+  },
+  "graph_after": {
+    "node_count": 301,
+    "op_counts": {
+      "Add": 9,
+      "Concat": 18,
+      "Constant": 27,
+      "Conv": 76,
+      "ConvTranspose": 1,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 69,
+      "Reshape": 11,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 67,
+      "Slice": 2,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502"
+  },
+  "graph_before": {
+    "node_count": 301,
+    "op_counts": {
+      "Add": 9,
+      "Concat": 18,
+      "Constant": 27,
+      "Conv": 76,
+      "ConvTranspose": 1,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 69,
+      "Reshape": 11,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 67,
+      "Slice": 2,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502"
+  },
+  "graph_changed": false,
+  "graph_runtime": {
+    "node_count": 301,
+    "op_counts": {
+      "Add": 9,
+      "Concat": 18,
+      "Constant": 27,
+      "Conv": 76,
+      "ConvTranspose": 1,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 69,
+      "Reshape": 11,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 67,
+      "Slice": 2,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502"
+  },
+  "host": {
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "kind": "yolov8n-seg",
+    "opset": 13,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-seg.onnx",
+    "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502"
+  },
+  "passes_applied": [],
+  "run_id": "ad757018-7d60-4d40-bf8c-a84b68b19ada",
+  "schema_version": 1,
+  "skip": null,
+  "strategy": {
+    "rationale": "caller override",
+    "source": "override",
+    "strategy": "baseline"
+  }
+}

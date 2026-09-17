@@ -248,13 +248,13 @@ def _advise_one(model: Path, client: LlmClient, *, kind: str, results: Path, war
         "run_id": compile_record.get("run_id"),
         "strategy": rec.strategy.name,
     }
-    if rec.strategy.name != "ort_extended":
+    if rec.strategy.name != "graph_fuse":
         # Compare against the catalog default when the advisor picked something else.
-        compare_name = "ort_extended"
+        compare_name = "graph_fuse"
         try:
             compare_name = get_model(kind).default_strategy
         except KeyError:
-            compare_name = "ort_extended"
+            compare_name = "graph_fuse"
         if rec.strategy.name != compare_name:
             baseline = compile_and_benchmark(
                 model,

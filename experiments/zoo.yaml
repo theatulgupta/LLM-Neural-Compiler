@@ -1,6 +1,6 @@
 # UAV companion model zoo. Source of truth for compiler.catalog.
-# Native strategy is always ORT graph-opt disable (baseline) on this host.
-# Optimized strategy is allowlisted (usually ort_extended) after analyze/recommend.
+# Native strategy is always unrewritten ONNX (baseline) on this host.
+# Optimized strategy is allowlisted (usually graph_fuse) after analyze/recommend.
 # Weights and ONNX are gitignored. Export scripts download legally from
 # Ultralytics or torchvision; they write a skip JSON instead of inventing latency.
 
@@ -12,7 +12,7 @@ models:
     onnx: experiments/models/yolov8n.onnx
     export_script: scripts/export_ultralytics.py
     export_args: --kind yolov8n
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 640
     opset: 13
@@ -26,7 +26,7 @@ models:
     onnx: experiments/models/yolo11n.onnx
     export_script: scripts/export_ultralytics.py
     export_args: --kind yolo11n
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 640
     opset: 13
@@ -40,7 +40,7 @@ models:
     onnx: experiments/models/yolov8n-pose.onnx
     export_script: scripts/export_ultralytics.py
     export_args: --kind yolov8n-pose
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 640
     opset: 13
@@ -54,7 +54,7 @@ models:
     onnx: experiments/models/yolov8n-seg.onnx
     export_script: scripts/export_ultralytics.py
     export_args: --kind yolov8n-seg
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 640
     opset: 13
@@ -68,7 +68,7 @@ models:
     onnx: experiments/models/ssdlite_mobilenetv3.onnx
     export_script: scripts/export_ssdlite.py
     export_args: ""
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 320
     opset: 13
@@ -82,7 +82,7 @@ models:
     onnx: experiments/models/mobilenetv3_small.onnx
     export_script: scripts/export_mobilenetv3_small.py
     export_args: ""
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 224
     opset: 13
@@ -96,7 +96,7 @@ models:
     onnx: experiments/models/midas_small.onnx
     export_script: scripts/export_midas_small.py
     export_args: ""
-    default_strategy: ort_extended
+    default_strategy: graph_fuse
     native_strategy: baseline
     imgsz: 256
     opset: 13

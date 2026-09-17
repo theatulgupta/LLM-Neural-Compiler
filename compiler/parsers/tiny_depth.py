@@ -1,7 +1,7 @@
 """Tiny depth-like CNN used in tests. Not a real UAV weight file.
 
 Input 1x3x8x8 -> a few Conv/Relu layers -> 1x1x8x8. Node count is above the
-heuristic tiny-graph cutoff so recommend() can pick ort_extended without
+heuristic tiny-graph cutoff so recommend() can pick graph_fuse without
 downloading MiDaS.
 """
 

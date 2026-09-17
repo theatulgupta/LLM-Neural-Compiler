@@ -54,19 +54,19 @@ class HeuristicLlmClient:
         if summary.node_count <= 8:
             payload = {
                 "strategy": "baseline",
-                "rationale": "Tiny graph; disable ORT opts first so the Flatten/Gemm contract is visible.",
+                "rationale": "Tiny graph; keep the native DAG so the Flatten/Gemm contract is visible.",
                 "source": self.name,
             }
         elif summary.op_counts.get("Conv", 0) >= 1:
             payload = {
-                "strategy": "ort_extended",
-                "rationale": "Convolutional graph benefits from extended ORT fusions on CPU.",
+                "strategy": "graph_fuse",
+                "rationale": "Convolutional DAG: fuse Conv-BN and Conv-ReLU, fold constants, drop Identity.",
                 "source": self.name,
             }
         else:
             payload = {
-                "strategy": "ort_all",
-                "rationale": "Generic graph; enable all ORT graph optimizations on CPU.",
+                "strategy": "graph_simplify",
+                "rationale": "Generic DAG: shape infer, dead-node elim, constant fold; no extra fusion.",
                 "source": self.name,
             }
         return proposal_from_dict(payload)
