@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool, Float32, String
@@ -40,6 +41,9 @@ def _ensure_nnc_on_path() -> None:
         venv_site = root / ".venv" / "lib" / version / "site-packages"
         if venv_site.is_dir() and str(venv_site) not in sys.path:
             sys.path.insert(0, str(venv_site))
+
+
+_BOX_TASKS = {"detect", "detect-lite", "pose", "segment"}
 
 
 class InferenceNode(Node):
@@ -113,7 +117,9 @@ class InferenceNode(Node):
         )
         topic = str(self.get_parameter("image_topic").value)
         self.create_subscription(Image, topic, self._on_image, qos)
-        self._det_pub = self.create_publisher(Detection2DArray, "/nnc/detections", 10)
+        task = str(self.get_parameter("task").value)
+        if task in _BOX_TASKS:
+            self._det_pub = self.create_publisher(Detection2DArray, "/nnc/detections", 10)
         if bool(self.get_parameter("publish_annotated").value):
             self._ann_pub = self.create_publisher(Image, "/nnc/annotated", 10)
 
@@ -150,8 +156,16 @@ class InferenceNode(Node):
             self._busy = False
 
     def _infer_image(self, msg) -> None:
+        topic = str(self.get_parameter("image_topic").value)
+        base = {
+            "source": "camera",
+            "inputs_source": "gazebo_camera",
+            "image_topic": topic,
+            "image_wh": [int(msg.width), int(msg.height)],
+            "fps_claimed": False,
+        }
         if self._artifact is None:
-            self._publish({"ok": False, "error": self._error, "source": "camera", "fps_claimed": False}, None, False)
+            self._publish({**base, "ok": False, "error": self._error}, None, False)
             return
         t_all = time.perf_counter()
         rgb = self._image_to_rgb(msg)
@@ -160,6 +174,7 @@ class InferenceNode(Node):
         from nnc.preprocess import letterbox
 
         imgsz = int(self.get_parameter("imgsz").value)
+        task = str(self.get_parameter("task").value)
         t0 = time.perf_counter()
         nchw, meta = letterbox(rgb, imgsz, rgb=True)
         pre_ms = (time.perf_counter() - t0) * 1000.0
@@ -167,23 +182,24 @@ class InferenceNode(Node):
         sample = infer_once(self._artifact, feeds)
         t1 = time.perf_counter()
         det = decode(
-            str(self.get_parameter("task").value),
+            task,
             list(sample.outputs or []),
             conf=float(self.get_parameter("conf").value),
             iou=float(self.get_parameter("iou").value),
         )
         post_ms = (time.perf_counter() - t1) * 1000.0
         self._frame_seq += 1
-        self._publish_detections(msg, det, meta)
+        if task in _BOX_TASKS:
+            self._publish_detections(msg, det, meta)
         e2e = (time.perf_counter() - t_all) * 1000.0
         payload = {
+            **base,
             "ok": True,
             "error": None,
-            "source": "camera",
             "frame_seq": self._frame_seq,
             "stamp": {"sec": int(msg.header.stamp.sec), "nanosec": int(msg.header.stamp.nanosec)},
             "ms": {"pre": pre_ms, "infer": sample.latency_ms, "post": post_ms, "e2e": e2e},
-            "n_det": int(len(det.get("boxes", []))),
+            "n_det": int(len(det.get("boxes", []))) if det.get("boxes") is not None else 0,
             "dropped_frames": self._dropped,
             "model": {
                 "path": str(self._artifact.path),
@@ -192,32 +208,35 @@ class InferenceNode(Node):
                 "plan_id": (self._artifact.plan or {}).get("plan_id") if self._artifact.plan else None,
             },
             "options": self._artifact.options.to_dict() if self._artifact.options else None,
-            "fps_claimed": False,
         }
+        if task == "classify":
+            payload["top1"] = det.get("class_id")
+            payload["score"] = det.get("score")
+        elif task == "depth":
+            payload["min"] = det.get("min")
+            payload["max"] = det.get("max")
+            payload["mean"] = det.get("mean")
+        elif task == "segment":
+            payload["mask_decoded"] = bool(det.get("mask_decoded", False))
         self._publish(payload, sample.latency_ms, True)
 
     def _publish_detections(self, msg, det: dict, meta: dict) -> None:
         if self._det_pub is None:
             return
         from vision_msgs.msg import BoundingBox2D, Detection2D, Detection2DArray, ObjectHypothesisWithPose
+        from nnc.postprocess import boxes_to_original
 
         out = Detection2DArray()
         out.header = msg.header
-        pad_x, pad_y = meta.get("pad", (0, 0))
-        scale = float(meta.get("scale") or 1.0)
         boxes = det.get("boxes")
         scores = det.get("scores")
         classes = det.get("classes")
         if boxes is None:
             self._det_pub.publish(out)
             return
+        boxes = boxes_to_original(boxes, meta)
         for box, score, cls in zip(boxes, scores, classes):
             x1, y1, x2, y2 = [float(v) for v in box]
-            # letterbox space -> original pixels
-            x1 = (x1 - pad_x) / max(scale, 1e-6)
-            x2 = (x2 - pad_x) / max(scale, 1e-6)
-            y1 = (y1 - pad_y) / max(scale, 1e-6)
-            y2 = (y2 - pad_y) / max(scale, 1e-6)
             item = Detection2D()
             item.header = msg.header
             item.bbox = BoundingBox2D()
@@ -270,14 +289,17 @@ class InferenceNode(Node):
 
 def main(args=None) -> None:
     rclpy.init(args=args)
-    node = InferenceNode()
+    node = None
     try:
+        node = InferenceNode()
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
-        node.destroy_node()
-        rclpy.shutdown()
+        if node is not None:
+            node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":

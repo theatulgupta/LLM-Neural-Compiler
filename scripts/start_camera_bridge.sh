@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bridge the Gazebo mono_cam image topic onto ROS 2 /nnc/camera/image_raw.
+# Bridge Gazebo camera image + camera_info onto /nnc/camera/*.
 set -euo pipefail
 set +u
 source /opt/ros/jazzy/setup.bash
@@ -17,7 +17,12 @@ if [[ -z "$GZ_TOPIC" ]]; then
   echo "no Gazebo camera image topic after 60s" >&2
   exit 1
 fi
+INFO_TOPIC="${GZ_TOPIC%/image}/camera_info"
 echo "bridging $GZ_TOPIC -> /nnc/camera/image_raw"
+echo "bridging $INFO_TOPIC -> /nnc/camera/camera_info"
 exec ros2 run ros_gz_bridge parameter_bridge \
   "${GZ_TOPIC}@sensor_msgs/msg/Image[gz.msgs.Image" \
-  --ros-args -r "${GZ_TOPIC}:=/nnc/camera/image_raw"
+  "${INFO_TOPIC}@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo" \
+  --ros-args \
+  -r "${GZ_TOPIC}:=/nnc/camera/image_raw" \
+  -r "${INFO_TOPIC}:=/nnc/camera/camera_info"

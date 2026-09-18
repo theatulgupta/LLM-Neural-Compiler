@@ -1,0 +1,513 @@
+{
+  "artifact": {
+    "bytes": 13503215,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-pose/graph_simplify.onnx",
+    "sha256": "fa32a49f3539702f734cd0bfd607ee7838d935450d1d6b948120d4f040db72bc",
+    "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-pose/graph_simplify.onnx.json"
+  },
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 30,
+    "latency_ms": {
+      "max": 217.90028200007328,
+      "mean": 118.73055139998694,
+      "min": 97.14705500005039,
+      "p50": 109.91006599988395,
+      "p95": 194.76633499994023
+    },
+    "measured_at": "2026-09-18T15:03:01.184613+00:00",
+    "throughput_ips": 8.422432037994477,
+    "warmup": 5
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "disable",
+    "ms": 108.06101800017132,
+    "ok": true,
+    "options": {
+      "execution_mode": "sequential",
+      "graph_opt": "disable",
+      "inter_op_threads": null,
+      "intra_op_threads": null
+    },
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_inlined": false
+  },
+  "created_at": "2026-09-18T15:02:54.207746+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 9221462804,
+    "flops_by_op": {
+      "Add": 1360801,
+      "Concat": 8375600,
+      "Constant": 0,
+      "Conv": 9177729600,
+      "Div": 1,
+      "Gather": 0,
+      "MaxPool": 153600,
+      "Mul": 15047202,
+      "Reshape": 2402400,
+      "Resize": 1228800,
+      "Shape": 0,
+      "Sigmoid": 14627200,
+      "Slice": 0,
+      "Softmax": 0,
+      "Split": 0,
+      "Sub": 0,
+      "Transpose": 537600
+    },
+    "flops_total": 9221462804,
+    "initializer_bytes": 13159856,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          640,
+          640
+        ]
+      }
+    ],
+    "ir": "onnx",
+    "ir_version": 7,
+    "memory": {
+      "activations_total_bytes": 255747808,
+      "largest_tensor": {
+        "bytes": 6553600,
+        "name": "/model.0/conv/Conv_output_0",
+        "shape": [
+          1,
+          16,
+          320,
+          320
+        ]
+      },
+      "peak_live_bytes": 19660800,
+      "weights_bytes": 13159856
+    },
+    "node_count": 313,
+    "notes": [
+      "conv without BatchNormalization; fuse_bn_into_conv not applicable",
+      "no fused CPU SiLU kernel; quantization/threads are the levers"
+    ],
+    "op_counts": {
+      "Add": 10,
+      "Concat": 19,
+      "Constant": 40,
+      "Conv": 73,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 68,
+      "Reshape": 13,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "opset": 13,
+    "origin_format": "onnx",
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "output0",
+        "shape": [
+          1,
+          56,
+          8400
+        ]
+      }
+    ],
+    "param_count": 3289964,
+    "patterns": {
+      "bn_standalone": 0,
+      "concat": 19,
+      "conv_add_residual": 0,
+      "conv_bn": 0,
+      "conv_relu": 0,
+      "conv_silu": 63,
+      "dropout_nodes": 0,
+      "foldable_constant_nodes": 0,
+      "identity_nodes": 0,
+      "matmul_add": 0,
+      "reshape_transpose_chains": 1,
+      "resize": 2
+    },
+    "producer": "pytorch",
+    "sha256": "6572477bf384f3c302a2f138e5d6a649329495763deb2e7299b08278b8b62fc2",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-pose.onnx",
+    "static_shapes": false,
+    "top_nodes": [
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv2.0/cv2.0.0/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv2.0/cv2.0.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv3.0/cv3.0.0/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv3.0/cv3.0.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 376012800,
+        "name": "/model.22/cv4.0/cv4.0.0/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          51,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 299635200,
+        "name": "/model.22/cv4.0/cv4.0.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          51,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          32,
+          160,
+          160
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.3/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.5/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          128,
+          40,
+          40
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.7/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          256,
+          20,
+          20
+        ]
+      }
+    ]
+  },
+  "graph_after": {
+    "node_count": 313,
+    "op_counts": {
+      "Add": 10,
+      "Concat": 19,
+      "Constant": 40,
+      "Conv": 73,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 68,
+      "Reshape": 13,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "fa32a49f3539702f734cd0bfd607ee7838d935450d1d6b948120d4f040db72bc"
+  },
+  "graph_before": {
+    "node_count": 313,
+    "op_counts": {
+      "Add": 10,
+      "Concat": 19,
+      "Constant": 40,
+      "Conv": 73,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 68,
+      "Reshape": 13,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "6572477bf384f3c302a2f138e5d6a649329495763deb2e7299b08278b8b62fc2"
+  },
+  "graph_changed": false,
+  "graph_runtime": {
+    "node_count": 313,
+    "op_counts": {
+      "Add": 10,
+      "Concat": 19,
+      "Constant": 40,
+      "Conv": 73,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 68,
+      "Reshape": 13,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "fa32a49f3539702f734cd0bfd607ee7838d935450d1d6b948120d4f040db72bc"
+  },
+  "hardware": {
+    "arch": "aarch64",
+    "cpu_count": 6,
+    "cpu_model": "0x000",
+    "features": [
+      "asimd",
+      "asimddp",
+      "bf16",
+      "fphp"
+    ],
+    "fp16_execution": false,
+    "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+    "gpu_present": false,
+    "ort_version": "1.30.0",
+    "os": "Linux 7.0.0-31-generic",
+    "providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "python": "3.12.3",
+    "ram_available_mb": 9938,
+    "ram_total_mb": 11922,
+    "virtualized": true
+  },
+  "host": {
+    "hardware": {
+      "arch": "aarch64",
+      "cpu_count": 6,
+      "cpu_model": "0x000",
+      "features": [
+        "asimd",
+        "asimddp",
+        "bf16",
+        "fphp"
+      ],
+      "fp16_execution": false,
+      "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "gpu_present": false,
+      "ort_version": "1.30.0",
+      "os": "Linux 7.0.0-31-generic",
+      "providers": [
+        "AzureExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "python": "3.12.3",
+      "ram_available_mb": 9917,
+      "ram_total_mb": 11922,
+      "virtualized": true
+    },
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "ir": "onnx",
+    "kind": "yolov8n-pose",
+    "opset": 13,
+    "origin_format": "onnx",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-pose.onnx",
+    "sha256": "6572477bf384f3c302a2f138e5d6a649329495763deb2e7299b08278b8b62fc2"
+  },
+  "passes_applied": [
+    "onnx_shape_infer",
+    "eliminate_identity",
+    "eliminate_dropout",
+    "constant_folding"
+  ],
+  "plan": {
+    "confidence": 1.0,
+    "expected_effects": [
+      "fewer_nodes"
+    ],
+    "options": {
+      "execution_mode": "sequential",
+      "ort_graph_opt": "disable"
+    },
+    "plan_id": "graph_simplify",
+    "rationale": "Shape infer, drop Identity/nop Dropout, constant-fold.",
+    "source": "preset",
+    "steps": [
+      {
+        "atom": "onnx_shape_infer",
+        "params": {}
+      },
+      {
+        "atom": "eliminate_identity",
+        "params": {}
+      },
+      {
+        "atom": "eliminate_dropout",
+        "params": {}
+      },
+      {
+        "atom": "constant_folding",
+        "params": {}
+      }
+    ]
+  },
+  "profile": {
+    "compile_ms": 108.06101800017132,
+    "cpu_percent_mean": 581.202857142857,
+    "model_bytes": 13503215,
+    "rss_mb": {
+      "after_compile": 485.98828125,
+      "before": 485.97265625,
+      "peak": 485.98828125
+    },
+    "threads": 19
+  },
+  "run_id": "2389046c-330d-40c0-b640-e69c9b3525d4",
+  "schema_version": 2,
+  "skip": null,
+  "steps_applied": [
+    {
+      "atom": "onnx_shape_infer",
+      "ms": 9.769745999847146,
+      "nodes_after": 313,
+      "nodes_before": 313,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "eliminate_identity",
+      "ms": 2.683530000012979,
+      "nodes_after": 313,
+      "nodes_before": 313,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "eliminate_dropout",
+      "ms": 2.2675959999105544,
+      "nodes_after": 313,
+      "nodes_before": 313,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "constant_folding",
+      "ms": 4.142383000043992,
+      "nodes_after": 313,
+      "nodes_before": 313,
+      "op_delta": {},
+      "params": {}
+    }
+  ],
+  "strategy": {
+    "rationale": "Shape infer, drop Identity/nop Dropout, constant-fold.",
+    "source": "preset",
+    "strategy": "graph_simplify"
+  },
+  "verification": {
+    "accepted_plan": true,
+    "agreement": {
+      "matched_ratio": 1.0,
+      "mean_iou": 1.0
+    },
+    "gate_used": "exact_max_abs",
+    "inputs_source": "calib",
+    "numerics": {
+      "cosine_min": 1.0,
+      "max_abs": 0.0,
+      "per_output": [
+        {
+          "cosine": 1.0,
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "name": "0"
+        }
+      ]
+    },
+    "numerics_kind": "exact",
+    "passed": true,
+    "rejections": []
+  }
+}

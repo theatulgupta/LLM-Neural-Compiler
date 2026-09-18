@@ -7,8 +7,7 @@ a transformation engine that rewrites the DAG, and measured compile/latency
 history. Runtime backends live in `src/nnc/backends/` (ONNX Runtime CPU;
 TensorRT skip-with-reason).
 
-This tree does **not** add UAV-agent stubs. The existing ROS 2 telemetry node
-and empty planning/control modules stay as they are. `inference_node` loads an
+This tree does **not** add UAV-agent stubs. `inference_node` loads an
 ORT artifact (sidecar options if present) and, when `source:=camera`, runs on
 `/nnc/camera/image_raw`.
 
@@ -29,6 +28,8 @@ an export script; analyze / recommend / compile / matrix use the same CLI.
 | `ssdlite_mobilenetv3` | detect-lite | Classic 320² SSD-MobileNet stack on Raspberry Pi / older Jetson. |
 | `mobilenetv3_small` | classify | Landing-pad / gate / sign ID. Smaller than ResNet18. |
 | `midas_small` | depth | Monocular depth cue for sense-and-avoid when stereo is not on the companion. |
+
+See `docs/zoo.md` for decode status. Numbers live in `experiments/results/report.md`.
 
 ONNX weights are gitignored. Reproduce:
 
@@ -107,6 +108,9 @@ Scripts use **real paths**: `~/PX4-Autopilot`, `~/px4_ros_uxrce_dds_ws`,
 bash scripts/build_ros.sh
 HEADLESS=1 bash scripts/start_all.sh
 python scripts/verify_sitl.py
+bash scripts/gz_probe_camera.sh
+/usr/bin/python3 scripts/record_frames.py --n 64 --world nnc_yard --airframe nnc_x500_cam
+bash scripts/sim_matrix.sh
 ```
 
 `verify_sitl.py` exits 0 only if x,y,z change on the live local-position topic.
@@ -125,5 +129,5 @@ src/nnc/artifact.py     load ORT ONNX and time a real inference
 tests/                  fixture contract, allowlist, ORT compile, history, LLM schema
 experiments/results/    JSON run records + history.jsonl
 schemas/                run-result.schema.json, llm-proposal.schema.json
-ros2_ws/                telemetry + inference_node; empty agent modules stay empty
+ros2_ws/                telemetry + inference_node
 ```

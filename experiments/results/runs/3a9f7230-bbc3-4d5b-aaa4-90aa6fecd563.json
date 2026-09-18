@@ -1,0 +1,411 @@
+{
+  "artifact": {
+    "bytes": 10185813,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/mobilenetv3_small/baseline.onnx",
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae",
+    "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/mobilenetv3_small/baseline.onnx.json"
+  },
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 30,
+    "latency_ms": {
+      "max": 4.748433000031582,
+      "mean": 3.6043240333583526,
+      "min": 2.9969270001402037,
+      "p50": 3.3675540000785986,
+      "p95": 4.736392000040723
+    },
+    "measured_at": "2026-09-18T15:05:12.834874+00:00",
+    "throughput_ips": 277.44453349502083,
+    "warmup": 5
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "disable",
+    "ms": 24.040794000029564,
+    "ok": true,
+    "options": {
+      "execution_mode": "sequential",
+      "graph_opt": "disable",
+      "inter_op_threads": null,
+      "intra_op_threads": null
+    },
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_inlined": false
+  },
+  "created_at": "2026-09-18T15:05:12.467957+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 114633064,
+    "flops_by_op": {
+      "Add": 53312,
+      "Conv": 109793152,
+      "Flatten": 576,
+      "Gemm": 3227648,
+      "GlobalAveragePool": 2872,
+      "HardSigmoid": 0,
+      "Mul": 1084512,
+      "Relu": 470992
+    },
+    "flops_total": 114633064,
+    "initializer_bytes": 10147200,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          224,
+          224
+        ]
+      }
+    ],
+    "ir": "onnx",
+    "ir_version": 7,
+    "memory": {
+      "activations_total_bytes": 15927616,
+      "largest_tensor": {
+        "bytes": 903168,
+        "name": "/features/features.2/block/block.0/block.0.0/Conv_output_0",
+        "shape": [
+          1,
+          72,
+          56,
+          56
+        ]
+      },
+      "peak_live_bytes": 2408448,
+      "weights_bytes": 10147200
+    },
+    "node_count": 141,
+    "notes": [
+      "classifier head is Flatten+Gemm; Gemm K must match Flatten width",
+      "conv without BatchNormalization; fuse_bn_into_conv not applicable"
+    ],
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "opset": 13,
+    "origin_format": "onnx",
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "logits",
+        "shape": [
+          1,
+          1000
+        ]
+      }
+    ],
+    "param_count": 2536800,
+    "patterns": {
+      "bn_standalone": 0,
+      "concat": 0,
+      "conv_add_residual": 10,
+      "conv_bn": 0,
+      "conv_relu": 14,
+      "conv_silu": 0,
+      "dropout_nodes": 0,
+      "foldable_constant_nodes": 0,
+      "identity_nodes": 0,
+      "matmul_add": 0,
+      "reshape_transpose_chains": 0,
+      "resize": 0
+    },
+    "producer": "pytorch",
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx",
+    "static_shapes": true,
+    "top_nodes": [
+      {
+        "flops": 10838016,
+        "name": "/features/features.0/features.0.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          16,
+          112,
+          112
+        ]
+      },
+      {
+        "flops": 7225344,
+        "name": "/features/features.2/block/block.0/block.0.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          72,
+          56,
+          56
+        ]
+      },
+      {
+        "flops": 5419008,
+        "name": "/features/features.9/block/block.0/block.0.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          288,
+          14,
+          14
+        ]
+      },
+      {
+        "flops": 5419008,
+        "name": "/features/features.10/block/block.0/block.0.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          576,
+          7,
+          7
+        ]
+      },
+      {
+        "flops": 5419008,
+        "name": "/features/features.10/block/block.3/block.3.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          96,
+          7,
+          7
+        ]
+      },
+      {
+        "flops": 5419008,
+        "name": "/features/features.11/block/block.0/block.0.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          576,
+          7,
+          7
+        ]
+      },
+      {
+        "flops": 5419008,
+        "name": "/features/features.11/block/block.3/block.3.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          96,
+          7,
+          7
+        ]
+      },
+      {
+        "flops": 5419008,
+        "name": "/features/features.12/features.12.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          576,
+          7,
+          7
+        ]
+      },
+      {
+        "flops": 3763200,
+        "name": "/features/features.5/block/block.0/block.0.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          240,
+          14,
+          14
+        ]
+      },
+      {
+        "flops": 3763200,
+        "name": "/features/features.5/block/block.3/block.3.0/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          40,
+          14,
+          14
+        ]
+      }
+    ]
+  },
+  "graph_after": {
+    "node_count": 141,
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "graph_before": {
+    "node_count": 141,
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "graph_changed": false,
+  "graph_runtime": {
+    "node_count": 141,
+    "op_counts": {
+      "Add": 6,
+      "Conv": 52,
+      "Flatten": 1,
+      "Gemm": 2,
+      "GlobalAveragePool": 10,
+      "HardSigmoid": 28,
+      "Mul": 28,
+      "Relu": 14
+    },
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "hardware": {
+    "arch": "aarch64",
+    "cpu_count": 6,
+    "cpu_model": "0x000",
+    "features": [
+      "asimd",
+      "asimddp",
+      "bf16",
+      "fphp"
+    ],
+    "fp16_execution": false,
+    "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+    "gpu_present": false,
+    "ort_version": "1.30.0",
+    "os": "Linux 7.0.0-31-generic",
+    "providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "python": "3.12.3",
+    "ram_available_mb": 9852,
+    "ram_total_mb": 11922,
+    "virtualized": true
+  },
+  "host": {
+    "hardware": {
+      "arch": "aarch64",
+      "cpu_count": 6,
+      "cpu_model": "0x000",
+      "features": [
+        "asimd",
+        "asimddp",
+        "bf16",
+        "fphp"
+      ],
+      "fp16_execution": false,
+      "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "gpu_present": false,
+      "ort_version": "1.30.0",
+      "os": "Linux 7.0.0-31-generic",
+      "providers": [
+        "AzureExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "python": "3.12.3",
+      "ram_available_mb": 9824,
+      "ram_total_mb": 11922,
+      "virtualized": true
+    },
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "ir": "onnx",
+    "kind": "mobilenetv3_small",
+    "opset": 13,
+    "origin_format": "onnx",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx",
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "passes_applied": [],
+  "plan": {
+    "confidence": 1.0,
+    "expected_effects": [
+      "none"
+    ],
+    "options": {
+      "execution_mode": "sequential",
+      "ort_graph_opt": "disable"
+    },
+    "plan_id": "baseline",
+    "rationale": "No graph rewrites. ORT graph optimizations disabled (native DAG).",
+    "source": "preset",
+    "steps": []
+  },
+  "profile": {
+    "compile_ms": 24.040794000029564,
+    "cpu_percent_mean": 573.55,
+    "model_bytes": 10185813,
+    "rss_mb": {
+      "after_compile": 384.109375,
+      "before": 384.09375,
+      "peak": 384.109375
+    },
+    "threads": 18
+  },
+  "run_id": "3a9f7230-bbc3-4d5b-aaa4-90aa6fecd563",
+  "schema_version": 2,
+  "skip": null,
+  "steps_applied": [],
+  "strategy": {
+    "rationale": "No graph rewrites. ORT graph optimizations disabled (native DAG).",
+    "source": "preset",
+    "strategy": "baseline"
+  },
+  "verification": {
+    "accepted_plan": true,
+    "agreement": {
+      "top1_agreement": 1.0
+    },
+    "gate_used": "exact_max_abs",
+    "inputs_source": "calib",
+    "numerics": {
+      "cosine_min": 1.0,
+      "max_abs": 0.0,
+      "per_output": [
+        {
+          "cosine": 1.0,
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "name": "0"
+        }
+      ]
+    },
+    "numerics_kind": "exact",
+    "passed": true,
+    "rejections": []
+  }
+}

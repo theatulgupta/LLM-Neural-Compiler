@@ -1,0 +1,31 @@
+{
+  "achieved_hz": 1.35,
+  "artifact": {
+    "kind": "mobilenetv3_small",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/mobilenetv3_small.onnx",
+    "plan_id": null,
+    "sha256": "b4493eb9ef8d9369330dc66b3ede71e8373d7806c3420be0dd36b5b7906505ae"
+  },
+  "classes_seen": [],
+  "detections_total": 0,
+  "e2e_ms": {
+    "n": 54,
+    "p50": 9.433422000256542,
+    "p95": 16.7321419999098
+  },
+  "fps_claimed": false,
+  "frames_rx": 70,
+  "infer_ms": {
+    "n": 54,
+    "p50": 7.258965000346507,
+    "p95": 14.241012000184128
+  },
+  "inferences": 54,
+  "kind": "mobilenetv3_small",
+  "note": "llvmpipe and ORT share 6 vCPUs; one model at a time. fps_claimed=false.",
+  "ok": true,
+  "position_samples": 1854,
+  "seconds": 40.0,
+  "variant": "native",
+  "xyz_changed": true
+}

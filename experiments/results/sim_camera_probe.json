@@ -1,13 +1,34 @@
 {
+  "airframe": "nnc_x500_cam",
+  "display_mode": "xvfb",
   "fps_claimed": false,
-  "gz_topics_camera": [
-    "/world/default/model/x500_mono_cam_0/link/camera_link/sensor/camera_imu/imu"
-  ],
-  "ok": false,
-  "reason": "Gazebo camera image topic never appeared on this QEMU Virtio GPU host. ogre2 Sensors thread failed EGL (hardware vs LIBGL_ALWAYS_SOFTWARE). ogre1 still published no /sensor/camera/image. IMU topic /world/default/model/x500_mono_cam_0/link/camera_link/sensor/camera_imu/imu did appear. Calibration falls back to ultralytics assets. fps_claimed: false.",
+  "gl_renderer": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 128 bits)",
+  "height": 480,
+  "ok": true,
+  "render_engine": "ogre",
+  "topic": "/world/nnc_yard/model/nnc_x500_cam_0/link/camera_link/sensor/camera/image",
   "tried": [
-    "ogre2 --headless-rendering",
-    "ogre --headless-rendering",
-    "GZ_SIM_SERVER_CONFIG_PATH=PX4 server.config"
-  ]
+    {
+      "display_mode": "xvfb",
+      "gl_renderer": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 128 bits)",
+      "height": 0,
+      "label": "ogre2+xvfb",
+      "render_engine": "ogre2",
+      "status": "fail:#6    Object \"/opt/ros/jazzy/opt/gz_ogre_next_vendor/lib/OGRE-Next/RenderSystem_GL3Plus.so\", at 0xee49500aa70f, in  #5    Object \"/lib/aarch64-linux-gnu/libEGL_mesa.so.0\", at 0xee4938733ecb, in  #4    Object \"/lib/aarch64-linux-gnu/libEGL_mesa.so.0\", at 0xee4938744ceb, in  #3    Object \"/lib/aarch64-linux-gnu/libEGL_mesa.so.0\", at 0xee4938745917, in  #2    Object \"/lib/aarch64-linux-gnu/libEGL_mes",
+      "topic": null,
+      "width": 0
+    },
+    {
+      "display_mode": "xvfb",
+      "gl_renderer": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 128 bits)",
+      "height": 480,
+      "label": "ogre+xvfb",
+      "render_engine": "ogre",
+      "status": "ok",
+      "topic": "/world/nnc_yard/model/nnc_x500_cam_0/link/camera_link/sensor/camera/image",
+      "width": 640
+    }
+  ],
+  "width": 640,
+  "world": "nnc_yard"
 }

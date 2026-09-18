@@ -34,6 +34,21 @@ def test_zoo_strategies_are_allowlisted() -> None:
         assert spec.export_script.endswith(".py")
 
 
+def test_cli_zoo_json_has_imgsz(capsys) -> None:
+    import json
+
+    from compiler.cli import main
+
+    assert main(["zoo"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["models"]
+    for row in payload["models"]:
+        assert isinstance(row["imgsz"], int)
+        assert row["imgsz"] > 0
+    for spec in load_zoo():
+        assert spec.imgsz in {224, 256, 320, 640}
+
+
 def test_get_model_unknown_raises() -> None:
     try:
         get_model("not-a-real-uav-net")

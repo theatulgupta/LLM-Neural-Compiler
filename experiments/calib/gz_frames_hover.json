@@ -1,0 +1,21 @@
+{
+  "airframe": "nnc_x500_cam",
+  "count": 64,
+  "encoding": "rgb8",
+  "fps_claimed": false,
+  "height": 480,
+  "ok": true,
+  "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/calib/gz_frames_hover.npz",
+  "render_engine": "ogre",
+  "sha256": "649b33b4fdc0e90b8b2f65bc071b3546a6f1469689612e9a1ad7da56d26c5c19",
+  "shape": [
+    64,
+    480,
+    640,
+    3
+  ],
+  "topic": "/nnc/camera/image_raw",
+  "wanted": 64,
+  "width": 640,
+  "world": "nnc_yard"
+}

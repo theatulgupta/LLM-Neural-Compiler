@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
-# SSH-safe SITL stack: XRCE agent, headless Gazebo, PX4 camera airframe, ROS bridge.
+# SSH-safe SITL stack: XRCE agent, Gazebo (Xvfb/llvmpipe), PX4 camera airframe, ROS bridge.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOGDIR="${NNC_SITL_LOGDIR:-$ROOT/experiments/results/sitl_logs}"
 mkdir -p "$LOGDIR"
+
+"$ROOT/scripts/stop_all.sh" >/dev/null 2>&1 || true
+
+export PX4_GZ_WORLD="${PX4_GZ_WORLD:-nnc_yard}"
+export PX4_SIM_MODEL="${PX4_SIM_MODEL:-nnc_x500_cam}"
+export PX4_GZ_MODELS="${PX4_GZ_MODELS:-$ROOT/sim/models}"
+export NNC_GZ_DISPLAY="${NNC_GZ_DISPLAY:-auto}"
+export NNC_GZ_RENDER="${NNC_GZ_RENDER:-ogre}"
 
 stop_children() {
   local pid
@@ -21,12 +29,12 @@ echo "starting MicroXRCEAgent" | tee "$LOGDIR/stack.log"
 PIDS+=($!)
 sleep 2
 
-echo "starting Gazebo headless (${NNC_GZ_RENDER:-ogre2})" | tee -a "$LOGDIR/stack.log"
+echo "starting Gazebo (${NNC_GZ_RENDER}, ${NNC_GZ_DISPLAY}, world=${PX4_GZ_WORLD})" | tee -a "$LOGDIR/stack.log"
 "$ROOT/scripts/start_gz.sh" >"$LOGDIR/gz.log" 2>&1 &
 PIDS+=($!)
-sleep 3
+sleep 4
 
-echo "starting PX4 SITL ${NNC_PX4_TARGET:-gz_x500_mono_cam} (PX4_GZ_STANDALONE=1)" | tee -a "$LOGDIR/stack.log"
+echo "starting PX4 SITL model=${PX4_SIM_MODEL} (PX4_GZ_STANDALONE=1)" | tee -a "$LOGDIR/stack.log"
 HEADLESS=1 PX4_GZ_STANDALONE=1 "$ROOT/scripts/start_px4.sh" >"$LOGDIR/px4.log" 2>&1 &
 PIDS+=($!)
 

@@ -62,10 +62,32 @@ python scripts/verify_sitl.py      # success only if x,y,z actually change
 NNC_START_INFERENCE=1 bash scripts/start_all.sh
 /usr/bin/python3 scripts/verify_sim_inference.py --seconds 60
 bash scripts/stop_all.sh
-```
 python -m compiler probe
 ```
 
 Do not treat a built `bin/px4` as a passing telemetry run. `verify_sitl.py`
 must see changing `x,y,z` on `/fmu/out/vehicle_local_position_v1` (or the
 live `vehicle_local_position*` topic).
+
+## Another machine
+
+```bash
+git clone -b llm-advisor git@github.com:theatulgupta/LLM-Neural-Compiler.git
+cd LLM-Neural-Compiler
+bash scripts/bootstrap.sh
+mkdir -p ~/.config/nnc
+scp <this-host>:~/.config/nnc/groq.env ~/.config/nnc/groq.env
+```
+
+PX4, ROS 2 Jazzy, and Micro XRCE-DDS are OS installs (`~/PX4-Autopilot`,
+`~/ros2_px4_ws`, `~/px4_ros_uxrce_dds_ws`). The repo `sim/` tree only needs
+`GZ_SIM_RESOURCE_PATH` to also include `$PX4_DIR/Tools/simulation/gz/models`
+so `model://x500` resolves. Camera loop:
+
+```bash
+bash scripts/gz_probe_camera.sh
+bash scripts/start_all.sh
+/usr/bin/python3 scripts/record_frames.py --n 64 --world nnc_yard --airframe nnc_x500_cam
+```
+
+See `docs/deploy.md` for packing the same ONNX onto a later companion.

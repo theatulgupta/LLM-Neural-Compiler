@@ -1,0 +1,846 @@
+{
+  "candidates": [
+    {
+      "artifact": {
+        "bytes": 66384550,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/baseline.onnx",
+        "sha256": "f0fefe6e32058a6bbbf9d971d6e4f9281d3260bef76497dbf4c1b55c5ace4578",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/baseline.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 131.90480800017212,
+          "mean": 94.50007966666665,
+          "min": 89.60594499990293,
+          "p50": 91.91707300010421,
+          "p95": 112.7907810000579
+        },
+        "measured_at": "2026-09-18T15:05:29.551024+00:00",
+        "throughput_ips": 10.582001661028585,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": false,
+      "nodes_after": 645,
+      "nodes_before": 645,
+      "origin": "preset:baseline",
+      "p50_ms": 91.91707300010421,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "none"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "disable"
+        },
+        "plan_id": "baseline",
+        "rationale": "No graph rewrites. ORT graph optimizations disabled (native DAG).",
+        "source": "preset",
+        "steps": []
+      },
+      "plan_id": "baseline",
+      "profile": {
+        "compile_ms": 192.43612400009624,
+        "cpu_percent_mean": 591.2642857142857,
+        "model_bytes": 66384550,
+        "rss_mb": {
+          "after_compile": 914.3515625,
+          "before": 914.328125,
+          "peak": 914.3515625
+        },
+        "threads": 18
+      },
+      "run_id": "a02ec00f-dcf0-41cc-b548-8ae2a3921730",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 0.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 1.0,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 66384550,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/ort_default.onnx",
+        "sha256": "f0fefe6e32058a6bbbf9d971d6e4f9281d3260bef76497dbf4c1b55c5ace4578",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/ort_default.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 137.2327710000718,
+          "mean": 87.81870373333429,
+          "min": 81.08080700003484,
+          "p50": 85.36795499981054,
+          "p95": 96.33900200014978
+        },
+        "measured_at": "2026-09-18T15:05:36.103581+00:00",
+        "throughput_ips": 11.387095886048922,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": false,
+      "nodes_after": 645,
+      "nodes_before": 645,
+      "origin": "preset:ort_default",
+      "p50_ms": 85.36795499981054,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "all"
+        },
+        "plan_id": "ort_default",
+        "rationale": "Unrewritten ONNX with ORT graph optimizations enabled.",
+        "source": "preset",
+        "steps": []
+      },
+      "plan_id": "ort_default",
+      "profile": {
+        "compile_ms": 174.24187899996468,
+        "cpu_percent_mean": 592.9153846153846,
+        "model_bytes": 66384550,
+        "rss_mb": {
+          "after_compile": 907.37109375,
+          "before": 907.33984375,
+          "peak": 907.37109375
+        },
+        "threads": 17
+      },
+      "run_id": "25133dad-9753-4ac1-8222-f8eb80eb2478",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 5.20996798294381e-07
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9999999999999682,
+          "max_abs": 0.00067138671875,
+          "per_output": [
+            {
+              "cosine": 0.9999999999999682,
+              "max_abs": 0.00067138671875,
+              "mean_abs": 0.0001859399490058422,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 66431778,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_simplify.onnx",
+        "sha256": "06ac3f94dbdf16f4d6093550fd1ee16e60c93ab0a7652ec8570771d417f04c71",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_simplify.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 97.87853000011637,
+          "mean": 90.63299880000766,
+          "min": 86.46317099987755,
+          "p50": 90.04562800009808,
+          "p95": 95.12462599991522
+        },
+        "measured_at": "2026-09-18T15:05:43.249618+00:00",
+        "throughput_ips": 11.033508912207763,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": false,
+      "nodes_after": 645,
+      "nodes_before": 645,
+      "origin": "preset:graph_simplify",
+      "p50_ms": 90.04562800009808,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "fewer_nodes"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "disable"
+        },
+        "plan_id": "graph_simplify",
+        "rationale": "Shape infer, drop Identity/nop Dropout, constant-fold.",
+        "source": "preset",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_identity",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_dropout",
+            "params": {}
+          },
+          {
+            "atom": "constant_folding",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "graph_simplify",
+      "profile": {
+        "compile_ms": 159.5188449998659,
+        "cpu_percent_mean": 596.3283018867925,
+        "model_bytes": 66431778,
+        "rss_mb": {
+          "after_compile": 915.94921875,
+          "before": 915.91796875,
+          "peak": 915.94921875
+        },
+        "threads": 17
+      },
+      "run_id": "06b211af-7b2c-483e-963b-8c2117becb40",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 0.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 1.0,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 66431112,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse.onnx",
+        "sha256": "5d690aeb7b3051b42af57c4697e10cad09d40a315862f8274f617f096542c3c8",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 104.10695199993825,
+          "mean": 92.86794853333807,
+          "min": 86.01707999991959,
+          "p50": 92.30430000002343,
+          "p95": 102.8893820000576
+        },
+        "measured_at": "2026-09-18T15:05:50.492018+00:00",
+        "throughput_ips": 10.767977712364525,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "nodes_after": 636,
+      "nodes_before": 645,
+      "origin": "preset:graph_fuse",
+      "p50_ms": 92.30430000002343,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "fewer_nodes",
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "disable"
+        },
+        "plan_id": "graph_fuse",
+        "rationale": "Simplify plus Conv-BN and Conv-ReLU fusion on the ONNX DAG.",
+        "source": "preset",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_identity",
+            "params": {}
+          },
+          {
+            "atom": "constant_folding",
+            "params": {}
+          },
+          {
+            "atom": "fuse_conv_relu",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "graph_fuse",
+      "profile": {
+        "compile_ms": 166.08357700010856,
+        "cpu_percent_mean": 595.6854545454546,
+        "model_bytes": 66431112,
+        "rss_mb": {
+          "after_compile": 917.34765625,
+          "before": 917.30859375,
+          "peak": 917.34765625
+        },
+        "threads": 18
+      },
+      "run_id": "a40c9851-b711-4941-ab9c-a0f4222bc729",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 0.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 1.0,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 66431112,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse_ort.onnx",
+        "sha256": "5d690aeb7b3051b42af57c4697e10cad09d40a315862f8274f617f096542c3c8",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse_ort.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 100.38486700000249,
+          "mean": 89.24468126668519,
+          "min": 84.93507599996519,
+          "p50": 89.02613100008239,
+          "p95": 93.01545600010286
+        },
+        "measured_at": "2026-09-18T15:05:57.501839+00:00",
+        "throughput_ips": 11.205149548484044,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "nodes_after": 636,
+      "nodes_before": 645,
+      "origin": "preset:graph_fuse_ort",
+      "p50_ms": 89.02613100008239,
+      "passed": true,
+      "plan": {
+        "confidence": 1.0,
+        "expected_effects": [
+          "fewer_nodes",
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "extended"
+        },
+        "plan_id": "graph_fuse_ort",
+        "rationale": "Same DAG fusions as graph_fuse, then ORT extended.",
+        "source": "preset",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_identity",
+            "params": {}
+          },
+          {
+            "atom": "constant_folding",
+            "params": {}
+          },
+          {
+            "atom": "fuse_conv_relu",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "graph_fuse_ort",
+      "profile": {
+        "compile_ms": 158.07143600000018,
+        "cpu_percent_mean": 592.4207547169812,
+        "model_bytes": 66431112,
+        "rss_mb": {
+          "after_compile": 908.34765625,
+          "before": 908.2578125,
+          "peak": 908.34765625
+        },
+        "threads": 20
+      },
+      "run_id": "704a11c8-bc76-4c8a-a9a5-e64d96c9b0e2",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 0.0
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 1.0,
+          "max_abs": 0.0,
+          "per_output": [
+            {
+              "cosine": 1.0,
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 17026816,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/int8_dynamic.onnx",
+        "sha256": "1646c8c8b9570df53d884cb7e27b4610fb7a016dfe9d28b45848726710db7569",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/int8_dynamic.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 191.38228000019808,
+          "mean": 133.61608170001395,
+          "min": 124.85776600010468,
+          "p50": 129.75099899995257,
+          "p95": 151.96555800002898
+        },
+        "measured_at": "2026-09-18T15:06:06.312470+00:00",
+        "throughput_ips": 7.484129060490894,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "nodes_after": 1216,
+      "nodes_before": 645,
+      "origin": "preset:int8_dynamic",
+      "p50_ms": 129.75099899995257,
+      "passed": false,
+      "plan": {
+        "confidence": 0.6,
+        "expected_effects": [
+          "smaller_model",
+          "lower_latency",
+          "lower_memory"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "basic"
+        },
+        "plan_id": "int8_dynamic",
+        "rationale": "Dynamic INT8 weights for CPU (asimddp) after shape infer.",
+        "source": "preset",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "quantize_dynamic_int8",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "int8_dynamic",
+      "profile": {
+        "compile_ms": 178.78472299980785,
+        "cpu_percent_mean": 592.5392405063291,
+        "model_bytes": 17026816,
+        "rss_mb": {
+          "after_compile": 716.2109375,
+          "before": 716.1796875,
+          "peak": 716.2109375
+        },
+        "threads": 17
+      },
+      "run_id": "3fbf2eaa-1e3f-4168-a760-308a41b51f69",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 0.3370569202842376
+        },
+        "gate_used": "approx_cosine",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9731953406934134,
+          "max_abs": 241.55514526367188,
+          "per_output": [
+            {
+              "cosine": 0.9731953406934134,
+              "max_abs": 241.55514526367188,
+              "mean_abs": 89.88877507863799,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "approx",
+        "passed": false,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 17556186,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/int8_static.onnx",
+        "sha256": "116407c6cd01062d7b93450d93f03783396d03314e3457e04e05ce300d2f3220",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/int8_static.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 150.40406100001746,
+          "mean": 113.83325163333211,
+          "min": 104.06793099991773,
+          "p50": 109.67133399981321,
+          "p95": 143.88991300006637
+        },
+        "measured_at": "2026-09-18T15:06:18.286525+00:00",
+        "throughput_ips": 8.784779365005724,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "nodes_after": 1074,
+      "nodes_before": 645,
+      "origin": "preset:int8_static",
+      "p50_ms": 109.67133399981321,
+      "passed": true,
+      "plan": {
+        "confidence": 0.5,
+        "expected_effects": [
+          "smaller_model",
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "ort_graph_opt": "basic"
+        },
+        "plan_id": "int8_static",
+        "rationale": "Static INT8 with calibration frames.",
+        "source": "preset",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "quantize_static_int8",
+            "params": {
+              "calibration": "gz_frames",
+              "format": "qdq",
+              "per_channel": true
+            }
+          }
+        ]
+      },
+      "plan_id": "int8_static",
+      "profile": {
+        "compile_ms": 176.81226199988487,
+        "cpu_percent_mean": 592.4194029850746,
+        "model_bytes": 17556186,
+        "rss_mb": {
+          "after_compile": 770.48828125,
+          "before": 770.44140625,
+          "peak": 770.48828125
+        },
+        "threads": 18
+      },
+      "run_id": "77c8e138-e246-4140-81cb-1a53d54fbe22",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 0.07827539260036899
+        },
+        "gate_used": "approx_cosine",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9992082647020988,
+          "max_abs": 63.48272705078125,
+          "per_output": [
+            {
+              "cosine": 0.9992082647020988,
+              "max_abs": 63.48272705078125,
+              "mean_abs": 14.133214852772653,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "approx",
+        "passed": true,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 66431112,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse.onnx",
+        "sha256": "5d690aeb7b3051b42af57c4697e10cad09d40a315862f8274f617f096542c3c8",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 92.86870300002192,
+          "mean": 85.68036433332509,
+          "min": 82.09622999993371,
+          "p50": 84.45504399992387,
+          "p95": 90.1558999998997
+        },
+        "measured_at": "2026-09-18T15:06:25.335596+00:00",
+        "throughput_ips": 11.671285571448642,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "nodes_after": 636,
+      "nodes_before": 645,
+      "origin": "heuristic",
+      "p50_ms": 84.45504399992387,
+      "passed": true,
+      "plan": {
+        "confidence": 0.7,
+        "expected_effects": [
+          "fewer_nodes",
+          "lower_latency"
+        ],
+        "options": {
+          "execution_mode": "sequential",
+          "intra_op_threads": 4,
+          "ort_graph_opt": "extended"
+        },
+        "plan_id": "graph_fuse",
+        "rationale": "Convolutional DAG: fuse Conv-BN and Conv-ReLU when present; fold constants.",
+        "source": "heuristic",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "constant_folding",
+            "params": {}
+          },
+          {
+            "atom": "fuse_conv_relu",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "graph_fuse",
+      "profile": {
+        "compile_ms": 145.17743700002939,
+        "cpu_percent_mean": 401.64489795918365,
+        "model_bytes": 66431112,
+        "rss_mb": {
+          "after_compile": 938.515625,
+          "before": 938.48828125,
+          "peak": 938.515625
+        },
+        "threads": 16
+      },
+      "run_id": "3285baca-510a-4756-a02e-0856a1063fcd",
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "relative_error_mean": 4.330326820650464e-07
+        },
+        "gate_used": "exact_max_abs",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9999999999999765,
+          "max_abs": 0.00042724609375,
+          "per_output": [
+            {
+              "cosine": 0.9999999999999765,
+              "max_abs": 0.00042724609375,
+              "mean_abs": 0.0001135899219661951,
+              "name": "0"
+            }
+          ]
+        },
+        "numerics_kind": "exact",
+        "passed": true,
+        "rejections": []
+      }
+    }
+  ],
+  "chosen": {
+    "artifact": {
+      "bytes": 66431112,
+      "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse.onnx",
+      "sha256": "5d690aeb7b3051b42af57c4697e10cad09d40a315862f8274f617f096542c3c8",
+      "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/midas_small/graph_fuse.onnx.json"
+    },
+    "benchmark": {
+      "fps_claimed": false,
+      "iters": 30,
+      "latency_ms": {
+        "max": 92.86870300002192,
+        "mean": 85.68036433332509,
+        "min": 82.09622999993371,
+        "p50": 84.45504399992387,
+        "p95": 90.1558999998997
+      },
+      "measured_at": "2026-09-18T15:06:25.335596+00:00",
+      "throughput_ips": 11.671285571448642,
+      "warmup": 5
+    },
+    "compile_ok": true,
+    "graph_changed": true,
+    "nodes_after": 636,
+    "nodes_before": 645,
+    "origin": "heuristic",
+    "p50_ms": 84.45504399992387,
+    "passed": true,
+    "plan": {
+      "confidence": 0.7,
+      "expected_effects": [
+        "fewer_nodes",
+        "lower_latency"
+      ],
+      "options": {
+        "execution_mode": "sequential",
+        "intra_op_threads": 4,
+        "ort_graph_opt": "extended"
+      },
+      "plan_id": "graph_fuse",
+      "rationale": "Convolutional DAG: fuse Conv-BN and Conv-ReLU when present; fold constants.",
+      "source": "heuristic",
+      "steps": [
+        {
+          "atom": "onnx_shape_infer",
+          "params": {}
+        },
+        {
+          "atom": "constant_folding",
+          "params": {}
+        },
+        {
+          "atom": "fuse_conv_relu",
+          "params": {}
+        }
+      ]
+    },
+    "plan_id": "graph_fuse",
+    "profile": {
+      "compile_ms": 145.17743700002939,
+      "cpu_percent_mean": 401.64489795918365,
+      "model_bytes": 66431112,
+      "rss_mb": {
+        "after_compile": 938.515625,
+        "before": 938.48828125,
+        "peak": 938.515625
+      },
+      "threads": 16
+    },
+    "run_id": "3285baca-510a-4756-a02e-0856a1063fcd",
+    "verification": {
+      "accepted_plan": true,
+      "agreement": {
+        "relative_error_mean": 4.330326820650464e-07
+      },
+      "gate_used": "exact_max_abs",
+      "inputs_source": "calib",
+      "numerics": {
+        "cosine_min": 0.9999999999999765,
+        "max_abs": 0.00042724609375,
+        "per_output": [
+          {
+            "cosine": 0.9999999999999765,
+            "max_abs": 0.00042724609375,
+            "mean_abs": 0.0001135899219661951,
+            "name": "0"
+          }
+        ]
+      },
+      "numerics_kind": "exact",
+      "passed": true,
+      "rejections": []
+    }
+  },
+  "fps_claimed": false,
+  "host": {
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "release": "7.0.0-31-generic",
+    "system": "Linux"
+  },
+  "kind": "midas_small",
+  "llm_confidence": null,
+  "llm_rank": null,
+  "llm_vs_oracle_gap_pct": null,
+  "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/midas_small.onnx",
+  "ranking": [
+    "heuristic",
+    "preset:ort_default",
+    "preset:graph_fuse_ort",
+    "preset:graph_simplify",
+    "preset:baseline",
+    "preset:graph_fuse",
+    "preset:int8_static"
+  ],
+  "sha256": "f0fefe6e32058a6bbbf9d971d6e4f9281d3260bef76497dbf4c1b55c5ace4578",
+  "task": "depth"
+}

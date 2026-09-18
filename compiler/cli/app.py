@@ -379,6 +379,7 @@ def cmd_zoo(args: argparse.Namespace) -> int:
                 "export": " ".join(spec.export_cmd()),
                 "native_strategy": spec.native_strategy,
                 "default_strategy": spec.default_strategy,
+                "imgsz": spec.imgsz,
                 "uav_role": spec.uav_role,
                 "justification": spec.justification,
             }
@@ -440,7 +441,12 @@ def cmd_matrix(args: argparse.Namespace) -> int:
             "fps_claimed": False,
         }
     )
-    measured = [row for row in summary.get("models", []) if row.get("native") and row["native"].get("compile_ok")]
+    measured = [
+        row
+        for row in summary.get("models", [])
+        if (row.get("native") and row["native"].get("compile_ok"))
+        or (row.get("chosen") and row["chosen"].get("compile_ok") is not False and row["chosen"].get("p50_ms"))
+    ]
     return 0 if measured else 1
 
 

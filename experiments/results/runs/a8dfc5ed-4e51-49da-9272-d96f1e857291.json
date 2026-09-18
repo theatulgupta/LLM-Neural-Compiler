@@ -1,0 +1,520 @@
+{
+  "artifact": {
+    "bytes": 3756078,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-pose/graph_fuse.onnx",
+    "sha256": "5a542ca7b6b340eed602bd16f1778d4bdceebea2ca0e3028ff499c3a5b36424b",
+    "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-pose/graph_fuse.onnx.json"
+  },
+  "backend": "ort_cpu",
+  "benchmark": {
+    "fps_claimed": false,
+    "iters": 30,
+    "latency_ms": {
+      "max": 79.72203899998931,
+      "mean": 62.902332199996636,
+      "min": 54.69011400009549,
+      "p50": 60.21018699993874,
+      "p95": 78.92764399980479
+    },
+    "measured_at": "2026-09-18T15:03:38.354654+00:00",
+    "throughput_ips": 15.897661740434698,
+    "warmup": 5
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "extended",
+    "ms": 103.19478999986131,
+    "ok": true,
+    "options": {
+      "execution_mode": "sequential",
+      "graph_opt": "extended",
+      "inter_op_threads": null,
+      "intra_op_threads": 4
+    },
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_inlined": false
+  },
+  "created_at": "2026-09-18T15:03:34.144563+00:00",
+  "fps_claimed": false,
+  "graph": {
+    "estimated_flops": 9221462804,
+    "flops_by_op": {
+      "Add": 1360801,
+      "Concat": 8375600,
+      "Constant": 0,
+      "Conv": 9177729600,
+      "Div": 1,
+      "Gather": 0,
+      "MaxPool": 153600,
+      "Mul": 15047202,
+      "Reshape": 2402400,
+      "Resize": 1228800,
+      "Shape": 0,
+      "Sigmoid": 14627200,
+      "Slice": 0,
+      "Softmax": 0,
+      "Split": 0,
+      "Sub": 0,
+      "Transpose": 537600
+    },
+    "flops_total": 9221462804,
+    "initializer_bytes": 13159856,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          640,
+          640
+        ]
+      }
+    ],
+    "ir": "onnx",
+    "ir_version": 7,
+    "memory": {
+      "activations_total_bytes": 255747808,
+      "largest_tensor": {
+        "bytes": 6553600,
+        "name": "/model.0/conv/Conv_output_0",
+        "shape": [
+          1,
+          16,
+          320,
+          320
+        ]
+      },
+      "peak_live_bytes": 19660800,
+      "weights_bytes": 13159856
+    },
+    "node_count": 313,
+    "notes": [
+      "conv without BatchNormalization; fuse_bn_into_conv not applicable",
+      "no fused CPU SiLU kernel; quantization/threads are the levers"
+    ],
+    "op_counts": {
+      "Add": 10,
+      "Concat": 19,
+      "Constant": 40,
+      "Conv": 73,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 68,
+      "Reshape": 13,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "opset": 13,
+    "origin_format": "onnx",
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "output0",
+        "shape": [
+          1,
+          56,
+          8400
+        ]
+      }
+    ],
+    "param_count": 3289964,
+    "patterns": {
+      "bn_standalone": 0,
+      "concat": 19,
+      "conv_add_residual": 0,
+      "conv_bn": 0,
+      "conv_relu": 0,
+      "conv_silu": 63,
+      "dropout_nodes": 0,
+      "foldable_constant_nodes": 0,
+      "identity_nodes": 0,
+      "matmul_add": 0,
+      "reshape_transpose_chains": 1,
+      "resize": 2
+    },
+    "producer": "pytorch",
+    "sha256": "6572477bf384f3c302a2f138e5d6a649329495763deb2e7299b08278b8b62fc2",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-pose.onnx",
+    "static_shapes": false,
+    "top_nodes": [
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv2.0/cv2.0.0/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv2.0/cv2.0.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv3.0/cv3.0.0/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 471859200,
+        "name": "/model.22/cv3.0/cv3.0.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 376012800,
+        "name": "/model.22/cv4.0/cv4.0.0/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          51,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 299635200,
+        "name": "/model.22/cv4.0/cv4.0.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          51,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.1/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          32,
+          160,
+          160
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.3/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          64,
+          80,
+          80
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.5/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          128,
+          40,
+          40
+        ]
+      },
+      {
+        "flops": 235929600,
+        "name": "/model.7/conv/Conv",
+        "op_type": "Conv",
+        "out_shape": [
+          1,
+          256,
+          20,
+          20
+        ]
+      }
+    ]
+  },
+  "graph_after": {
+    "node_count": 741,
+    "op_counts": {
+      "Add": 82,
+      "Cast": 73,
+      "Concat": 19,
+      "Constant": 40,
+      "ConvInteger": 73,
+      "Div": 2,
+      "DynamicQuantizeLinear": 65,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 214,
+      "Reshape": 85,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "5a542ca7b6b340eed602bd16f1778d4bdceebea2ca0e3028ff499c3a5b36424b"
+  },
+  "graph_before": {
+    "node_count": 313,
+    "op_counts": {
+      "Add": 10,
+      "Concat": 19,
+      "Constant": 40,
+      "Conv": 73,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 68,
+      "Reshape": 13,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "6572477bf384f3c302a2f138e5d6a649329495763deb2e7299b08278b8b62fc2"
+  },
+  "graph_changed": true,
+  "graph_runtime": {
+    "node_count": 741,
+    "op_counts": {
+      "Add": 82,
+      "Cast": 73,
+      "Concat": 19,
+      "Constant": 40,
+      "ConvInteger": 73,
+      "Div": 2,
+      "DynamicQuantizeLinear": 65,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 214,
+      "Reshape": 85,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 65,
+      "Slice": 4,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "sha256": "5a542ca7b6b340eed602bd16f1778d4bdceebea2ca0e3028ff499c3a5b36424b"
+  },
+  "hardware": {
+    "arch": "aarch64",
+    "cpu_count": 6,
+    "cpu_model": "0x000",
+    "features": [
+      "asimd",
+      "asimddp",
+      "bf16",
+      "fphp"
+    ],
+    "fp16_execution": false,
+    "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+    "gpu_present": false,
+    "ort_version": "1.30.0",
+    "os": "Linux 7.0.0-31-generic",
+    "providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "python": "3.12.3",
+    "ram_available_mb": 9785,
+    "ram_total_mb": 11922,
+    "virtualized": true
+  },
+  "host": {
+    "hardware": {
+      "arch": "aarch64",
+      "cpu_count": 6,
+      "cpu_model": "0x000",
+      "features": [
+        "asimd",
+        "asimddp",
+        "bf16",
+        "fphp"
+      ],
+      "fp16_execution": false,
+      "gpu_detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "gpu_present": false,
+      "ort_version": "1.30.0",
+      "os": "Linux 7.0.0-31-generic",
+      "providers": [
+        "AzureExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "python": "3.12.3",
+      "ram_available_mb": 9844,
+      "ram_total_mb": 11922,
+      "virtualized": true
+    },
+    "machine": "aarch64",
+    "machine_id": "e996b2604c4c49ada2a0d0e9e55b47d5",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3",
+    "system": "Linux",
+    "uname_m": "aarch64"
+  },
+  "model": {
+    "ir": "onnx",
+    "kind": "yolov8n-pose",
+    "opset": 13,
+    "origin_format": "onnx",
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-pose.onnx",
+    "sha256": "6572477bf384f3c302a2f138e5d6a649329495763deb2e7299b08278b8b62fc2"
+  },
+  "passes_applied": [
+    "onnx_shape_infer",
+    "constant_folding",
+    "quantize_dynamic_int8"
+  ],
+  "plan": {
+    "confidence": 0.7,
+    "expected_effects": [
+      "fewer_nodes",
+      "lower_latency"
+    ],
+    "options": {
+      "execution_mode": "sequential",
+      "intra_op_threads": 4,
+      "ort_graph_opt": "extended"
+    },
+    "plan_id": "graph_fuse",
+    "rationale": "Convolutional DAG: fuse Conv-BN and Conv-ReLU when present; fold constants.",
+    "source": "heuristic",
+    "steps": [
+      {
+        "atom": "onnx_shape_infer",
+        "params": {}
+      },
+      {
+        "atom": "constant_folding",
+        "params": {}
+      },
+      {
+        "atom": "quantize_dynamic_int8",
+        "params": {
+          "per_channel": true,
+          "weight_type": "qint8"
+        }
+      }
+    ]
+  },
+  "profile": {
+    "compile_ms": 103.19478999986131,
+    "cpu_percent_mean": 401.64166666666665,
+    "model_bytes": 3756078,
+    "rss_mb": {
+      "after_compile": 537.859375,
+      "before": 534.98828125,
+      "peak": 537.859375
+    },
+    "threads": 15
+  },
+  "run_id": "a8dfc5ed-4e51-49da-9272-d96f1e857291",
+  "schema_version": 2,
+  "skip": null,
+  "steps_applied": [
+    {
+      "atom": "onnx_shape_infer",
+      "ms": 9.915637999938554,
+      "nodes_after": 313,
+      "nodes_before": 313,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "constant_folding",
+      "ms": 12.381954000147743,
+      "nodes_after": 313,
+      "nodes_before": 313,
+      "op_delta": {},
+      "params": {}
+    },
+    {
+      "atom": "quantize_dynamic_int8",
+      "ms": 189.67458099996293,
+      "nodes_after": 741,
+      "nodes_before": 313,
+      "op_delta": {
+        "Add": 72,
+        "Cast": 73,
+        "Conv": -73,
+        "ConvInteger": 73,
+        "DynamicQuantizeLinear": 65,
+        "Mul": 146,
+        "Reshape": 72
+      },
+      "params": {
+        "per_channel": true,
+        "weight_type": "qint8"
+      }
+    }
+  ],
+  "strategy": {
+    "rationale": "Convolutional DAG: fuse Conv-BN and Conv-ReLU when present; fold constants.",
+    "source": "heuristic",
+    "strategy": "graph_fuse"
+  },
+  "verification": {
+    "accepted_plan": true,
+    "agreement": {
+      "matched_ratio": 1.0,
+      "mean_iou": 1.0
+    },
+    "gate_used": "approx_detect",
+    "inputs_source": "calib",
+    "numerics": {
+      "cosine_min": 0.9995017450615586,
+      "max_abs": 267.6463623046875,
+      "per_output": [
+        {
+          "cosine": 0.9995017450615586,
+          "max_abs": 267.6463623046875,
+          "mean_abs": 3.7190098015590234,
+          "name": "0"
+        }
+      ]
+    },
+    "numerics_kind": "approx",
+    "passed": true,
+    "rejections": []
+  }
+}
