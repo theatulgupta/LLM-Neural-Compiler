@@ -1,8 +1,8 @@
 """Build the LLM chat messages from graph/hardware facts.
 
 The system string is fixed. The user string changes with this graph, this
-board, and the last compile rows. Groq only sends the messages; it does not
-write them.
+board, and the last compile rows. The HTTP client only sends the messages;
+it does not write them.
 """
 
 from __future__ import annotations
@@ -46,15 +46,29 @@ def _applicable(summary: GraphSummary, context: dict[str, Any]) -> tuple[list[st
     return yes, no
 
 
+def _format_feedback(feedback: list[dict[str, Any]]) -> str:
+    lines = ["Previous attempts"]
+    for index, item in enumerate(feedback, 1):
+        n = item.get("n", index)
+        outcome = item.get("outcome", "")
+        detail = item.get("detail", "")
+        lines.append(f"- attempt {n} {outcome}: {detail}")
+    lines.append("Reply again with a corrected plan. Only allowlisted atoms. Do not repeat rejected atoms.")
+    return "\n".join(lines)
+
+
 def build_messages(
     summary: GraphSummary,
     context: dict[str, Any] | None = None,
     hardware: HardwareProfile | None = None,
     constraints: dict[str, Any] | None = None,
     history: list[dict[str, Any]] | None = None,
+    feedback: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, str]]:
-    ctx = context if context is not None else build_context(
-        summary, hardware or probe_hardware(), constraints, history
+    ctx = (
+        context
+        if context is not None
+        else build_context(summary, hardware or probe_hardware(), constraints, history)
     )
     yes, no = _applicable(summary, ctx)
     history_rows = ctx.get("history") or []
@@ -78,6 +92,8 @@ def build_messages(
         f"Schema:\n{json.dumps(load_schema(LLM_PLAN_SCHEMA_PATH), indent=2)}\n\n"
         f"{json.dumps(ctx, default=str, indent=2)}\n"
     )
+    if feedback:
+        user = f"{user}\n{_format_feedback(feedback)}\n"
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user},

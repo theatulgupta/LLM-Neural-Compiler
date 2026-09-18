@@ -25,7 +25,12 @@ def write_report(results_dir: Path | None = None) -> Path:
     results = results_dir or DEFAULT_RESULTS
     matrix_path = results / "paper_matrix.json"
     matrix = json.loads(matrix_path.read_text(encoding="utf-8")) if matrix_path.is_file() else {}
-    lines = ["# LLM-guided compiler report", "", "Numbers below are measured on this host. `fps_claimed` is false.", ""]
+    lines = [
+        "# LLM-guided compiler report",
+        "",
+        "Numbers below are measured on this host. `fps_claimed` is false.",
+        "",
+    ]
     host = matrix.get("host") or {}
     lines += ["## Hardware", "", f"```json\n{json.dumps(host, indent=2)}\n```", ""]
 
@@ -33,8 +38,8 @@ def write_report(results_dir: Path | None = None) -> Path:
     lines += [
         "## Summary",
         "",
-        "| kind | task | baseline p50 | chosen plan | chosen p50 | speedup | passed | llm_rank | llm_gap_pct | inputs_source |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| kind | task | baseline p50 | chosen plan | chosen p50 | speedup | passed | llm_source | llm_rank | llm_gap_pct | inputs_source |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in models:
         chosen = row.get("chosen") or {}
@@ -51,8 +56,9 @@ def write_report(results_dir: Path | None = None) -> Path:
             native_p50 = (row.get("native") or {}).get("p50_ms", native_p50)
         chosen_p50 = chosen.get("p50_ms")
         plan_id = chosen.get("plan_id") or ((chosen.get("plan") or {}).get("plan_id"))
+        llm = row.get("llm") or {}
         lines.append(
-            "| {kind} | {task} | {base} | {plan} | {p50} | {sp} | {ok} | {rank} | {gap} | {src} |".format(
+            "| {kind} | {task} | {base} | {plan} | {p50} | {sp} | {ok} | {src_llm} | {rank} | {gap} | {src} |".format(
                 kind=row.get("kind"),
                 task=row.get("task") or "",
                 base=native_p50 if native_p50 is not None else "",
@@ -60,6 +66,7 @@ def write_report(results_dir: Path | None = None) -> Path:
                 p50=chosen_p50 if chosen_p50 is not None else "",
                 sp=_speedup(native_p50, chosen_p50),
                 ok=chosen.get("passed"),
+                src_llm=llm.get("source") or "",
                 rank=row.get("llm_rank"),
                 gap=row.get("llm_vs_oracle_gap_pct"),
                 src=inputs_source or "",
@@ -74,13 +81,18 @@ def write_report(results_dir: Path | None = None) -> Path:
             f"- chosen origin `{chosen.get('origin')}` plan `{chosen.get('plan_id')}` "
             f"p50_ms `{chosen.get('p50_ms')}` passed `{chosen.get('passed')}`"
         )
-        lines.append(f"- llm_rank `{row.get('llm_rank')}` oracle_gap_pct `{row.get('llm_vs_oracle_gap_pct')}`")
+        llm = row.get("llm") or {}
+        lines.append(
+            f"- llm source `{llm.get('source')}` plan `{llm.get('plan_id')}` "
+            f"rank `{row.get('llm_rank')}` oracle_gap_pct `{row.get('llm_vs_oracle_gap_pct')}` "
+            f"fallback `{llm.get('fallback_reason')}`"
+        )
         lines.append("")
         lines.append("| origin | plan | p50_ms | passed | nodes | bytes |")
         lines.append("| --- | --- | --- | --- | --- | --- |")
         for cand in row.get("candidates") or []:
             nodes = f"{cand.get('nodes_before')}->{cand.get('nodes_after')}"
-            bytes_ = ((cand.get("profile") or {}).get("model_bytes"))
+            bytes_ = (cand.get("profile") or {}).get("model_bytes")
             lines.append(
                 f"| {cand.get('origin')} | {cand.get('plan_id')} | {cand.get('p50_ms')} | {cand.get('passed')} | {nodes} | {bytes_} |"
             )

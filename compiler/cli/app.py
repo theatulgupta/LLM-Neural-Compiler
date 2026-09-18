@@ -10,21 +10,20 @@ from pathlib import Path
 from compiler.catalog import REPO_ROOT, get_model, load_zoo, zoo_kinds
 from compiler.errors import FrontendSkip, UnknownFrontendError, UnknownStrategyError
 from compiler.exporters import skip_run_record
+from compiler.frontends import frontend_catalog
 from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
-from compiler.history import append_history, history_for_model, write_run_json
-from compiler.llm.groq_client import GroqLlmClient, DEFAULT_GROQ_MODEL, load_groq_api_key
-from compiler.llm.llm_client import LlmClient
-from compiler.llm.prompting import build_messages, user_prompt
-from compiler.llm.recommendation_engine import recommend_plan, recommend_strategy
-from compiler.pipeline import compile_and_benchmark, get_backend, measure_path, optimize_model, run_zoo_matrix
-from compiler.report.report_generator import write_report
 from compiler.hardware.profile import probe_hardware
+from compiler.history import append_history, history_for_model, write_run_json
+from compiler.llm.prompting import build_messages, user_prompt
+from compiler.llm.provider import known_providers
+from compiler.llm.recommendation_engine import recommend_plan, recommend_strategy
 from compiler.parsers.tiny_cnn import flatten_features, write_tiny_cnn
 from compiler.parsers.tiny_depth import write_tiny_depth
+from compiler.pipeline import compile_and_benchmark, get_backend, measure_path, optimize_model, run_zoo_matrix
 from compiler.planner import ALLOWED_STRATEGY_NAMES
+from compiler.report.report_generator import write_report
 from compiler.schema import SchemaError, validate_llm_proposal
-from compiler.frontends import frontend_catalog
 from nnc.artifact import benchmark_artifact, load_ort_artifact
 from nnc.backends import known_backends
 from nnc.probe import probe_host
@@ -34,10 +33,13 @@ DEFAULT_DEPTH_FIXTURE = REPO_ROOT / "fixtures" / "tiny_depth.onnx"
 DEFAULT_RESULTS = REPO_ROOT / "experiments" / "results"
 
 
+_SECRET_MARKERS = ("gsk_", "sk-ant-", "sk-or-", "sk-proj-", "AIzaSy", "nvapi-")
+
+
 def _redact(value: object) -> object:
     text = json.dumps(value, default=str)
-    if "gsk_" in text:
-        raise SchemaError("refusing to print a Groq-looking secret")
+    if any(marker in text for marker in _SECRET_MARKERS):
+        raise SchemaError("refusing to print an API-key-looking secret")
     return value
 
 
@@ -80,8 +82,10 @@ def cmd_plan(args: argparse.Namespace) -> int:
     for item in getattr(args, "constraint", []) or []:
         key, _, value = item.partition("=")
         constraints[key] = value
-    rec = recommend_plan(summary, hardware, constraints, history=history_for_model(args.kind or loaded.sha256))
-    payload = rec.strategy.to_dict() if hasattr(rec.strategy, "to_dict") else rec.to_dict()
+    rec = recommend_plan(
+        summary, hardware, constraints, history=history_for_model(args.kind or loaded.sha256)
+    )
+    payload = rec.outcome.to_dict() if rec.outcome is not None else rec.strategy.to_dict()
     if args.show_prompt:
         payload["prompt"] = build_messages(summary, hardware=hardware, constraints=constraints)[1]["content"]
     _print(payload)
@@ -98,7 +102,14 @@ def cmd_optimize(args: argparse.Namespace) -> int:
         iters=args.iters,
         results_dir=Path(args.results),
     )
-    _print({"wrote": payload.get("wrote"), "chosen": payload.get("chosen"), "fps_claimed": False})
+    _print(
+        {
+            "wrote": payload.get("wrote"),
+            "chosen": payload.get("chosen"),
+            "llm": payload.get("llm"),
+            "fps_claimed": False,
+        }
+    )
     return 0 if payload.get("chosen") else 1
 
 
@@ -250,119 +261,12 @@ def cmd_formats(args: argparse.Namespace) -> int:
         {
             "frontends": frontend_catalog(),
             "backends": list(known_backends()),
+            "llm_providers": list(known_providers()),
             "ir": ["onnx"],
             "fps_claimed": False,
         }
     )
     return 0
-
-
-def _advise_one(model: Path, client: LlmClient, *, kind: str, results: Path, warmup: int, iters: int) -> dict:
-    loaded = load_graph(model)
-    summary = summarize_graph(loaded)
-    try:
-        rec = recommend_strategy(summary, client=client)
-        proposal_error = None
-    except SchemaError as exc:
-        rec = None
-        proposal_error = str(exc)
-    entry: dict = {
-        "model": {"path": str(model), "kind": kind, "sha256": loaded.sha256},
-        "advisor": {
-            "backend": getattr(client, "name", "unknown"),
-            "model": getattr(client, "model", None),
-            "key_present": load_groq_api_key() is not None if getattr(client, "name", "") == "groq" else False,
-        },
-        "proposal": None if rec is None else rec.to_dict(),
-        "proposal_error": proposal_error,
-        "compile": None,
-        "compare_baseline": None,
-    }
-    if rec is None:
-        return entry
-    compile_record = compile_and_benchmark(
-        model,
-        backend_name="ort_cpu",
-        strategy_name=rec.strategy.name,
-        warmup=warmup,
-        iters=iters,
-        results_dir=results,
-        model_kind=kind,
-    )
-    entry["compile"] = {
-        "ok": compile_record.get("compile", {}).get("ok"),
-        "ms": compile_record.get("compile", {}).get("ms"),
-        "error": compile_record.get("compile", {}).get("error"),
-        "skip": compile_record.get("skip"),
-        "benchmark": compile_record.get("benchmark"),
-        "run_id": compile_record.get("run_id"),
-        "strategy": rec.strategy.name,
-    }
-    if rec.strategy.name != "graph_fuse":
-        # Compare against the catalog default when the advisor picked something else.
-        compare_name = "graph_fuse"
-        try:
-            compare_name = get_model(kind).default_strategy
-        except KeyError:
-            compare_name = "graph_fuse"
-        if rec.strategy.name != compare_name:
-            baseline = compile_and_benchmark(
-                model,
-                backend_name="ort_cpu",
-                strategy_name=compare_name,
-                warmup=warmup,
-                iters=iters,
-                results_dir=results,
-                model_kind=kind,
-            )
-            entry["compare_baseline"] = {
-                "strategy": compare_name,
-                "ok": baseline.get("compile", {}).get("ok"),
-                "benchmark": baseline.get("benchmark"),
-                "run_id": baseline.get("run_id"),
-                "error": baseline.get("compile", {}).get("error"),
-            }
-    return entry
-
-
-def cmd_live(args: argparse.Namespace) -> int:
-    if load_groq_api_key() is None:
-        print("GROQ_API_KEY missing; set env or ~/.config/nnc/groq.env", file=sys.stderr)
-        return 2
-    client = GroqLlmClient(model=args.model_name)
-    results = Path(args.results)
-    jobs: list[tuple[Path, str]] = []
-    if not args.no_fixture:
-        fixture = Path(args.fixture)
-        if not fixture.exists():
-            write_tiny_cnn(fixture)
-        jobs.append((fixture, "fixture"))
-    model = Path(args.onnx)
-    jobs.append((model, args.kind))
-
-    trt = get_backend("tensorrt")
-    trt_ok, trt_reason = trt.available()
-    entries = [
-        _advise_one(path, client, kind=kind, results=results, warmup=args.warmup, iters=args.iters)
-        for path, kind in jobs
-    ]
-    strategies = sorted(
-        {e["proposal"]["strategy"] for e in entries if e.get("proposal")}
-    )
-    summary = {
-        "advisor": {"backend": client.name, "model": getattr(client, "model", None)},
-        "tensorrt": {"available": trt_ok, "reason": None if trt_ok else trt_reason},
-        "host": probe_host(),
-        "live_strategy_count": len(strategies),
-        "live_strategies": strategies,
-        "runs": entries,
-    }
-    out = results / "groq_live.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(summary, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
-    _print({"wrote": str(out), "live_strategy_count": len(strategies), "strategies": strategies})
-    compile_ok = any(e.get("compile", {}) and e["compile"].get("ok") for e in entries)
-    return 0 if compile_ok else 1
 
 
 def cmd_zoo(args: argparse.Namespace) -> int:
@@ -431,7 +335,9 @@ def cmd_matrix(args: argparse.Namespace) -> int:
                 ),
             )
             wrote = results / "paper_matrix.json"
-            wrote.write_text(json.dumps(summary, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+            wrote.write_text(
+                json.dumps(summary, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+            )
             summary["wrote"] = str(wrote)
     _print(
         {
@@ -445,7 +351,9 @@ def cmd_matrix(args: argparse.Namespace) -> int:
         row
         for row in summary.get("models", [])
         if (row.get("native") and row["native"].get("compile_ok"))
-        or (row.get("chosen") and row["chosen"].get("compile_ok") is not False and row["chosen"].get("p50_ms"))
+        or (
+            row.get("chosen") and row["chosen"].get("compile_ok") is not False and row["chosen"].get("p50_ms")
+        )
     ]
     return 0 if measured else 1
 
@@ -501,7 +409,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     compile_p = sub.add_parser("compile", help="Compile and benchmark")
     compile_p.add_argument("model")
-    compile_p.add_argument("--backend", choices=known_backends() or ("ort_cpu", "tensorrt"), default="ort_cpu")
+    compile_p.add_argument(
+        "--backend", choices=known_backends() or ("ort_cpu", "tensorrt"), default="ort_cpu"
+    )
     compile_p.add_argument("--strategy", default="baseline", choices=ALLOWED_STRATEGY_NAMES)
     compile_p.add_argument("--warmup", type=int, default=10)
     compile_p.add_argument("--iters", type=int, default=50)
@@ -522,17 +432,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     formats = sub.add_parser("formats", help="List frontends, backends, prompt engines, and GraphIR")
     formats.set_defaults(func=cmd_formats)
-
-    live = sub.add_parser("live", help="Groq advisor then ORT compile/profile (requires GROQ_API_KEY)")
-    live.add_argument("onnx")
-    live.add_argument("--kind", default="onnx")
-    live.add_argument("--fixture", default=str(DEFAULT_FIXTURE), help="Also advise+compile the tiny fixture")
-    live.add_argument("--no-fixture", action="store_true")
-    live.add_argument("--model-name", default=DEFAULT_GROQ_MODEL)
-    live.add_argument("--results", default=str(DEFAULT_RESULTS))
-    live.add_argument("--warmup", type=int, default=3)
-    live.add_argument("--iters", type=int, default=8)
-    live.set_defaults(func=cmd_live)
 
     zoo = sub.add_parser("zoo", help="List UAV companion models from experiments/zoo.yaml")
     zoo.set_defaults(func=cmd_zoo)

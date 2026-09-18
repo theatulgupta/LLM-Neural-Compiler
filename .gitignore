@@ -57,6 +57,7 @@ third_party/Micro-XRCE-DDS-Agent/
 .env
 .env.*
 groq.env
+llm.env
 .pytest_cache/
 .mypy_cache/
 *.egg-info/

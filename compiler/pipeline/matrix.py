@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from compiler.catalog import ModelSpec, REPO_ROOT, load_zoo
+from compiler.catalog import REPO_ROOT, ModelSpec, load_zoo
 from compiler.exporters import skip_run_record, write_skip
 from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
@@ -73,6 +73,7 @@ def measure_path(
         iters=iters,
         results_dir=results_dir,
         model_kind=kind,
+        task=task or "detect",
     )
     optimized = compile_and_benchmark(
         model_path,
@@ -82,6 +83,7 @@ def measure_path(
         iters=iters,
         results_dir=results_dir,
         model_kind=kind,
+        task=task or "detect",
     )
     native_slice = _slice(native)
     opt_slice = _slice(optimized)
@@ -139,9 +141,7 @@ def measure_spec(
 ) -> dict[str, Any]:
     onnx_path = spec.onnx_path(root or REPO_ROOT)
     if not onnx_path.is_file():
-        reason = (
-            f"ONNX not present at {onnx_path}; run {' '.join(spec.export_cmd())}"
-        )
+        reason = f"ONNX not present at {onnx_path}; run {' '.join(spec.export_cmd())}"
         if results_dir is not None:
             write_skip(kind=spec.kind, path=str(onnx_path), reason=reason, stem=f"skip_{spec.kind}")
         record = skip_run_record(kind=spec.kind, path=str(onnx_path), reason=reason)
@@ -190,7 +190,9 @@ def run_zoo_matrix(
 
             onnx_path = spec.onnx_path(root or REPO_ROOT)
             if not onnx_path.is_file():
-                rows.append(measure_spec(spec, warmup=warmup, iters=iters, results_dir=results_dir, root=root))
+                rows.append(
+                    measure_spec(spec, warmup=warmup, iters=iters, results_dir=results_dir, root=root)
+                )
                 continue
             opt = optimize_model(
                 onnx_path,
@@ -203,9 +205,7 @@ def run_zoo_matrix(
             )
             rows.append(opt)
             continue
-        rows.append(
-            measure_spec(spec, warmup=warmup, iters=iters, results_dir=results_dir, root=root)
-        )
+        rows.append(measure_spec(spec, warmup=warmup, iters=iters, results_dir=results_dir, root=root))
     summary = {
         "host": {
             "machine": host["platform"]["machine"],

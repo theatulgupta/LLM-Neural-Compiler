@@ -18,8 +18,7 @@ from compiler.graph.graph_loader import LoadedGraph, load_graph
 from compiler.graph.graph_summary import GraphSummary, summarize_graph
 from compiler.hardware.profile import probe_hardware
 from compiler.history import append_history, new_run_record, write_run_json
-from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.optimization.engine import apply_plan_on_graph, apply_strategy_on_graph
+from compiler.optimization.engine import apply_plan_on_graph
 from compiler.optimization.passes import graph_ir_snapshot
 from compiler.planner.plan import Plan
 from compiler.planner.verifier import verify_plan
@@ -41,7 +40,9 @@ def _numpy_dtype(name: str) -> np.dtype:
     return np.float32
 
 
-def _input_feeds(compiled: CompiledModel, model: onnx.ModelProto, rng: np.random.Generator) -> dict[str, np.ndarray]:
+def _input_feeds(
+    compiled: CompiledModel, model: onnx.ModelProto, rng: np.random.Generator
+) -> dict[str, np.ndarray]:
     inits = {item.name for item in model.graph.initializer}
     feeds: dict[str, np.ndarray] = {}
     specs = compiled.inputs or tuple()
@@ -65,25 +66,6 @@ def _host_block() -> dict[str, Any]:
         "system": host["platform"]["system"],
         "nvidia": host["nvidia"],
         "hardware": hw.to_dict(),
-    }
-
-
-def _latency_stats(samples_ms: list[float]) -> dict[str, float]:
-    ordered = sorted(samples_ms)
-    if not ordered:
-        return {"mean": 0.0, "p50": 0.0, "p95": 0.0, "min": 0.0, "max": 0.0}
-
-    def pct(p: float) -> float:
-        idx = min(len(ordered) - 1, max(0, int(round((p / 100.0) * (len(ordered) - 1)))))
-        return float(ordered[idx])
-
-    mean = float(sum(ordered) / len(ordered))
-    return {
-        "mean": mean,
-        "p50": pct(50),
-        "p95": pct(95),
-        "min": float(ordered[0]),
-        "max": float(ordered[-1]),
     }
 
 
@@ -194,7 +176,9 @@ def compile_verify_profile(
         apply_error = f"{type(exc).__name__}: {exc}"
     optimized = optimized_graph.model
     after_ir = graph_ir_snapshot(optimized)
-    graph_changed = before_ir["node_count"] != after_ir["node_count"] or before_ir["op_counts"] != after_ir["op_counts"]
+    graph_changed = (
+        before_ir["node_count"] != after_ir["node_count"] or before_ir["op_counts"] != after_ir["op_counts"]
+    )
     runtime_bytes = optimized.SerializeToString()
     artifact_meta = _save_artifact(kind, active.plan_id.replace("/", "_"), optimized, active)
 
@@ -204,7 +188,14 @@ def compile_verify_profile(
     record: dict[str, Any] = new_run_record(
         schema_version=2,
         run_id=run_id,
-        model={"path": str(model_path), "sha256": loaded.sha256, "kind": kind, "opset": loaded.opset, "origin_format": loaded.origin_format, "ir": loaded.ir},
+        model={
+            "path": str(model_path),
+            "sha256": loaded.sha256,
+            "kind": kind,
+            "opset": loaded.opset,
+            "origin_format": loaded.origin_format,
+            "ir": loaded.ir,
+        },
         graph=summary.to_dict(),
         graph_before=before_ir,
         graph_after=after_ir,
@@ -249,7 +240,9 @@ def compile_verify_profile(
     t0 = time.perf_counter()
     try:
         compiled = backend.compile(runtime_bytes, options=options)
-        native_compiled = native_backend.compile(loaded.model.SerializeToString(), options=BackendOptions(graph_opt="disable"))
+        native_compiled = native_backend.compile(
+            loaded.model.SerializeToString(), options=BackendOptions(graph_opt="disable")
+        )
         trial_feeds = _input_feeds(compiled, optimized, np.random.default_rng(seed))
         backend.infer(compiled, trial_feeds)
     except Exception as exc:  # noqa: BLE001
@@ -296,7 +289,9 @@ def compile_verify_profile(
             }
         elif "top1_agreement" in agreements[0]:
             agreement = {
-                "top1_agreement": float(sum(a.get("top1_agreement", 0) for a in agreements) / len(agreements)),
+                "top1_agreement": float(
+                    sum(a.get("top1_agreement", 0) for a in agreements) / len(agreements)
+                ),
             }
         else:
             agreement = agreements[0]
@@ -307,7 +302,9 @@ def compile_verify_profile(
         task=task,
         ref_scale=ref_scale,
     )
-    profile_feeds = feeds_list[0] if feeds_list else _input_feeds(compiled, optimized, np.random.default_rng(seed))
+    profile_feeds = (
+        feeds_list[0] if feeds_list else _input_feeds(compiled, optimized, np.random.default_rng(seed))
+    )
     rss_before = 0.0
     try:
         import psutil
@@ -368,142 +365,37 @@ def compile_and_benchmark(
     seed: int = 0,
     results_dir: Path | None = None,
     model_kind: str = "onnx",
+    task: str | None = None,
 ) -> dict[str, Any]:
-    try:
-        loaded = load_graph(model_path, check=True)
-    except FrontendSkip as exc:
-        return _frontend_skip_record(
-            model_path, exc, backend_name=backend_name, kind=model_kind, results_dir=results_dir
-        )
-    except Exception as exc:  # noqa: BLE001 — invalid graphs are compile failures
-        try:
-            loaded = load_graph(model_path, check=False)
-        except FrontendSkip as skip_exc:
-            return _frontend_skip_record(
-                model_path, skip_exc, backend_name=backend_name, kind=model_kind, results_dir=results_dir
-            )
-        summary = summarize_graph(loaded)
-        record = new_run_record(
-            run_id=str(uuid.uuid4()),
-            model={
-                "path": str(model_path),
-                "sha256": loaded.sha256,
-                "kind": model_kind,
-                "opset": loaded.opset,
-                "origin_format": loaded.origin_format,
-                "ir": loaded.ir,
-            },
-            graph=summary.to_dict(),
-            backend=backend_name,
-            strategy={"strategy": strategy_name or "baseline", "rationale": "load failed before recommend", "source": "pipeline"},
-            compile={"ok": False, "ms": None, "error": f"{type(exc).__name__}: {exc}"},
-            benchmark=None,
-            skip=None,
-            host=_host_block(),
-            fps_claimed=False,
-        )
-        _persist(record, results_dir)
-        return record
-    summary = summarize_graph(loaded)
-    recommendation = recommend_strategy(summary, override=strategy_name)
-    strategy = recommendation.strategy
+    """Compile through an allowlisted plan. Delegates to compile_verify_profile."""
 
-    before_ir = graph_ir_snapshot(loaded.model)
-    optimized_graph = apply_strategy_on_graph(loaded, strategy)
-    optimized = optimized_graph.model
-    after_ir = graph_ir_snapshot(optimized)
-    runtime = optimized
-    runtime_ir = graph_ir_snapshot(runtime)
-    graph_changed = before_ir["node_count"] != after_ir["node_count"] or before_ir["op_counts"] != after_ir["op_counts"]
-    runtime_bytes = runtime.SerializeToString()
+    if strategy_name:
+        from compiler.planner.plan import get_plan
 
-    backend = get_backend(backend_name)
-    available, skip_reason = backend.available()
-    run_id = str(uuid.uuid4())
+        plan = get_plan(strategy_name)
+    else:
+        from compiler.llm.recommendation_engine import recommend_plan
 
-    record: dict[str, Any] = new_run_record(
-        run_id=run_id,
-        model={
-            "path": str(model_path),
-            "sha256": loaded.sha256,
-            "kind": model_kind,
-            "opset": loaded.opset,
-            "origin_format": loaded.origin_format,
-            "ir": loaded.ir,
-        },
-        graph=summary.to_dict(),
-        graph_before=before_ir,
-        graph_after=after_ir,
-        graph_runtime=runtime_ir,
-        graph_changed=bool(graph_changed),
-        passes_applied=list(strategy.passes),
-        backend=backend_name,
-        strategy=recommendation.to_dict(),
-        host=_host_block(),
-        fps_claimed=False,
+        loaded = load_graph(model_path, check=False)
+        plan = recommend_plan(summarize_graph(loaded)).strategy
+    if task is None:
+        if model_kind == "tiny_depth" or "depth" in model_kind:
+            task = "depth"
+        elif model_kind.startswith("fixture"):
+            task = "classify"
+        else:
+            task = "detect"
+    return compile_verify_profile(
+        model_path,
+        plan=plan,
+        backend_name=backend_name,
+        kind=model_kind,
+        task=task,
+        results_dir=results_dir,
+        warmup=warmup,
+        iters=iters,
+        seed=seed,
     )
-
-    if not available:
-        skip = BackendSkip(backend=backend_name, reason=skip_reason or "unavailable")
-        record["compile"] = {"ok": False, "ms": None, "error": None}
-        record["benchmark"] = None
-        record["skip"] = skip.to_dict()
-        _persist(record, results_dir)
-        return record
-
-    compile_error: str | None = None
-    compiled: CompiledModel | None = None
-    t0 = time.perf_counter()
-    try:
-        compiled = backend.compile(runtime_bytes, graph_opt=strategy.ort_graph_opt)
-        trial_rng = np.random.default_rng(seed)
-        trial_feeds = _input_feeds(compiled, runtime, trial_rng)
-        backend.infer(compiled, trial_feeds)
-    except Exception as exc:  # noqa: BLE001
-        compile_error = f"{type(exc).__name__}: {exc}"
-        compiled = None
-    compile_ms = (time.perf_counter() - t0) * 1000.0
-
-    if compiled is None:
-        record["compile"] = {"ok": False, "ms": compile_ms, "error": compile_error}
-        record["benchmark"] = None
-        record["skip"] = None
-        _persist(record, results_dir)
-        return record
-
-    rng = np.random.default_rng(seed)
-    feeds = _input_feeds(compiled, runtime, rng)
-    for _ in range(max(0, warmup)):
-        backend.infer(compiled, feeds)
-
-    samples: list[float] = []
-    for _ in range(max(1, iters)):
-        t1 = time.perf_counter()
-        backend.infer(compiled, feeds)
-        samples.append((time.perf_counter() - t1) * 1000.0)
-
-    latency = _latency_stats(samples)
-    mean = latency["mean"]
-    throughput = 1000.0 / mean if mean > 0 else 0.0
-    record["compile"] = {
-        "ok": True,
-        "ms": compile_ms,
-        "error": None,
-        "providers": list(compiled.providers),
-        "graph_opt": strategy.ort_graph_opt,
-        "runtime_inlined": after_ir.get("op_counts") != runtime_ir.get("op_counts"),
-    }
-    record["benchmark"] = {
-        "warmup": warmup,
-        "iters": iters,
-        "latency_ms": latency,
-        "throughput_ips": throughput,
-        "measured_at": utc_now_iso(),
-        "fps_claimed": False,
-    }
-    record["skip"] = None
-    _persist(record, results_dir)
-    return record
 
 
 def _persist(record: dict[str, Any], results_dir: Path | None) -> None:

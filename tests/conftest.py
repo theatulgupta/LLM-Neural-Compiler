@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
 
 from compiler.parsers.tiny_cnn import write_tiny_cnn
 from compiler.parsers.tiny_depth import write_tiny_depth
+
+
+@pytest.fixture(autouse=True)
+def _pin_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep unit tests off the network even when a Groq key exists on the host."""
+
+    monkeypatch.setenv("NNC_LLM", os.environ.get("NNC_LLM", "heuristic"))
 
 
 @pytest.fixture

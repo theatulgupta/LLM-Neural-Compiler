@@ -6,7 +6,7 @@ import os
 from typing import Any, Protocol
 
 from compiler.graph.graph_summary import GraphSummary
-from compiler.hardware.profile import HardwareProfile, probe_hardware
+from compiler.hardware.profile import probe_hardware
 from compiler.llm.context_builder import build_context
 from compiler.planner.plan import Plan
 from compiler.schema import SchemaError, validate_llm_plan
@@ -15,7 +15,9 @@ from compiler.schema import SchemaError, validate_llm_plan
 class LlmProposal:
     """Back-compat wrapper: strategy name + rationale."""
 
-    def __init__(self, strategy: str, rationale: str, source: str, plan: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self, strategy: str, rationale: str, source: str, plan: dict[str, Any] | None = None
+    ) -> None:
         self.strategy = strategy
         self.rationale = rationale
         self.source = source
@@ -35,8 +37,12 @@ class LlmProposal:
 class LlmClient(Protocol):
     name: str
 
-    def propose(self, summary: GraphSummary, context: dict[str, Any] | None = None) -> LlmProposal:
-        ...
+    def propose(
+        self,
+        summary: GraphSummary,
+        context: dict[str, Any] | None = None,
+        feedback: list[dict[str, Any]] | None = None,
+    ) -> LlmProposal: ...
 
 
 def proposal_from_dict(payload: dict[str, object]) -> LlmProposal:
@@ -81,7 +87,12 @@ class HeuristicLlmClient:
 
     name = "heuristic"
 
-    def propose(self, summary: GraphSummary, context: dict[str, Any] | None = None) -> LlmProposal:
+    def propose(
+        self,
+        summary: GraphSummary,
+        context: dict[str, Any] | None = None,
+        feedback: list[dict[str, Any]] | None = None,
+    ) -> LlmProposal:
         ctx = _context(summary, context)
         hardware = ctx.get("hardware") or {}
         features = set(hardware.get("features") or [])
@@ -100,7 +111,9 @@ class HeuristicLlmClient:
         if int(patterns.get("matmul_add", 0) or 0) > 0:
             steps.append({"atom": "fuse_matmul_add_gemm", "params": {}})
         if int(summary.flops_total or 0) > 1_000_000_000 and "asimddp" in features:
-            steps.append({"atom": "quantize_dynamic_int8", "params": {"per_channel": True, "weight_type": "qint8"}})
+            steps.append(
+                {"atom": "quantize_dynamic_int8", "params": {"per_channel": True, "weight_type": "qint8"}}
+            )
         if summary.node_count <= 8:
             payload = {
                 "plan_id": "baseline",
@@ -128,7 +141,12 @@ class HeuristicLlmClient:
         else:
             payload = {
                 "plan_id": "graph_simplify",
-                "steps": [s for s in steps if s["atom"] in {"onnx_shape_infer", "eliminate_identity", "eliminate_dropout", "constant_folding"}],
+                "steps": [
+                    s
+                    for s in steps
+                    if s["atom"]
+                    in {"onnx_shape_infer", "eliminate_identity", "eliminate_dropout", "constant_folding"}
+                ],
                 "options": {"ort_graph_opt": "disable", "execution_mode": "sequential"},
                 "rationale": "Generic DAG: shape infer, dead-node elim, constant fold; no extra fusion.",
                 "expected_effects": ["fewer_nodes"],
@@ -151,24 +169,30 @@ class MockLlmClient:
             "source": "mock",
         }
 
-    def propose(self, summary: GraphSummary, context: dict[str, Any] | None = None) -> LlmProposal:
+    def propose(
+        self,
+        summary: GraphSummary,
+        context: dict[str, Any] | None = None,
+        feedback: list[dict[str, Any]] | None = None,
+    ) -> LlmProposal:
         return proposal_from_dict(dict(self._proposal))
 
 
 def build_client() -> LlmClient:
+    """Pick heuristic/mock, or any registered / custom HTTP provider."""
+
     mode = os.environ.get("NNC_LLM", "").strip().lower()
+    named = os.environ.get("NNC_LLM_PROVIDER", "").strip().lower()
     if mode == "mock":
         return MockLlmClient()
     if mode == "heuristic":
         return HeuristicLlmClient()
-    if mode == "groq":
-        from compiler.llm.groq_client import GroqLlmClient
+    from compiler.llm.provider import HttpLlmClient, get_provider, known_providers, load_api_key
 
-        return GroqLlmClient()
-    from compiler.llm.groq_client import load_groq_api_key
-
-    if load_groq_api_key() and mode != "heuristic":
-        if mode == "groq" or not mode:
-            # Default stays heuristic unless NNC_LLM=groq so offline tests are stable.
-            return HeuristicLlmClient()
-    return HeuristicLlmClient()
+    choice = mode or named
+    if choice in {"auto", ""}:
+        for name in known_providers():
+            if load_api_key(get_provider(name)):
+                return HttpLlmClient(provider=name)
+        return HeuristicLlmClient()
+    return HttpLlmClient(provider=choice)
