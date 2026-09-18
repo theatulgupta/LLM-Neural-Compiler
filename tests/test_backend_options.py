@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
+
+import numpy as np
+
 from nnc.backends.base import BackendOptions
 from nnc.backends.ort_cpu import OrtCpuBackend
-import numpy as np
-import os
 
 
 def test_backend_thread_options(tiny_path) -> None:

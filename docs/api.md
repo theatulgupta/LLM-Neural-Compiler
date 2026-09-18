@@ -15,12 +15,14 @@ API surface:
 - `python -m compiler optimize <model.onnx> --kind KIND [--candidates default|all]`
 - `python -m compiler zoo`
 - `python -m compiler export [--kind KIND]`
-- `python -m compiler matrix [--candidates default|all]`
+- `python -m compiler matrix [--candidates all]`
 - `python -m compiler report`
 - `python -m compiler baseline`
 - `python -m compiler probe`
-- `python -m compiler formats` (frontends / backends / IR)
-- `python -m compiler live` (Groq if `~/.config/nnc/groq.env`; key never printed)
+- `python -m compiler formats` (frontends / backends / `llm_providers` / GraphIR)
+
+LLM client: `NNC_LLM=heuristic|mock|auto|<provider>|custom`. Keys are never
+printed. Copy `configs/llm.env.example` to `~/.config/nnc/llm.env`.
 
 ROS 2 (after `scripts/build_ros.sh`):
 

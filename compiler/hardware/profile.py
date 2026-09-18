@@ -78,7 +78,11 @@ def probe_hardware() -> HardwareProfile:
         pass
 
     virt = bool(
-        Path("/sys/class/dmi/id/product_name").read_text(encoding="utf-8", errors="replace").lower().find("qemu") >= 0
+        Path("/sys/class/dmi/id/product_name")
+        .read_text(encoding="utf-8", errors="replace")
+        .lower()
+        .find("qemu")
+        >= 0
         if Path("/sys/class/dmi/id/product_name").is_file()
         else "qemu" in platform.release().lower() or platform.machine() == "aarch64"
     )

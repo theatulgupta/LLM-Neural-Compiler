@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from compiler.verification.numerics import compare_outputs
 from compiler.verification.gates import evaluate_gates
+from compiler.verification.numerics import compare_outputs
 
 
 def test_identical_outputs_zero_abs() -> None:

@@ -50,8 +50,10 @@ def detect_patterns(model: onnx.ModelProto) -> dict[str, int]:
             counts["concat"] += 1
         elif node.op_type in {"Resize", "Upsample"}:
             counts["resize"] += 1
-        if node.op_type in {"Relu", "Add", "Mul", "Identity"} and node.input and all(
-            name in constants for name in node.input if name
+        if (
+            node.op_type in {"Relu", "Add", "Mul", "Identity"}
+            and node.input
+            and all(name in constants for name in node.input if name)
         ):
             counts["foldable_constant_nodes"] += 1
 

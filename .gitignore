@@ -21,6 +21,7 @@ __pycache__/
 .vscode/
 
 experiments/results/sitl_logs/
+experiments/results/runs/
 experiments/calib/*.npz
 experiments/artifacts/**
 !experiments/artifacts/.gitkeep

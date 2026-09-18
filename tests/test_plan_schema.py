@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from compiler.hardware.profile import probe_hardware
+import pytest
+
 from compiler.planner.plan import Plan
 from compiler.schema import SchemaError, validate_llm_plan
-import pytest
 
 
 def test_valid_plan() -> None:

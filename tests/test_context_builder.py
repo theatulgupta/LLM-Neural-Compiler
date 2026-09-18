@@ -10,7 +10,9 @@ from compiler.llm.prompting import build_messages
 def test_context_contains_patterns_and_hardware(tiny_path) -> None:
     summary = summarize_graph(load_graph(tiny_path))
     hw = probe_hardware()
-    ctx = build_context(summary, hw, {"latency_ms": "50"}, [{"plan_id": "baseline", "p50_ms": 1.2, "passed": True}])
+    ctx = build_context(
+        summary, hw, {"latency_ms": "50"}, [{"plan_id": "baseline", "p50_ms": 1.2, "passed": True}]
+    )
     prompt = render_user_prompt(ctx)
     assert "conv_relu" in prompt
     assert "cpu_count" in prompt

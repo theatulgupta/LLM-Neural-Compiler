@@ -134,10 +134,13 @@ python -m compiler matrix --warmup 3 --iters 8
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests
 ```
 
-LLM path (optional, key stays in `~/.config/nnc/groq.env`, never in git):
+LLM path (optional; key stays in `~/.config/nnc/`, never in git):
 
 ```bash
-python -m compiler live experiments/models/yolov8n.onnx --kind yolov8n --no-fixture
+# Groq is one preset. Same CLI for openai / openrouter / custom URL.
+export NNC_LLM=groq   # or openai, ollama, custom, …
+python -m compiler plan experiments/models/yolov8n.onnx
+python -m compiler matrix --candidates all --warmup 5 --iters 30
 ```
 
 ROS `inference_node` still loads any ORT path; default is YOLOv8n. It does not
@@ -153,8 +156,9 @@ become a zoo of if-branches.
   papers) with citations.
 - Accuracy / mAP is out of scope until we add a labelled set; this proposal
   only claims compile + latency logs.
-- The LLM advisor on Groq is schema-bound; a submission should show live vs
-  heuristic agreement on the zoo, without putting API keys in the paper.
+- The LLM advisor is schema-bound and provider-agnostic; a submission should
+  show live vs heuristic agreement on the zoo, without putting API keys in
+  the paper.
 
 Until those exist, this tree is a **proposal with a measured companion-CPU
 table**, not a finished conference paper.

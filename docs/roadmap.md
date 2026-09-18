@@ -10,9 +10,10 @@ Mapped to the 10-phase compiler thesis (UAV deploy is Phase 0, not the science).
    constant folding, Identity DCE, MatMul+Add→Gemm, dynamic INT8 (done).
 6. Context builder, verifier, candidates, history feedback, report (done).
 7. ROS inference node on Gazebo camera frames (wired; SITL binary must be present).
-8. PX4 SITL `gz_x500_mono_cam` + Micro XRCE-DDS + `ros_gz_bridge` scripts (done).
+8. PX4 SITL `nnc_x500_cam` + Micro XRCE-DDS + `ros_gz_bridge` scripts (done).
    Camera-frame JSON is written when the stack is up (`record_frames.py`).
-9. Optional Groq client, still schema-bound (done; key stays outside git).
+9. Optional HTTP LLM client (`HttpLlmClient` + provider registry), still
+   schema-bound (done; key stays outside git). Groq is one preset.
 10. Later: Jetson TensorRT, INT8 static with a large calib set, Isaac Sim, camera mAP
     — not this QEMU host.
 

@@ -40,5 +40,10 @@ def letterbox(
     pad_x = (target - new_w) // 2
     canvas[pad_y : pad_y + new_h, pad_x : pad_x + new_w] = resized
     nchw = np.transpose(canvas.astype(np.float32) / 255.0, (2, 0, 1))[None]
-    meta = {"scale": float(scale), "pad": (int(pad_x), int(pad_y)), "resized": (new_w, new_h), "imgsz": target}
+    meta = {
+        "scale": float(scale),
+        "pad": (int(pad_x), int(pad_y)),
+        "resized": (new_w, new_h),
+        "imgsz": target,
+    }
     return nchw, meta

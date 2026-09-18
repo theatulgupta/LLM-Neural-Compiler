@@ -57,7 +57,9 @@ def _calibration_tensors(params: dict, input_shape: tuple[int, ...]) -> list[np.
 def quantize_static_int8(model: onnx.ModelProto, params: dict) -> onnx.ModelProto:
     from onnxruntime.quantization import CalibrationDataReader, QuantFormat, QuantType, quantize_static
 
-    graph_input = next(item for item in model.graph.input if item.name not in {i.name for i in model.graph.initializer})
+    graph_input = next(
+        item for item in model.graph.input if item.name not in {i.name for i in model.graph.initializer}
+    )
     dims = []
     for dim in graph_input.type.tensor_type.shape.dim:
         dims.append(int(dim.dim_value) if dim.HasField("dim_value") and dim.dim_value > 0 else 1)

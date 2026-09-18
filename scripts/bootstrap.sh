@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create a venv and install this tree. Groq key stays in ~/.config/nnc/groq.env.
+# Create a venv and install this tree. LLM keys stay in ~/.config/nnc/, never git.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -10,4 +10,4 @@ pip install -U pip
 pip install -e ".[dev]"
 python -m compiler emit-fixture --out fixtures/tiny_cnn.onnx
 python -m compiler probe
-echo "bootstrap ok. copy groq key with: scp ~/.config/nnc/groq.env <host>:~/.config/nnc/groq.env"
+echo "bootstrap ok. copy a key with: scp ~/.config/nnc/llm.env <host>:~/.config/nnc/llm.env"

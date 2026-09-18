@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import builtins
 import importlib.util
-from pathlib import Path
 
 from compiler.catalog import REPO_ROOT
 

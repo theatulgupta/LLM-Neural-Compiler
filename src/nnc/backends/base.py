@@ -60,7 +60,9 @@ class Backend(ABC):
         """Return (True, None) or (False, skip reason)."""
 
     @abstractmethod
-    def compile(self, model_bytes: bytes, *, options: BackendOptions | None = None, graph_opt: str | None = None) -> CompiledModel:
+    def compile(
+        self, model_bytes: bytes, *, options: BackendOptions | None = None, graph_opt: str | None = None
+    ) -> CompiledModel:
         """Build an executable. Must raise if available() is False."""
 
     @abstractmethod

@@ -38,8 +38,9 @@ def main() -> int:
     parser.add_argument("--seconds", type=float, default=90.0)
     parser.add_argument("--out", default="")
     parser.add_argument("--world", default="default")
-    parser.add_argument("--airframe", default="gz_x500_mono_cam")
+    parser.add_argument("--airframe", default="nnc_x500_cam")
     parser.add_argument("--render", default="")
+    parser.add_argument("--jpeg", default="", help="Write the first RGB frame as JPEG")
     args = parser.parse_args()
 
     import rclpy
@@ -114,7 +115,17 @@ def main() -> int:
         return 3
 
     stacked = np.stack(frames, axis=0)
-    np.savez_compressed(out, frames=stacked, stamps=np.asarray(stamps, dtype=np.float64), encoding=np.asarray(encoding))
+    np.savez_compressed(
+        out, frames=stacked, stamps=np.asarray(stamps, dtype=np.float64), encoding=np.asarray(encoding)
+    )
+    if args.jpeg:
+        from PIL import Image as PILImage
+
+        jpeg_path = Path(args.jpeg)
+        jpeg_path.parent.mkdir(parents=True, exist_ok=True)
+        PILImage.fromarray(frames[0]).save(jpeg_path, format="JPEG", quality=85)
+        payload["jpeg"] = str(jpeg_path)
+        payload["jpeg_bytes"] = jpeg_path.stat().st_size
     digest = hashlib.sha256(out.read_bytes()).hexdigest()
     payload["path"] = str(out)
     payload["sha256"] = digest

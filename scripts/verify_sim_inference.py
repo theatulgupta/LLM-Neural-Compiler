@@ -104,7 +104,11 @@ def main() -> int:
         if not samples:
             return {}
         ordered = sorted(samples)
-        return {"p50": ordered[len(ordered) // 2], "p95": ordered[min(len(ordered) - 1, int(0.95 * (len(ordered) - 1)))], "n": len(ordered)}
+        return {
+            "p50": ordered[len(ordered) // 2],
+            "p95": ordered[min(len(ordered) - 1, int(0.95 * (len(ordered) - 1)))],
+            "n": len(ordered),
+        }
 
     changed = False
     if len(xyz) >= 2:

@@ -21,10 +21,20 @@ def evaluate_gates(
     if task in {"detect", "detect-lite", "pose", "segment"}:
         agr_ok = float(agreement.get("matched_ratio") or 0) >= 0.90
         passed = cosine_ok and agr_ok
-        return {"passed": passed, "gate_used": "approx_detect", "cosine_ok": cosine_ok, "agreement_ok": agr_ok}
+        return {
+            "passed": passed,
+            "gate_used": "approx_detect",
+            "cosine_ok": cosine_ok,
+            "agreement_ok": agr_ok,
+        }
     if task == "classify":
         agr_ok = float(agreement.get("top1_agreement") or 0) >= 0.95
         passed = cosine_ok and agr_ok
-        return {"passed": passed, "gate_used": "approx_classify", "cosine_ok": cosine_ok, "agreement_ok": agr_ok}
+        return {
+            "passed": passed,
+            "gate_used": "approx_classify",
+            "cosine_ok": cosine_ok,
+            "agreement_ok": agr_ok,
+        }
     passed = cosine_ok
     return {"passed": passed, "gate_used": "approx_cosine", "cosine_ok": cosine_ok}

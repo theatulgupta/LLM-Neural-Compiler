@@ -14,8 +14,8 @@ from compiler.exporters import export_note, finish_onnx, write_skip
 def export_midas_small(out: Path) -> int:
     spec = get_model("midas_small")
     try:
-        import torch
         import timm  # noqa: F401  — MiDaS_small backbone
+        import torch
     except ImportError as exc:
         reason = f"torch/timm missing for MiDaS ({exc}). Install timm or skip depth."
         print(f"skip: {reason}", file=sys.stderr)
@@ -31,7 +31,9 @@ def export_midas_small(out: Path) -> int:
         owners = {"intel-isl", "isl-org", "rwightman"}
         existing = set()
         if trusted.is_file():
-            existing = {line.strip() for line in trusted.read_text(encoding="utf-8").splitlines() if line.strip()}
+            existing = {
+                line.strip() for line in trusted.read_text(encoding="utf-8").splitlines() if line.strip()
+            }
         trusted.write_text("\n".join(sorted(existing | owners)) + "\n", encoding="utf-8")
         model = torch.hub.load("intel-isl/MiDaS", "MiDaS_small", pretrained=True, trust_repo=True)
         model.eval()

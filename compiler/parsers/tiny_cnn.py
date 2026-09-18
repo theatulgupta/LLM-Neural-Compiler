@@ -61,12 +61,8 @@ def write_tiny_cnn(
     gemm_b = np.zeros((GEMM_OUT,), dtype=np.float32)
 
     input_tensor = helper.make_tensor_value_info(INPUT_NAME, TensorProto.FLOAT, list(INPUT_SHAPE))
-    output_tensor = helper.make_tensor_value_info(
-        OUTPUT_NAME, TensorProto.FLOAT, [INPUT_SHAPE[0], GEMM_OUT]
-    )
-    flatten_info = helper.make_tensor_value_info(
-        "flat", TensorProto.FLOAT, [INPUT_SHAPE[0], expected_k]
-    )
+    output_tensor = helper.make_tensor_value_info(OUTPUT_NAME, TensorProto.FLOAT, [INPUT_SHAPE[0], GEMM_OUT])
+    flatten_info = helper.make_tensor_value_info("flat", TensorProto.FLOAT, [INPUT_SHAPE[0], expected_k])
 
     nodes = [
         helper.make_node(

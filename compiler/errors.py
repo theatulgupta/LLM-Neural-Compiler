@@ -17,9 +17,7 @@ class UnknownStrategyError(CompilerError):
     def __init__(self, name: str, allowed: tuple[str, ...]) -> None:
         self.name = name
         self.allowed = allowed
-        super().__init__(
-            f"strategy {name!r} is not allowlisted; allowed={list(allowed)}"
-        )
+        super().__init__(f"strategy {name!r} is not allowlisted; allowed={list(allowed)}")
 
 
 class CalibrationUnavailable(CompilerError):
@@ -41,6 +39,4 @@ class UnknownFrontendError(CompilerError):
     def __init__(self, suffix: str, known: tuple[str, ...]) -> None:
         self.suffix = suffix
         self.known = known
-        super().__init__(
-            f"no frontend for suffix {suffix!r}; known={list(known)}"
-        )
+        super().__init__(f"no frontend for suffix {suffix!r}; known={list(known)}")

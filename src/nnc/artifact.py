@@ -98,7 +98,9 @@ def load_artifact_with_sidecar(path: Path) -> LoadedArtifact:
             inter_op_threads=raw_opts.get("inter_op_threads"),
             execution_mode=str(raw_opts.get("execution_mode") or "sequential"),
         )
-    artifact = load_ort_artifact(path, options=options, graph_opt=(options.graph_opt if options else "disable"))
+    artifact = load_ort_artifact(
+        path, options=options, graph_opt=(options.graph_opt if options else "disable")
+    )
     return LoadedArtifact(
         path=artifact.path,
         sha256=artifact.sha256,

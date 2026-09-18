@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from compiler.graph.graph_loader import load_graph
-from compiler.pipeline import compile_and_benchmark
 from compiler.profiling.profiler import profile_session
 from nnc.backends.ort_cpu import OrtCpuBackend
 

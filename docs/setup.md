@@ -56,7 +56,7 @@ SSH-safe stack (no `gnome-terminal`):
 
 ```bash
 bash scripts/build_ros.sh
-bash scripts/start_all.sh          # agent + gz headless + PX4 gz_x500_mono_cam + camera bridge + telemetry
+bash scripts/start_all.sh          # agent + gz server + PX4 nnc_x500_cam + camera bridge + telemetry
 /usr/bin/python3 scripts/record_frames.py --n 64
 python scripts/verify_sitl.py      # success only if x,y,z actually change
 NNC_START_INFERENCE=1 bash scripts/start_all.sh
@@ -76,7 +76,7 @@ git clone -b llm-advisor git@github.com:theatulgupta/LLM-Neural-Compiler.git
 cd LLM-Neural-Compiler
 bash scripts/bootstrap.sh
 mkdir -p ~/.config/nnc
-scp <this-host>:~/.config/nnc/groq.env ~/.config/nnc/groq.env
+scp <this-host>:~/.config/nnc/llm.env ~/.config/nnc/llm.env
 ```
 
 PX4, ROS 2 Jazzy, and Micro XRCE-DDS are OS installs (`~/PX4-Autopilot`,
@@ -91,3 +91,15 @@ bash scripts/start_all.sh
 ```
 
 See `docs/deploy.md` for packing the same ONNX onto a later companion.
+
+## LLM keys (never git)
+
+```bash
+mkdir -p ~/.config/nnc
+cp configs/llm.env.example ~/.config/nnc/llm.env
+# set NNC_LLM and the matching key; Groq is optional
+# NNC_LLM=groq | openai | openrouter | ollama | custom | …
+```
+
+`python -m compiler formats` prints `llm_providers`. Tests pin `NNC_LLM=heuristic`.
+

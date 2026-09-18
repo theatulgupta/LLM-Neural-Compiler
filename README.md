@@ -39,6 +39,7 @@ pip install timm           # only for MiDaS
 python -m compiler zoo
 python -m compiler export              # or --kind yolov8n
 python -m compiler plan fixtures/tiny_cnn.onnx
+# Optional: NNC_LLM=groq | openai | custom (see configs/llm.env.example)
 python -m compiler optimize fixtures/tiny_cnn.onnx --kind fixture --task classify --candidates default --warmup 2 --iters 5
 python -m compiler matrix --candidates default --warmup 3 --iters 8
 python -m compiler report
@@ -114,6 +115,7 @@ bash scripts/sim_matrix.sh
 ```
 
 `verify_sitl.py` exits 0 only if x,y,z change on the live local-position topic.
+Camera path: `docs/simulation.md`.
 
 ## Backends
 

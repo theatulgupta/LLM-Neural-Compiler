@@ -78,6 +78,7 @@ def validate_llm_plan(payload: dict[str, Any]) -> dict[str, Any]:
 
 def validate_llm_proposal(payload: dict[str, Any]) -> dict[str, Any]:
     from compiler.planner import ALLOWED_STRATEGY_NAMES
+
     schema = load_schema(LLM_PROPOSAL_SCHEMA_PATH)
     enum = tuple(schema["properties"]["strategy"]["enum"])
     if enum != ALLOWED_STRATEGY_NAMES:
@@ -93,9 +94,7 @@ def validate_llm_proposal(payload: dict[str, Any]) -> dict[str, Any]:
         raise SchemaError(f"LLM proposal has unknown fields: {extra}")
     strategy = payload.get("strategy")
     if strategy not in ALLOWED_STRATEGY_NAMES:
-        raise SchemaError(
-            f"strategy {strategy!r} is not allowlisted; allowed={list(ALLOWED_STRATEGY_NAMES)}"
-        )
+        raise SchemaError(f"strategy {strategy!r} is not allowlisted; allowed={list(ALLOWED_STRATEGY_NAMES)}")
     rationale = payload.get("rationale")
     source = payload.get("source")
     if not isinstance(rationale, str) or not rationale.strip():

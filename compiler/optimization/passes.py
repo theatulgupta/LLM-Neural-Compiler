@@ -109,7 +109,12 @@ def constant_folding(model: onnx.ModelProto, params: dict | None = None) -> onnx
             extra_inits.append(numpy_helper.from_array(folded, name=node.output[0]))
             init[node.output[0]] = folded
             continue
-        if node.op_type in {"Add", "Mul"} and len(node.input) == 2 and node.input[0] in init and node.input[1] in init:
+        if (
+            node.op_type in {"Add", "Mul"}
+            and len(node.input) == 2
+            and node.input[0] in init
+            and node.input[1] in init
+        ):
             left, right = init[node.input[0]], init[node.input[1]]
             folded = left + right if node.op_type == "Add" else left * right
             folded = np.asarray(folded)
@@ -166,7 +171,11 @@ def fuse_bn_into_conv(model: onnx.ModelProto, params: dict | None = None) -> onn
             kept.append(node)
             continue
         weight = _arr(weight_name)
-        bias = _arr(node.input[2]) if len(node.input) > 2 and node.input[2] in init else np.zeros(weight.shape[0], dtype=weight.dtype)
+        bias = (
+            _arr(node.input[2])
+            if len(node.input) > 2 and node.input[2] in init
+            else np.zeros(weight.shape[0], dtype=weight.dtype)
+        )
         scale = _arr(bn.input[1])
         shift = _arr(bn.input[2])
         mean = _arr(bn.input[3])
@@ -185,7 +194,11 @@ def fuse_bn_into_conv(model: onnx.ModelProto, params: dict | None = None) -> onn
             [node.input[0], w_name, b_name],
             [bn.output[0]],
             name=(node.name or "conv") + "_bn",
-            **{key: value for key, value in _attr_map(node).items() if key in {"kernel_shape", "pads", "strides", "dilations", "group", "auto_pad"}},
+            **{
+                key: value
+                for key, value in _attr_map(node).items()
+                if key in {"kernel_shape", "pads", "strides", "dilations", "group", "auto_pad"}
+            },
         )
         kept.append(fused)
         skip.add(nodes.index(bn))

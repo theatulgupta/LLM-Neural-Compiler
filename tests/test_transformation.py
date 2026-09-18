@@ -16,7 +16,6 @@ from compiler.optimization.passes import (
 )
 from compiler.pipeline import compile_and_benchmark
 from compiler.planner import get_strategy
-from nnc.backends.base import BackendOptions
 from nnc.backends.ort_cpu import OrtCpuBackend
 
 
@@ -25,7 +24,9 @@ def _conv_relu_model() -> onnx.ModelProto:
     conv_b = np.zeros((2,), dtype=np.float32)
     graph = helper.make_graph(
         [
-            helper.make_node("Conv", ["x", "w", "b"], ["c"], kernel_shape=[1, 1], pads=[0, 0, 0, 0], strides=[1, 1]),
+            helper.make_node(
+                "Conv", ["x", "w", "b"], ["c"], kernel_shape=[1, 1], pads=[0, 0, 0, 0], strides=[1, 1]
+            ),
             helper.make_node("Relu", ["c"], ["y"]),
         ],
         "conv_relu",
@@ -41,7 +42,9 @@ def _conv_identity_relu() -> onnx.ModelProto:
     conv_b = np.zeros((1,), dtype=np.float32)
     graph = helper.make_graph(
         [
-            helper.make_node("Conv", ["x", "w", "b"], ["c"], kernel_shape=[1, 1], pads=[0, 0, 0, 0], strides=[1, 1]),
+            helper.make_node(
+                "Conv", ["x", "w", "b"], ["c"], kernel_shape=[1, 1], pads=[0, 0, 0, 0], strides=[1, 1]
+            ),
             helper.make_node("Identity", ["c"], ["i"]),
             helper.make_node("Relu", ["i"], ["y"]),
         ],
@@ -62,7 +65,9 @@ def _conv_bn() -> onnx.ModelProto:
     var = np.ones((2,), dtype=np.float32)
     graph = helper.make_graph(
         [
-            helper.make_node("Conv", ["x", "w", "b"], ["c"], kernel_shape=[1, 1], pads=[0, 0, 0, 0], strides=[1, 1]),
+            helper.make_node(
+                "Conv", ["x", "w", "b"], ["c"], kernel_shape=[1, 1], pads=[0, 0, 0, 0], strides=[1, 1]
+            ),
             helper.make_node("BatchNormalization", ["c", "s", "t", "m", "v"], ["y"]),
         ],
         "bn",

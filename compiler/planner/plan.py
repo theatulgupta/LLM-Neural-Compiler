@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from compiler.planner.atoms import ATOMS, PASS_ATOMS
+from compiler.planner.atoms import PASS_ATOMS
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,7 +56,10 @@ class Plan:
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> Plan:
-        steps = tuple(dict(step) if isinstance(step, dict) else {"atom": str(step)} for step in payload.get("steps") or ())
+        steps = tuple(
+            dict(step) if isinstance(step, dict) else {"atom": str(step)}
+            for step in payload.get("steps") or ()
+        )
         options = dict(payload.get("options") or {})
         effects = payload.get("expected_effects") or ()
         return cls(
@@ -140,7 +143,10 @@ PRESETS: dict[str, Plan] = {
         plan_id="int8_static",
         steps=(
             {"atom": "onnx_shape_infer", "params": {}},
-            {"atom": "quantize_static_int8", "params": {"calibration": "gz_frames", "per_channel": True, "format": "qdq"}},
+            {
+                "atom": "quantize_static_int8",
+                "params": {"calibration": "gz_frames", "per_channel": True, "format": "qdq"},
+            },
         ),
         options={"ort_graph_opt": "basic", "execution_mode": "sequential"},
         rationale="Static INT8 with calibration frames.",

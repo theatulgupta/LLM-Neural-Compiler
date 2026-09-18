@@ -1,18 +1,15 @@
 import rclpy
-from rclpy.node import Node
-
 from px4_msgs.msg import VehicleLocalPosition
-
+from rclpy.node import Node
 from rclpy.qos import (
-    QoSProfile,
-    ReliabilityPolicy,
     DurabilityPolicy,
     HistoryPolicy,
+    QoSProfile,
+    ReliabilityPolicy,
 )
 
 
 class TelemetryNode(Node):
-
     def __init__(self):
         super().__init__("telemetry_node")
 

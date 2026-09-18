@@ -16,5 +16,4 @@ class Frontend(ABC):
         return True, None
 
     @abstractmethod
-    def ingest(self, path: Path, *, check: bool = True) -> LoadedGraph:
-        ...
+    def ingest(self, path: Path, *, check: bool = True) -> LoadedGraph: ...

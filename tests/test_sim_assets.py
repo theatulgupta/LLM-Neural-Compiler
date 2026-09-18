@@ -6,11 +6,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_nnc_yard_world() -> None:
+def test_nnc_yard_has_person_and_vehicle() -> None:
     tree = ET.parse(ROOT / "sim" / "worlds" / "nnc_yard.sdf")
-    world = tree.getroot().find("world")
-    assert world is not None
-    assert world.attrib.get("name") == "nnc_yard"
+    names = [inc.findtext("name") or "" for inc in tree.findall(".//include")]
+    assert any("person" in name for name in names)
+    assert any(name in {"pickup", "hatchback"} for name in names)
 
 
 def test_nnc_camera_model() -> None:

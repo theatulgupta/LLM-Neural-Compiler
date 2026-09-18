@@ -6,7 +6,7 @@ from pathlib import Path
 
 from compiler.errors import FrontendSkip, UnknownFrontendError
 from compiler.frontends.base import Frontend
-from compiler.graph.graph_loader import LoadedGraph, load_onnx_path
+from compiler.graph.graph_loader import LoadedGraph
 
 _FRONTENDS: dict[str, type[Frontend]] = {}
 

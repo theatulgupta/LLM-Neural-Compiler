@@ -45,7 +45,9 @@ def load_history(history_path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def history_for_model(kind_or_sha: str, k: int = 5, *, history_path: Path | None = None) -> list[dict[str, Any]]:
+def history_for_model(
+    kind_or_sha: str, k: int = 5, *, history_path: Path | None = None
+) -> list[dict[str, Any]]:
     from compiler.catalog import REPO_ROOT
 
     path = history_path or (REPO_ROOT / "experiments" / "results" / "history.jsonl")
@@ -59,7 +61,8 @@ def history_for_model(kind_or_sha: str, k: int = 5, *, history_path: Path | None
         bench = (row.get("benchmark") or {}).get("latency_ms") or {}
         matched.append(
             {
-                "plan_id": (row.get("plan") or {}).get("plan_id") or (row.get("strategy") or {}).get("strategy"),
+                "plan_id": (row.get("plan") or {}).get("plan_id")
+                or (row.get("strategy") or {}).get("strategy"),
                 "p50_ms": bench.get("p50"),
                 "passed": (row.get("verification") or {}).get("passed"),
                 "kind": kind,

@@ -159,12 +159,27 @@
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
       <name>pickup</name>
-      <pose>9 -3 0 0 0 1.2</pose>
+      <pose>7.5 2.5 0 0 0 1.2</pose>
     </include>
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Construction Cone</uri>
       <name>construction_cone</name>
       <pose>4 -1 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Standing person</uri>
+      <name>standing_person</name>
+      <pose>4.5 0.6 0 0 0 3.14</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
+      <name>hatchback</name>
+      <pose>6 -2 0 0 0 1.0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Casual female</uri>
+      <name>casual_female</name>
+      <pose>5.5 1.8 0 0 0 2.8</pose>
     </include>
   </world>
 </sdf>

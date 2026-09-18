@@ -73,6 +73,7 @@ class InferenceNode(Node):
         self._dropped = 0
         self._busy = False
         self._last_stamp = 0.0
+        self._last_classes: list[str] = []
         self._load()
         source = str(self.get_parameter("source").value)
         if source == "camera":
@@ -200,6 +201,7 @@ class InferenceNode(Node):
             "stamp": {"sec": int(msg.header.stamp.sec), "nanosec": int(msg.header.stamp.nanosec)},
             "ms": {"pre": pre_ms, "infer": sample.latency_ms, "post": post_ms, "e2e": e2e},
             "n_det": int(len(det.get("boxes", []))) if det.get("boxes") is not None else 0,
+            "classes": list(self._last_classes),
             "dropped_frames": self._dropped,
             "model": {
                 "path": str(self._artifact.path),
@@ -224,6 +226,8 @@ class InferenceNode(Node):
         if self._det_pub is None:
             return
         from vision_msgs.msg import BoundingBox2D, Detection2D, Detection2DArray, ObjectHypothesisWithPose
+
+        from nnc.labels import class_name
         from nnc.postprocess import boxes_to_original
 
         out = Detection2DArray()
@@ -235,6 +239,8 @@ class InferenceNode(Node):
             self._det_pub.publish(out)
             return
         boxes = boxes_to_original(boxes, meta)
+        names: list[str] = []
+        task = str(self.get_parameter("task").value)
         for box, score, cls in zip(boxes, scores, classes):
             x1, y1, x2, y2 = [float(v) for v in box]
             item = Detection2D()
@@ -245,16 +251,21 @@ class InferenceNode(Node):
             item.bbox.size_x = max(0.0, x2 - x1)
             item.bbox.size_y = max(0.0, y2 - y1)
             hyp = ObjectHypothesisWithPose()
-            hyp.hypothesis.class_id = str(int(cls))
+            name = class_name(task, int(cls))
+            names.append(name)
+            hyp.hypothesis.class_id = name
             hyp.hypothesis.score = float(score)
             item.results.append(hyp)
             out.detections.append(item)
+        self._last_classes = names
         self._det_pub.publish(out)
 
     def _tick_synthetic(self) -> None:
         source = str(self.get_parameter("source").value)
         if self._artifact is None:
-            self._publish({"ok": False, "error": self._error, "source": source, "fps_claimed": False}, None, False)
+            self._publish(
+                {"ok": False, "error": self._error, "source": source, "fps_claimed": False}, None, False
+            )
             return
         try:
             from nnc.artifact import infer_once, synthetic_feed
@@ -271,7 +282,16 @@ class InferenceNode(Node):
             }
             self._publish(payload, sample.latency_ms, True)
         except Exception as exc:  # noqa: BLE001
-            self._publish({"ok": False, "error": f"{type(exc).__name__}: {exc}", "source": source, "fps_claimed": False}, None, False)
+            self._publish(
+                {
+                    "ok": False,
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "source": source,
+                    "fps_claimed": False,
+                },
+                None,
+                False,
+            )
 
     def _publish(self, payload: dict, latency_ms: float | None, ok: bool) -> None:
         msg = String()

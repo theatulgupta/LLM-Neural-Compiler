@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from compiler.graph.graph_loader import load_graph
-from compiler.optimization.passes import graph_ir_snapshot
 from compiler.pipeline import compile_verify_profile
 from compiler.planner.plan import get_plan
 

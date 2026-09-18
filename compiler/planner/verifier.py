@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from compiler.graph.graph_summary import GraphSummary
 from compiler.hardware.profile import HardwareProfile
-from compiler.planner.atoms import ATOMS, PASS_ATOMS
+from compiler.planner.atoms import ATOMS
 from compiler.planner.plan import Plan
 from compiler.schema import SchemaError, validate_llm_plan
 
@@ -42,7 +42,12 @@ def verify_plan(
     try:
         validate_llm_plan(plan.to_dict())
     except SchemaError as exc:
-        return VerifiedPlan(plan=plan, accepted=False, rejections=({"step": "*", "reason": str(exc), "level": "reject"},), numerics="exact")
+        return VerifiedPlan(
+            plan=plan,
+            accepted=False,
+            rejections=({"step": "*", "reason": str(exc), "level": "reject"},),
+            numerics="exact",
+        )
 
     kept: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -72,7 +77,9 @@ def verify_plan(
             if flag == "fp16_execution" and backend_name == "ort_cpu":
                 hw_ok = False
             if not hw_ok:
-                rejections.append({"step": atom_name, "reason": f"hardware {flag} unavailable", "level": "drop"})
+                rejections.append(
+                    {"step": atom_name, "reason": f"hardware {flag} unavailable", "level": "drop"}
+                )
                 skip = True
                 break
         if skip:
@@ -86,7 +93,9 @@ def verify_plan(
     if any(name in _STRUCTURAL for name in names) and "onnx_shape_infer" not in names:
         kept.insert(0, {"atom": "onnx_shape_infer", "params": {}})
         names = [step["atom"] for step in kept]
-        rejections.append({"step": "onnx_shape_infer", "reason": "forced first for structural passes", "level": "drop"})
+        rejections.append(
+            {"step": "onnx_shape_infer", "reason": "forced first for structural passes", "level": "drop"}
+        )
 
     rest = [step for step in kept if step["atom"] not in _QUANT and step["atom"] != "onnx_shape_infer"]
     quants = [step for step in kept if step["atom"] in _QUANT]
@@ -101,7 +110,9 @@ def verify_plan(
         except (TypeError, ValueError):
             value = cpu_count
         if value > cpu_count:
-            rejections.append({"step": "intra_op_threads", "reason": f"clamped {value} -> {cpu_count}", "level": "drop"})
+            rejections.append(
+                {"step": "intra_op_threads", "reason": f"clamped {value} -> {cpu_count}", "level": "drop"}
+            )
             value = cpu_count
         if value < 1:
             value = 1

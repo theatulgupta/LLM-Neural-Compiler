@@ -12,7 +12,14 @@ from compiler.errors import CalibrationUnavailable
 CALIB_NPZ = REPO_ROOT / "experiments" / "calib" / "gz_frames.npz"
 ASSET_DIRS = [
     REPO_ROOT / ".venv" / "lib" / "python3.12" / "site-packages" / "ultralytics" / "assets",
-    Path.home() / "LLM-Neural-Compiler" / ".venv" / "lib" / "python3.12" / "site-packages" / "ultralytics" / "assets",
+    Path.home()
+    / "LLM-Neural-Compiler"
+    / ".venv"
+    / "lib"
+    / "python3.12"
+    / "site-packages"
+    / "ultralytics"
+    / "assets",
 ]
 
 
@@ -24,7 +31,9 @@ def _letterbox_nchw(rgb: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
     # Match channel count.
     if len(shape) == 4 and shape[1] == 1 and nchw.shape[1] == 3:
         nchw = nchw.mean(axis=1, keepdims=True)
-    if len(shape) == 4 and tuple(nchw.shape) != tuple(d if d > 0 else nchw.shape[i] for i, d in enumerate(shape)):
+    if len(shape) == 4 and tuple(nchw.shape) != tuple(
+        d if d > 0 else nchw.shape[i] for i, d in enumerate(shape)
+    ):
         # Resize channels/spatial with nearest if the model is not square 3xHxW.
         target = tuple(int(d) if d and d > 0 else nchw.shape[i] for i, d in enumerate(shape))
         if nchw.shape != target:
@@ -64,7 +73,9 @@ def load_calibration_rgb(*, source: str = "gz_frames", limit: int = 16) -> tuple
     assets = _load_asset_rgbs(limit)
     if assets:
         return assets, "assets"
-    raise CalibrationUnavailable("no calibration frames (gz_frames.npz missing and ultralytics assets missing)")
+    raise CalibrationUnavailable(
+        "no calibration frames (gz_frames.npz missing and ultralytics assets missing)"
+    )
 
 
 def load_calibration_nchw(*, source: str, input_shape: tuple[int, ...], limit: int = 16) -> list[np.ndarray]:

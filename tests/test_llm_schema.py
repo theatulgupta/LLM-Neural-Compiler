@@ -7,8 +7,8 @@ from compiler.graph.graph_loader import load_graph
 from compiler.graph.graph_summary import summarize_graph
 from compiler.llm.llm_client import MockLlmClient, proposal_from_dict
 from compiler.llm.recommendation_engine import recommend_strategy
-from compiler.schema import LLM_PROPOSAL_SCHEMA_PATH, SchemaError, load_schema, validate_llm_proposal
 from compiler.planner import ALLOWED_STRATEGY_NAMES, get_strategy
+from compiler.schema import LLM_PROPOSAL_SCHEMA_PATH, SchemaError, load_schema, validate_llm_proposal
 
 
 def test_schema_enum_matches_allowlist() -> None:
@@ -26,9 +26,7 @@ def test_mock_client_is_schema_bound(tiny_path) -> None:
 
 def test_mock_client_rejects_unknown_strategy(tiny_path) -> None:
     summary = summarize_graph(load_graph(tiny_path))
-    client = MockLlmClient(
-        {"strategy": "invent_new_op", "rationale": "should fail", "source": "mock"}
-    )
+    client = MockLlmClient({"strategy": "invent_new_op", "rationale": "should fail", "source": "mock"})
     with pytest.raises(SchemaError):
         client.propose(summary)
 
@@ -48,4 +46,3 @@ def test_heuristic_recommendation_is_allowlisted(tiny_path) -> None:
     rec = recommend_strategy(summary)
     assert rec.strategy.name in ALLOWED_STRATEGY_NAMES
     assert rec.source == "heuristic"
-

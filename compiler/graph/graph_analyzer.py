@@ -80,7 +80,12 @@ def _node_flops(
             return 0, False
         if any(d is None for d in weight_shape[:4]) or any(d is None for d in out_shape[:4]):
             return 0, False
-        n, cout, hout, wout = (int(out_shape[0] or 1), int(out_shape[1]), int(out_shape[2]), int(out_shape[3]))
+        n, cout, hout, wout = (
+            int(out_shape[0] or 1),
+            int(out_shape[1]),
+            int(out_shape[2]),
+            int(out_shape[3]),
+        )
         groups = max(1, _attr_int(node, "group", 1))
         if node.op_type == "Conv":
             cin = int(weight_shape[1])
@@ -116,7 +121,26 @@ def _node_flops(
             batch *= int(dim)
         return 2 * batch * m * n * k, True
 
-    if node.op_type in {"Add", "Mul", "Div", "Sub", "Relu", "Sigmoid", "Tanh", "Clip", "LeakyRelu", "MaxPool", "AveragePool", "GlobalAveragePool", "Flatten", "Reshape", "Transpose", "Concat", "Resize", "Identity"}:
+    if node.op_type in {
+        "Add",
+        "Mul",
+        "Div",
+        "Sub",
+        "Relu",
+        "Sigmoid",
+        "Tanh",
+        "Clip",
+        "LeakyRelu",
+        "MaxPool",
+        "AveragePool",
+        "GlobalAveragePool",
+        "Flatten",
+        "Reshape",
+        "Transpose",
+        "Concat",
+        "Resize",
+        "Identity",
+    }:
         if out_shape is None:
             return 0, False
         total = 1
@@ -186,15 +210,18 @@ def analyze_graph(loaded: LoadedGraph) -> dict[str, object]:
         "patterns": patterns,
         "memory": memory,
         "static_shapes": static_shapes,
-        "shapes": {name: list(dims) for name, dims in shapes.items() if name in graph_inputs or name not in init_names},
+        "shapes": {
+            name: list(dims)
+            for name, dims in shapes.items()
+            if name in graph_inputs or name not in init_names
+        },
         "inputs": [
             {"name": item.name, "shape": _dims(item), "dtype": _dtype_name(item)}
             for item in graph.input
             if item.name not in init_names
         ],
         "outputs": [
-            {"name": item.name, "shape": _dims(item), "dtype": _dtype_name(item)}
-            for item in graph.output
+            {"name": item.name, "shape": _dims(item), "dtype": _dtype_name(item)} for item in graph.output
         ],
         "opset": loaded.opset,
         "ir_version": loaded.ir_version,

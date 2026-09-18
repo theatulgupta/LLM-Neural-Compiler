@@ -16,7 +16,7 @@ Notebook mapping:
 | --- | --- |
 | Graph analyzer | `compiler/graph/` |
 | Context builder | `compiler/llm/context_builder.py` |
-| LLM | `compiler/llm/` |
+| LLM | `compiler/llm/` (`LlmClient`, `ProviderSpec`, `propose_plan`) |
 | Strategy generator | `compiler/planner/candidates.py` |
 | Verification | `compiler/planner/verifier.py` + `compiler/verification/` |
 | Compiler | `compiler/optimization/` + `src/nnc/backends/` |
