@@ -1,5 +1,5 @@
 {
-  "achieved_hz": 1.4,
+  "achieved_hz": 1.325,
   "artifact": {
     "kind": "midas_small",
     "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/midas_small.onnx",
@@ -9,22 +9,22 @@
   "classes_seen": [],
   "detections_total": 0,
   "e2e_ms": {
-    "n": 56,
-    "p50": 78.04595800007519,
-    "p95": 155.79986700004156
+    "n": 53,
+    "p50": 135.8996279996063,
+    "p95": 280.6825480001862
   },
   "fps_claimed": false,
-  "frames_rx": 57,
+  "frames_rx": 61,
   "infer_ms": {
-    "n": 56,
-    "p50": 75.10958900002151,
-    "p95": 153.27445799994166
+    "n": 53,
+    "p50": 130.4983859999993,
+    "p95": 274.27343300041684
   },
-  "inferences": 56,
+  "inferences": 53,
   "kind": "midas_small",
   "note": "llvmpipe and ORT share 6 vCPUs; one model at a time. fps_claimed=false.",
   "ok": true,
-  "position_samples": 1892,
+  "position_samples": 1894,
   "seconds": 40.0,
   "variant": "native",
   "xyz_changed": true

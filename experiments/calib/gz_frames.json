@@ -1,21 +1,23 @@
 {
   "airframe": "nnc_x500_cam",
-  "count": 64,
+  "count": 8,
   "encoding": "rgb8",
   "fps_claimed": false,
   "height": 480,
+  "jpeg": "experiments/results/yard_frame.jpg",
+  "jpeg_bytes": 15211,
   "ok": true,
   "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/calib/gz_frames.npz",
-  "render_engine": "ogre",
-  "sha256": "53a3f5fbffbdd4007e81a174f1f2b0cb83889cd2300599a47ae5491ec9315009",
+  "render_engine": null,
+  "sha256": "a01bd713777b2c2d7d1f91c315d1b3ef6e81e63ba7e3d42dd4263eb880c24bf4",
   "shape": [
-    64,
+    8,
     480,
     640,
     3
   ],
   "topic": "/nnc/camera/image_raw",
-  "wanted": 64,
+  "wanted": 8,
   "width": 640,
   "world": "nnc_yard"
 }

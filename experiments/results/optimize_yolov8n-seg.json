@@ -11,22 +11,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 149.96470599999157,
-          "mean": 120.2037581999851,
-          "min": 112.37304099995526,
-          "p50": 119.17291400004615,
-          "p95": 127.82665999998244
+          "max": 73.32763000067644,
+          "mean": 69.58072610010883,
+          "min": 65.84872999974323,
+          "p50": 69.64457499998389,
+          "p95": 72.30518000051234
         },
-        "measured_at": "2026-09-18T15:03:46.746824+00:00",
-        "throughput_ips": 8.319207443882766,
+        "measured_at": "2026-09-18T15:55:06.763662+00:00",
+        "throughput_ips": 14.371795985015394,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": false,
+      "measured": true,
       "nodes_after": 301,
       "nodes_before": 301,
       "origin": "preset:baseline",
-      "p50_ms": 119.17291400004615,
+      "p50_ms": 69.64457499998389,
       "passed": true,
       "plan": {
         "confidence": 1.0,
@@ -44,17 +45,18 @@
       },
       "plan_id": "baseline",
       "profile": {
-        "compile_ms": 122.95756799994706,
-        "cpu_percent_mean": 591.7169014084508,
+        "compile_ms": 95.05245799937256,
+        "cpu_percent_mean": 599.3707317073171,
         "model_bytes": 13842019,
         "rss_mb": {
-          "after_compile": 690.28125,
-          "before": 690.26171875,
-          "peak": 690.28125
+          "after_compile": 589.73046875,
+          "before": 589.7265625,
+          "peak": 589.73046875
         },
-        "threads": 17
+        "threads": 18
       },
-      "run_id": "6d8ac5bd-1d58-4701-99b0-a5ceaf40d7ae",
+      "run_id": "2773c81b-8901-43d9-99ac-f3097613f01d",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -97,22 +99,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 276.0636190000696,
-          "mean": 129.740216500007,
-          "min": 114.14645200011364,
-          "p50": 122.30308300013348,
-          "p95": 146.55104999997093
+          "max": 73.1505069998093,
+          "mean": 69.25607636658242,
+          "min": 66.23239399959857,
+          "p50": 69.30274499973166,
+          "p95": 70.71727599941369
         },
-        "measured_at": "2026-09-18T15:03:54.932587+00:00",
-        "throughput_ips": 7.70771027655828,
+        "measured_at": "2026-09-18T15:55:11.566464+00:00",
+        "throughput_ips": 14.439166243072384,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": false,
+      "measured": true,
       "nodes_after": 301,
       "nodes_before": 301,
       "origin": "preset:ort_default",
-      "p50_ms": 122.30308300013348,
+      "p50_ms": 69.30274499973166,
       "passed": true,
       "plan": {
         "confidence": 1.0,
@@ -130,17 +133,18 @@
       },
       "plan_id": "ort_default",
       "profile": {
-        "compile_ms": 127.87116499998774,
-        "cpu_percent_mean": 592.4802631578947,
+        "compile_ms": 101.81636399920535,
+        "cpu_percent_mean": 598.8829268292683,
         "model_bytes": 13842019,
         "rss_mb": {
-          "after_compile": 659.4140625,
-          "before": 659.05859375,
-          "peak": 659.4140625
+          "after_compile": 589.81640625,
+          "before": 589.80078125,
+          "peak": 589.81640625
         },
-        "threads": 18
+        "threads": 17
       },
-      "run_id": "ccd793e2-2748-40b5-84fb-ce82f4dece00",
+      "run_id": "5272118c-2377-4851-abec-bce5150b1576",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -183,22 +187,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 169.0385790000164,
-          "mean": 119.46947686665983,
-          "min": 111.30661800007147,
-          "p50": 117.26457899999332,
-          "p95": 128.27437200007807
+          "max": 73.03684199996496,
+          "mean": 69.6671002333763,
+          "min": 67.18601300053706,
+          "p50": 69.33520399979898,
+          "p95": 71.96493399987958
         },
-        "measured_at": "2026-09-18T15:04:02.697578+00:00",
-        "throughput_ips": 8.370338819815059,
+        "measured_at": "2026-09-18T15:55:16.472714+00:00",
+        "throughput_ips": 14.35397765444696,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": false,
+      "measured": true,
       "nodes_after": 301,
       "nodes_before": 301,
       "origin": "preset:graph_simplify",
-      "p50_ms": 117.26457899999332,
+      "p50_ms": 69.33520399979898,
       "passed": true,
       "plan": {
         "confidence": 1.0,
@@ -233,17 +238,18 @@
       },
       "plan_id": "graph_simplify",
       "profile": {
-        "compile_ms": 127.35627300003216,
-        "cpu_percent_mean": 593.6257142857144,
+        "compile_ms": 118.45835900021484,
+        "cpu_percent_mean": 599.5146341463415,
         "model_bytes": 13860318,
         "rss_mb": {
-          "after_compile": 691.05859375,
-          "before": 691.0546875,
-          "peak": 691.05859375
+          "after_compile": 591.97265625,
+          "before": 591.94921875,
+          "peak": 591.97265625
         },
         "threads": 18
       },
-      "run_id": "ce8d79e5-3d20-4071-8cc6-16e2ca3d0b88",
+      "run_id": "4077291c-2c95-4ed8-9af5-c7b030b4fc8d",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -286,22 +292,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 173.36046000013994,
-          "mean": 122.83069929997812,
-          "min": 113.70578699984435,
-          "p50": 118.78605099991546,
-          "p95": 170.585243000005
+          "max": 86.05082400026731,
+          "mean": 70.30733609996484,
+          "min": 67.379054000412,
+          "p50": 69.65841100009129,
+          "p95": 77.67880600022181
         },
-        "measured_at": "2026-09-18T15:04:10.545566+00:00",
-        "throughput_ips": 8.141287200179427,
+        "measured_at": "2026-09-18T15:55:21.456887+00:00",
+        "throughput_ips": 14.223266809286777,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": false,
+      "measured": true,
       "nodes_after": 301,
       "nodes_before": 301,
       "origin": "preset:graph_fuse",
-      "p50_ms": 118.78605099991546,
+      "p50_ms": 69.65841100009129,
       "passed": true,
       "plan": {
         "confidence": 1.0,
@@ -333,17 +340,18 @@
       },
       "plan_id": "graph_fuse",
       "profile": {
-        "compile_ms": 117.27498499999456,
-        "cpu_percent_mean": 593.0763888888889,
+        "compile_ms": 118.32811099975515,
+        "cpu_percent_mean": 599.1292682926829,
         "model_bytes": 13860318,
         "rss_mb": {
-          "after_compile": 689.72265625,
-          "before": 689.19140625,
-          "peak": 689.72265625
+          "after_compile": 591.91796875,
+          "before": 591.90234375,
+          "peak": 591.91796875
         },
-        "threads": 18
+        "threads": 17
       },
-      "run_id": "1aec20d3-3b80-4347-92d5-44ab587433cc",
+      "run_id": "810c2689-eed3-4488-aae1-6f52a9bc2f0b",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -386,22 +394,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 123.69215300009273,
-          "mean": 115.20420186668616,
-          "min": 110.2344070000072,
-          "p50": 114.93083300001672,
-          "p95": 122.09457500011922
+          "max": 81.23823700043431,
+          "mean": 75.52172246669215,
+          "min": 69.55820399980439,
+          "p50": 75.25866000014503,
+          "p95": 80.33707799950207
         },
-        "measured_at": "2026-09-18T15:04:18.393657+00:00",
-        "throughput_ips": 8.680238947857093,
+        "measured_at": "2026-09-18T15:55:26.795646+00:00",
+        "throughput_ips": 13.241223416759816,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": false,
+      "measured": true,
       "nodes_after": 301,
       "nodes_before": 301,
       "origin": "preset:graph_fuse_ort",
-      "p50_ms": 114.93083300001672,
+      "p50_ms": 75.25866000014503,
       "passed": true,
       "plan": {
         "confidence": 1.0,
@@ -433,17 +442,18 @@
       },
       "plan_id": "graph_fuse_ort",
       "profile": {
-        "compile_ms": 133.30382699996335,
-        "cpu_percent_mean": 595.7308823529411,
+        "compile_ms": 115.56130000008125,
+        "cpu_percent_mean": 598.2022727272728,
         "model_bytes": 13860318,
         "rss_mb": {
-          "after_compile": 659.7421875,
-          "before": 659.73828125,
-          "peak": 659.7421875
+          "after_compile": 591.96875,
+          "before": 591.9453125,
+          "peak": 591.96875
         },
-        "threads": 18
+        "threads": 17
       },
-      "run_id": "534e1576-0294-46e0-99a8-add57e233fec",
+      "run_id": "ba116d7e-8ccb-4e33-a20f-adc49441b069",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -486,22 +496,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 209.0125810000245,
-          "mean": 99.80015826666506,
-          "min": 79.6413069999744,
-          "p50": 91.2776010000016,
-          "p95": 181.5720639999654
+          "max": 55.469898999945144,
+          "mean": 49.83958143329801,
+          "min": 46.74800799966761,
+          "p50": 49.61719400034781,
+          "p95": 53.58141299984709
         },
-        "measured_at": "2026-09-18T15:04:25.314901+00:00",
-        "throughput_ips": 10.02002419002192,
+        "measured_at": "2026-09-18T15:55:30.981386+00:00",
+        "throughput_ips": 20.064373962255956,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": true,
+      "measured": true,
       "nodes_after": 746,
       "nodes_before": 301,
       "origin": "preset:int8_dynamic",
-      "p50_ms": 91.2776010000016,
+      "p50_ms": 49.61719400034781,
       "passed": false,
       "plan": {
         "confidence": 0.6,
@@ -530,17 +541,18 @@
       },
       "plan_id": "int8_dynamic",
       "profile": {
-        "compile_ms": 118.38253399992027,
-        "cpu_percent_mean": 573.9586206896552,
+        "compile_ms": 93.78909800034307,
+        "cpu_percent_mean": 598.7724137931035,
         "model_bytes": 3824939,
         "rss_mb": {
-          "after_compile": 635.484375,
-          "before": 635.02734375,
-          "peak": 635.484375
+          "after_compile": 523.796875,
+          "before": 523.7734375,
+          "peak": 523.796875
         },
         "threads": 18
       },
-      "run_id": "32bb7ce9-68ae-4cc6-bd16-ec0c4af3acfa",
+      "run_id": "97194cfd-1e26-4c6f-a40a-d5e57bdf7e16",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -583,22 +595,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 173.9342729999862,
-          "mean": 155.01054820002386,
-          "min": 147.04393400006666,
-          "p50": 153.2372750000377,
-          "p95": 167.80887200002326
+          "max": 270.03313900058856,
+          "mean": 180.10453860000175,
+          "min": 161.7984009999418,
+          "p50": 167.93893599970033,
+          "p95": 238.8835490000929
         },
-        "measured_at": "2026-09-18T15:04:39.216630+00:00",
-        "throughput_ips": 6.451173882112921,
+        "measured_at": "2026-09-18T15:55:43.526729+00:00",
+        "throughput_ips": 5.55233092832226,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": true,
+      "measured": true,
       "nodes_after": 1012,
       "nodes_before": 301,
       "origin": "preset:int8_static",
-      "p50_ms": 153.2372750000377,
+      "p50_ms": 167.93893599970033,
       "passed": false,
       "plan": {
         "confidence": 0.5,
@@ -630,17 +643,18 @@
       },
       "plan_id": "int8_static",
       "profile": {
-        "compile_ms": 224.10960500019428,
-        "cpu_percent_mean": 592.9184782608696,
+        "compile_ms": 164.27596300036384,
+        "cpu_percent_mean": 590.2235849056603,
         "model_bytes": 3984215,
         "rss_mb": {
-          "after_compile": 732.203125,
-          "before": 732.19921875,
-          "peak": 732.203125
+          "after_compile": 591.125,
+          "before": 591.12109375,
+          "peak": 591.125
         },
         "threads": 17
       },
-      "run_id": "b8074ff2-f8d6-4dd3-ab9e-bab5b0afcd01",
+      "run_id": "e1a227de-5650-425f-98bc-b9ec670b1624",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -683,22 +697,23 @@
         "fps_claimed": false,
         "iters": 30,
         "latency_ms": {
-          "max": 126.75571099998706,
-          "mean": 73.44553563332283,
-          "min": 67.72094199982348,
-          "p50": 71.79628200015031,
-          "p95": 75.52672999986498
+          "max": 90.15992100012227,
+          "mean": 85.73847506671275,
+          "min": 82.87339500020607,
+          "p50": 85.45808199960447,
+          "p95": 88.18527000039467
         },
-        "measured_at": "2026-09-18T15:04:45.126694+00:00",
-        "throughput_ips": 13.615531446220292,
+        "measured_at": "2026-09-18T15:55:50.534393+00:00",
+        "throughput_ips": 11.663375155925086,
         "warmup": 5
       },
       "compile_ok": true,
       "graph_changed": true,
+      "measured": true,
       "nodes_after": 746,
       "nodes_before": 301,
       "origin": "heuristic",
-      "p50_ms": 71.79628200015031,
+      "p50_ms": 85.45808199960447,
       "passed": false,
       "plan": {
         "confidence": 0.7,
@@ -734,17 +749,130 @@
       },
       "plan_id": "graph_fuse",
       "profile": {
-        "compile_ms": 108.92003899994052,
-        "cpu_percent_mean": 401.7581395348837,
+        "compile_ms": 153.38505199997599,
+        "cpu_percent_mean": 401.7142857142857,
         "model_bytes": 3824939,
         "rss_mb": {
-          "after_compile": 482.03515625,
-          "before": 481.55859375,
-          "peak": 482.03515625
+          "after_compile": 588.93359375,
+          "before": 588.91015625,
+          "peak": 588.93359375
         },
         "threads": 15
       },
-      "run_id": "54ddbf1e-237f-4449-acd4-7b08f39fb0b5",
+      "run_id": "2334de0e-0e3b-4ade-874d-f35c5818950b",
+      "same_as": null,
+      "verification": {
+        "accepted_plan": true,
+        "agreement": {
+          "matched_ratio": 1.0,
+          "mean_iou": 0.976053470697322
+        },
+        "gate_used": "approx_detect",
+        "inputs_source": "calib",
+        "numerics": {
+          "cosine_min": 0.9742272795588576,
+          "max_abs": 296.6863098144531,
+          "per_output": [
+            {
+              "cosine": 0.9993132611002262,
+              "max_abs": 296.6863098144531,
+              "mean_abs": 0.19849458836177367,
+              "name": "0"
+            },
+            {
+              "cosine": 0.9742272795588576,
+              "max_abs": 0.9657859802246094,
+              "mean_abs": 0.1224191373076109,
+              "name": "1"
+            }
+          ]
+        },
+        "numerics_kind": "approx",
+        "passed": false,
+        "rejections": []
+      }
+    },
+    {
+      "artifact": {
+        "bytes": 3824939,
+        "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-seg/uav_companion_opt.onnx",
+        "sha256": "39403733d77d57553cabb5b0e6e0c1d9c2fef1b0f3adb87c5bb8c62722942dbe",
+        "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-seg/uav_companion_opt.onnx.json"
+      },
+      "benchmark": {
+        "fps_claimed": false,
+        "iters": 30,
+        "latency_ms": {
+          "max": 375.8193220000976,
+          "mean": 182.27346626657285,
+          "min": 115.03122799967969,
+          "p50": 172.42386599991733,
+          "p95": 299.5844589995613
+        },
+        "measured_at": "2026-09-18T15:56:01.201767+00:00",
+        "throughput_ips": 5.486262046158224,
+        "warmup": 5
+      },
+      "compile_ok": true,
+      "graph_changed": true,
+      "measured": true,
+      "nodes_after": 746,
+      "nodes_before": 301,
+      "origin": "llm",
+      "p50_ms": 172.42386599991733,
+      "passed": false,
+      "plan": {
+        "confidence": 0.6,
+        "expected_effects": [
+          "fewer_nodes",
+          "lower_latency",
+          "lower_memory"
+        ],
+        "options": {
+          "execution_mode": "parallel",
+          "intra_op_threads": 6,
+          "ort_graph_opt": "extended"
+        },
+        "plan_id": "uav_companion_opt",
+        "rationale": "Apply shape inference, remove no\u2011ops, fold constants, then dynamic INT8 quantization to reduce model size and latency on the aarch64 CPU with asimd/asimddp support. ORT extended optimizations will fuse remaining patterns, further lowering node count and runtime.",
+        "source": "groq",
+        "steps": [
+          {
+            "atom": "onnx_shape_infer",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_identity",
+            "params": {}
+          },
+          {
+            "atom": "eliminate_dropout",
+            "params": {}
+          },
+          {
+            "atom": "constant_folding",
+            "params": {}
+          },
+          {
+            "atom": "quantize_dynamic_int8",
+            "params": {}
+          }
+        ]
+      },
+      "plan_id": "uav_companion_opt",
+      "profile": {
+        "compile_ms": 189.38543999956892,
+        "cpu_percent_mean": 595.6971962616823,
+        "model_bytes": 3824939,
+        "rss_mb": {
+          "after_compile": 574.6796875,
+          "before": 573.48828125,
+          "peak": 574.6796875
+        },
+        "threads": 23
+      },
+      "run_id": "3801cf22-fd5e-48eb-8032-165f691087e2",
+      "same_as": null,
       "verification": {
         "accepted_plan": true,
         "agreement": {
@@ -779,73 +907,61 @@
   ],
   "chosen": {
     "artifact": {
-      "bytes": 13860318,
-      "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-seg/graph_fuse_ort.onnx",
-      "sha256": "582eb4ae973632e75be7b47d4ae5acf637e68ec5ceeb4f60ad879590b02dfb35",
-      "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-seg/graph_fuse_ort.onnx.json"
+      "bytes": 13842019,
+      "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-seg/ort_default.onnx",
+      "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502",
+      "sidecar": "/home/theatulgupta/LLM-Neural-Compiler/experiments/artifacts/yolov8n-seg/ort_default.onnx.json"
     },
     "benchmark": {
       "fps_claimed": false,
       "iters": 30,
       "latency_ms": {
-        "max": 123.69215300009273,
-        "mean": 115.20420186668616,
-        "min": 110.2344070000072,
-        "p50": 114.93083300001672,
-        "p95": 122.09457500011922
+        "max": 73.1505069998093,
+        "mean": 69.25607636658242,
+        "min": 66.23239399959857,
+        "p50": 69.30274499973166,
+        "p95": 70.71727599941369
       },
-      "measured_at": "2026-09-18T15:04:18.393657+00:00",
-      "throughput_ips": 8.680238947857093,
+      "measured_at": "2026-09-18T15:55:11.566464+00:00",
+      "throughput_ips": 14.439166243072384,
       "warmup": 5
     },
     "compile_ok": true,
     "graph_changed": false,
+    "measured": true,
     "nodes_after": 301,
     "nodes_before": 301,
-    "origin": "preset:graph_fuse_ort",
-    "p50_ms": 114.93083300001672,
+    "origin": "preset:ort_default",
+    "p50_ms": 69.30274499973166,
     "passed": true,
     "plan": {
       "confidence": 1.0,
       "expected_effects": [
-        "fewer_nodes",
         "lower_latency"
       ],
       "options": {
         "execution_mode": "sequential",
-        "ort_graph_opt": "extended"
+        "ort_graph_opt": "all"
       },
-      "plan_id": "graph_fuse_ort",
-      "rationale": "Same DAG fusions as graph_fuse, then ORT extended.",
+      "plan_id": "ort_default",
+      "rationale": "Unrewritten ONNX with ORT graph optimizations enabled.",
       "source": "preset",
-      "steps": [
-        {
-          "atom": "onnx_shape_infer",
-          "params": {}
-        },
-        {
-          "atom": "eliminate_identity",
-          "params": {}
-        },
-        {
-          "atom": "constant_folding",
-          "params": {}
-        }
-      ]
+      "steps": []
     },
-    "plan_id": "graph_fuse_ort",
+    "plan_id": "ort_default",
     "profile": {
-      "compile_ms": 133.30382699996335,
-      "cpu_percent_mean": 595.7308823529411,
-      "model_bytes": 13860318,
+      "compile_ms": 101.81636399920535,
+      "cpu_percent_mean": 598.8829268292683,
+      "model_bytes": 13842019,
       "rss_mb": {
-        "after_compile": 659.7421875,
-        "before": 659.73828125,
-        "peak": 659.7421875
+        "after_compile": 589.81640625,
+        "before": 589.80078125,
+        "peak": 589.81640625
       },
-      "threads": 18
+      "threads": 17
     },
-    "run_id": "534e1576-0294-46e0-99a8-add57e233fec",
+    "run_id": "5272118c-2377-4851-abec-bce5150b1576",
+    "same_as": null,
     "verification": {
       "accepted_plan": true,
       "agreement": {
@@ -878,6 +994,7 @@
     }
   },
   "fps_claimed": false,
+  "heuristic_rank": null,
   "host": {
     "machine": "aarch64",
     "python": "3.12.3",
@@ -885,16 +1002,39 @@
     "system": "Linux"
   },
   "kind": "yolov8n-seg",
-  "llm_confidence": null,
+  "llm": {
+    "attempts": [
+      {
+        "corrections": [],
+        "detail": "ok",
+        "n": 1,
+        "outcome": "accepted",
+        "plan_id": "uav_companion_opt",
+        "source": "groq"
+      }
+    ],
+    "fallback_reason": null,
+    "gap_pct": 148.7980324597315,
+    "p50_ms": 172.42386599991733,
+    "passed": false,
+    "plan_id": "uav_companion_opt",
+    "rank": null,
+    "revised": {
+      "skipped": "same as existing candidate"
+    },
+    "same_as": null,
+    "source": "groq"
+  },
+  "llm_confidence": 0.6,
   "llm_rank": null,
-  "llm_vs_oracle_gap_pct": null,
+  "llm_vs_oracle_gap_pct": 148.7980324597315,
   "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-seg.onnx",
   "ranking": [
-    "preset:graph_fuse_ort",
+    "preset:ort_default",
     "preset:graph_simplify",
-    "preset:graph_fuse",
     "preset:baseline",
-    "preset:ort_default"
+    "preset:graph_fuse",
+    "preset:graph_fuse_ort"
   ],
   "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502",
   "task": "segment"

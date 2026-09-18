@@ -1,5 +1,5 @@
 {
-  "achieved_hz": 1.3,
+  "achieved_hz": 1.6,
   "artifact": {
     "kind": "yolov8n-seg",
     "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n-seg.onnx",
@@ -7,26 +7,28 @@
     "sha256": "ab199ced994432893c81f1aff82cbeff4d910a15a67231ec1e8a2f69691ff502"
   },
   "classes_seen": [
-    "2"
+    "airplane",
+    "car",
+    "person"
   ],
-  "detections_total": 52,
+  "detections_total": 256,
   "e2e_ms": {
-    "n": 52,
-    "p50": 170.82349299994348,
-    "p95": 275.24745599998823
+    "n": 64,
+    "p50": 260.528293999414,
+    "p95": 329.4929209996553
   },
   "fps_claimed": false,
-  "frames_rx": 49,
+  "frames_rx": 67,
   "infer_ms": {
-    "n": 52,
-    "p50": 164.54190600006768,
-    "p95": 268.1048050001209
+    "n": 64,
+    "p50": 252.697351000279,
+    "p95": 317.4055449999287
   },
-  "inferences": 52,
+  "inferences": 64,
   "kind": "yolov8n-seg",
   "note": "llvmpipe and ORT share 6 vCPUs; one model at a time. fps_claimed=false.",
   "ok": true,
-  "position_samples": 1936,
+  "position_samples": 1856,
   "seconds": 40.0,
   "variant": "native",
   "xyz_changed": true
