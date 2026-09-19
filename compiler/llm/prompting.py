@@ -53,7 +53,21 @@ def _format_feedback(feedback: list[dict[str, Any]]) -> str:
         outcome = item.get("outcome", "")
         detail = item.get("detail", "")
         lines.append(f"- attempt {n} {outcome}: {detail}")
-    lines.append("Reply again with a corrected plan. Only allowlisted atoms. Do not repeat rejected atoms.")
+    outcomes = {str(item.get("outcome") or "") for item in feedback}
+    if "measured_not_best" in outcomes:
+        lines.append(
+            "A faster allowlisted plan already passed gates. Propose a different "
+            "steps/options pair. Do not invent metrics. Do not repeat the same steps and options."
+        )
+    elif "measured_failure" in outcomes:
+        lines.append(
+            "The previous plan failed compile or numerics. Propose a different allowlisted plan. "
+            "Do not invent metrics."
+        )
+    else:
+        lines.append(
+            "Reply again with a corrected plan. Only allowlisted atoms. Do not repeat rejected atoms."
+        )
     return "\n".join(lines)
 
 

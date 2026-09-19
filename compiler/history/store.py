@@ -66,6 +66,8 @@ def history_for_model(
                 "p50_ms": bench.get("p50"),
                 "passed": (row.get("verification") or {}).get("passed"),
                 "kind": kind,
+                "origin": (row.get("plan") or {}).get("source")
+                or (row.get("strategy") or {}).get("source"),
             }
         )
         if len(matched) >= k:

@@ -21,6 +21,25 @@ def _speedup(native, chosen) -> str:
     return f"{n / c:.3f}"
 
 
+def _followup_cell(llm: dict) -> str:
+    """Compact first-follow-up cell: improved/revised plan or skipped reason."""
+
+    for key in ("improved", "revised"):
+        block = llm.get(key)
+        if not isinstance(block, dict):
+            continue
+        if block.get("skipped"):
+            text = f"{key}:skipped:{block['skipped']}"
+            if block.get("same_as"):
+                text += f" same_as={block['same_as']}"
+            return text
+        if block.get("plan_id"):
+            return (
+                f"{key}:{block.get('plan_id')} p50={block.get('p50_ms')} rank={block.get('rank')}"
+            )
+    return ""
+
+
 def write_report(results_dir: Path | None = None) -> Path:
     results = results_dir or DEFAULT_RESULTS
     matrix_path = results / "paper_matrix.json"
@@ -38,8 +57,8 @@ def write_report(results_dir: Path | None = None) -> Path:
     lines += [
         "## Summary",
         "",
-        "| kind | task | baseline p50 | chosen plan | chosen p50 | speedup | passed | llm_source | llm_rank | llm_gap_pct | inputs_source |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| kind | task | baseline p50 | chosen origin | chosen plan | chosen p50 | speedup | passed | llm_source | llm_rank | llm_gap_pct | llm_followup | inputs_source |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in models:
         chosen = row.get("chosen") or {}
@@ -58,10 +77,11 @@ def write_report(results_dir: Path | None = None) -> Path:
         plan_id = chosen.get("plan_id") or ((chosen.get("plan") or {}).get("plan_id"))
         llm = row.get("llm") or {}
         lines.append(
-            "| {kind} | {task} | {base} | {plan} | {p50} | {sp} | {ok} | {src_llm} | {rank} | {gap} | {src} |".format(
+            "| {kind} | {task} | {base} | {corig} | {plan} | {p50} | {sp} | {ok} | {src_llm} | {rank} | {gap} | {follow} | {src} |".format(
                 kind=row.get("kind"),
                 task=row.get("task") or "",
                 base=native_p50 if native_p50 is not None else "",
+                corig=chosen.get("origin") or "",
                 plan=plan_id or "",
                 p50=chosen_p50 if chosen_p50 is not None else "",
                 sp=_speedup(native_p50, chosen_p50),
@@ -69,6 +89,7 @@ def write_report(results_dir: Path | None = None) -> Path:
                 src_llm=llm.get("source") or "",
                 rank=row.get("llm_rank"),
                 gap=row.get("llm_vs_oracle_gap_pct"),
+                follow=_followup_cell(llm),
                 src=inputs_source or "",
             )
         )
@@ -87,6 +108,8 @@ def write_report(results_dir: Path | None = None) -> Path:
             f"rank `{row.get('llm_rank')}` oracle_gap_pct `{row.get('llm_vs_oracle_gap_pct')}` "
             f"fallback `{llm.get('fallback_reason')}`"
         )
+        lines.append(f"- llm.revised `{llm.get('revised')}`")
+        lines.append(f"- llm.improved `{llm.get('improved')}`")
         lines.append("")
         lines.append("| origin | plan | p50_ms | passed | nodes | bytes |")
         lines.append("| --- | --- | --- | --- | --- | --- |")

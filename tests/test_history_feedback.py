@@ -19,3 +19,4 @@ def test_history_feedback(tmp_path) -> None:
     rows = history_for_model("yolov8n", history_path=path)
     assert rows[0]["plan_id"] == "graph_fuse"
     assert rows[0]["p50_ms"] == 12.0
+    assert "origin" in rows[0]

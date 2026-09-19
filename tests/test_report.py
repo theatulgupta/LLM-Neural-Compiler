@@ -61,6 +61,12 @@ def test_report_summary_row(tmp_path) -> None:
                 ],
                 "llm_rank": 1,
                 "llm_vs_oracle_gap_pct": 0,
+                "llm": {
+                    "source": "openai",
+                    "plan_id": "baseline",
+                    "improved": {"plan_id": "uav_try_threads", "p50_ms": 0.8, "passed": True, "rank": 1},
+                    "revised": None,
+                },
             }
         ],
     }
@@ -85,3 +91,7 @@ def test_report_summary_row(tmp_path) -> None:
     assert "2.0" in text
     assert "sim_inference_yolov8n_native.json" in text
     assert "Gazebo camera loop" in text
+    assert "chosen origin" in text
+    assert "llm.improved" in text
+    assert "uav_try_threads" in text
+    assert "llm_followup" in text
