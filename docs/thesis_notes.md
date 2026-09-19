@@ -21,7 +21,9 @@ Notebook mapping:
 | Verification | `compiler/planner/verifier.py` + `compiler/verification/` |
 | Compiler | `compiler/optimization/` + `src/nnc/backends/` |
 | Profiler | `compiler/profiling/` |
-| Report / history | `compiler/report/`, `compiler/history.py` |
+| Report / history | `compiler/report/`, `compiler/history/` |
+
+HLD: `docs/architecture.md`. LLD: `docs/design.md`.
 
 Application domain remains PX4 / ROS 2 / Gazebo edge inference.
 

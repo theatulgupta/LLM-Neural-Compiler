@@ -1,3 +1,6 @@
+CLI cheat sheet. Types and sequences: [`design.md`](design.md). System
+context: [`architecture.md`](architecture.md).
+
 Allowlisted **plan atoms** (graph passes) plus ORT session options.
 The LLM may only name those atoms. Unknown names are rejected. Plan JSON
 must match `schemas/llm-plan.schema.json`. Preset names (`baseline`,
@@ -13,6 +16,7 @@ API surface:
 - `python -m compiler infer <model.onnx>` (ORT CPU load + measured latency)
 - `python -m compiler compile <model.onnx> --backend ort_cpu|tensorrt --strategy PRESET`
 - `python -m compiler optimize <model.onnx> --kind KIND [--candidates default|all]`
+  (JSON includes `llm.revised` / `llm.improved` after at most one extra HTTP try)
 - `python -m compiler zoo`
 - `python -m compiler export [--kind KIND]`
 - `python -m compiler matrix [--candidates all]`

@@ -91,6 +91,7 @@ bash scripts/start_all.sh
 ```
 
 See `docs/deploy.md` for packing the same ONNX onto a later companion.
+HLD: `docs/architecture.md`. LLD: `docs/design.md`.
 
 ## LLM keys (never git)
 

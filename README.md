@@ -47,6 +47,7 @@ python -m compiler report
 
 Native = unrewritten ONNX (`baseline`, ORT graph opt off). Optimized = schema-bound
 advisor **graph pass set**, compiled and measured on the **same** aarch64 host.
+`optimize` may add one extra HTTP round (`llm_revised` or `llm_improved`).
 `docs/paper_proposal.md` is the proposal write-up. Numbers come only from
 `experiments/results/paper_matrix.json`. Do not compare this QEMU box to cloud x86.
 
@@ -124,12 +125,15 @@ Camera path: `docs/simulation.md`.
 
 ## Layout
 
+HLD: [`docs/architecture.md`](docs/architecture.md). LLD (types, sequences,
+schema v2): [`docs/design.md`](docs/design.md). CLI list: [`docs/api.md`](docs/api.md).
+
 ```
 compiler/               thesis contribution (parse, analyze, recommend, optimize, history)
 src/nnc/backends/       ORT CPU + TensorRT runtime
 src/nnc/artifact.py     load ORT ONNX and time a real inference
 tests/                  fixture contract, allowlist, ORT compile, history, LLM schema
 experiments/results/    JSON run records + history.jsonl
-schemas/                run-result.schema.json, llm-proposal.schema.json
+schemas/                run-result.schema.json, llm-plan.schema.json
 ros2_ws/                telemetry + inference_node
 ```
