@@ -23,7 +23,9 @@ def _dumps(plan_id: str, steps: list, options: dict, rationale: str = "ok") -> s
     )
 
 
-def _record(*, p50: float | None, passed: bool = True, compile_ok: bool = True, error: str | None = None) -> dict[str, Any]:
+def _record(
+    *, p50: float | None, passed: bool = True, compile_ok: bool = True, error: str | None = None
+) -> dict[str, Any]:
     return {
         "run_id": "t",
         "compile": {"ok": compile_ok, "ms": 1.0, "error": None if compile_ok else (error or "boom")},
@@ -172,7 +174,13 @@ def test_http_failed_gates_revised(monkeypatch, tiny_path, tmp_path) -> None:
     monkeypatch.setattr(
         "compiler.pipeline.optimize.compile_verify_profile",
         _p50_cvp(
-            {"baseline": 10.0, "ort_default": 11.0, "graph_fuse": 8.0, "llm_first": 3.0, "uav_try_threads": 7.0},
+            {
+                "baseline": 10.0,
+                "ort_default": 11.0,
+                "graph_fuse": 8.0,
+                "llm_first": 3.0,
+                "uav_try_threads": 7.0,
+            },
             failed="llm_first",
         ),
     )
@@ -211,9 +219,44 @@ def test_http_followup_garbage_skips_compile(monkeypatch, tiny_path, tmp_path) -
         results_dir=tmp_path,
         client=client,
     )
-    assert len(seen) == 2
+    assert len(seen) == 4
     assert str(payload["llm"]["improved"].get("skipped") or "").startswith("fallback")
     assert not any(row["origin"] == "llm_improved" for row in payload["candidates"])
+
+
+def test_http_followup_fails_once_then_accepts(monkeypatch, tiny_path, tmp_path) -> None:
+    seen: list = []
+    monkeypatch.setattr(
+        "compiler.pipeline.optimize.compile_verify_profile",
+        _p50_cvp(
+            {
+                "baseline": 10.0,
+                "ort_default": 11.0,
+                "graph_fuse": 8.0,
+                "llm_first": 20.0,
+                "uav_try_threads": 5.0,
+            }
+        ),
+    )
+    client = HttpLlmClient(
+        provider="openai",
+        chat=_chat([LLM_FIRST, "not a plan", IMPROVED], seen),
+        api_key="unused",
+    )
+    payload = optimize_model(
+        tiny_path,
+        kind="fixture",
+        task="classify",
+        mode="default",
+        warmup=1,
+        iters=2,
+        results_dir=tmp_path,
+        client=client,
+    )
+    assert len(seen) == 3
+    assert "schema_error" in seen[2][1]["content"] or "not a plan" in seen[1][1]["content"]
+    assert payload["llm"]["improved"]["plan_id"] == "uav_try_threads"
+    assert any(row["origin"] == "llm_improved" for row in payload["candidates"])
 
 
 def test_http_followup_same_key_records_same_as(monkeypatch, tiny_path, tmp_path) -> None:

@@ -77,8 +77,9 @@ def _heuristic_plan(
     hardware: HardwareProfile,
     backend_name: str,
     constraints: dict[str, Any] | None,
+    context: dict[str, Any] | None = None,
 ) -> tuple[Plan, VerifiedPlan]:
-    proposal = HeuristicLlmClient().propose(summary)
+    proposal = HeuristicLlmClient().propose(summary, context)
     plan = Plan.from_dict(proposal.plan)
     verified = verify_plan(plan, summary, hardware, backend_name=backend_name, constraints=constraints)
     return verified.plan if verified.accepted else plan, verified
@@ -158,7 +159,7 @@ def propose_plan(
             verified=verified,
         )
 
-    plan, verified = _heuristic_plan(summary, hardware, backend_name, constraints)
+    plan, verified = _heuristic_plan(summary, hardware, backend_name, constraints, context)
     return PlanOutcome(
         plan=verified.plan if verified.accepted else plan,
         accepted=bool(verified.accepted),

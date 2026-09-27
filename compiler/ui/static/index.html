@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NNC operator</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --ink: #1a1d21;
+      --muted: #5c6570;
+      --line: #d5dbe3;
+      --card: #ffffff;
+      --accent: #0b6b4f;
+      --accent-ink: #ffffff;
+      --bad: #9b1c1c;
+      --warn: #8a5a00;
+      --ok: #0b6b4f;
+      --bar: #e7f3ee;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121417;
+        --ink: #f2f4f7;
+        --muted: #a7b0ba;
+        --line: #2c333c;
+        --card: #1b1f25;
+        --accent: #7dcea0;
+        --accent-ink: #10241c;
+        --bad: #f0a8a8;
+        --warn: #e2c27a;
+        --ok: #7dcea0;
+        --bar: #1c2a24;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px/1.45 ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 0.8rem 1.2rem;
+    }
+    h1 { font-size: 1.15rem; margin: 0; }
+    h2 { font-size: 1rem; margin: 0 0 0.6rem; }
+    #host, #jobbar { margin: 0.25rem 0 0; color: var(--muted); }
+    #jobbar.running { color: var(--ink); background: var(--bar); padding: 0.35rem 0.5rem; border-radius: 6px; }
+    #jobbar.error { color: var(--bad); }
+    main { display: grid; grid-template-columns: 300px 1fr; gap: 1rem; padding: 1rem; }
+    @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+    aside, .panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem; }
+    button, input, select {
+      font: inherit;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.35rem 0.55rem;
+    }
+    button { cursor: pointer; }
+    button.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .models { list-style: none; padding: 0; margin: 0.6rem 0; max-height: 50vh; overflow: auto; }
+    .models button { width: 100%; text-align: left; margin: 0 0 0.35rem; }
+    .models button[aria-current="true"] { border-color: var(--accent); }
+    .chip { display: inline-block; font-size: 0.75rem; border-radius: 999px; padding: 0 0.4rem; border: 1px solid var(--line); }
+    .chip.passed { color: var(--ok); }
+    .chip.failed, .chip.missing { color: var(--bad); }
+    .chip.unmeasured { color: var(--warn); }
+    .role { display: block; color: var(--muted); font-size: 0.8rem; }
+    .tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .tabs button[aria-selected="true"] { border-color: var(--accent); }
+    .row { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: end; margin: 0.6rem 0; }
+    label { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.8rem; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    tr.chosen { background: var(--bar); }
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+    .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; min-width: 80px; }
+    .bar > span { display: block; height: 100%; background: var(--accent); }
+    details { margin-top: 0.8rem; }
+    pre { white-space: pre-wrap; background: var(--bg); padding: 0.6rem; border-radius: 8px; overflow: auto; }
+    .note { color: var(--muted); }
+    ul.clean { padding-left: 1.1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NNC operator</h1>
+    <p id="host">Loading host…</p>
+    <p id="jobbar">Idle. One run at a time. Latency on this page is from this machine. fps_claimed is false.</p>
+  </header>
+  <main>
+    <aside>
+      <h2>Models</h2>
+      <ul class="models" id="models"></ul>
+      <div class="row">
+        <label>Path on this machine<input id="path" type="text" placeholder="/path/model.onnx" /></label>
+        <button type="button" id="use-path">Use path</button>
+      </div>
+      <div class="row">
+        <label>Upload ONNX<input id="file" type="file" accept=".onnx" /></label>
+        <button type="button" id="upload">Upload</button>
+      </div>
+      <button type="button" id="emit" class="action">Write tiny CNN fixture</button>
+    </aside>
+    <section class="panel">
+      <div class="tabs" id="tabs"></div>
+      <div id="panel"></div>
+    </section>
+  </main>
+  <script>
+    const SECTIONS = [
+      ["graph", "Graph"],
+      ["plan", "Plan"],
+      ["ranking", "Ranking"],
+      ["report", "Report"],
+      ["remeasure", "Remeasure"]
+    ];
+    let dashboard = null;
+    let selected = 0;
+    let section = "graph";
+    let poll = null;
+    let busy = false;
+    let report = null;
+    let providerRows = [];
+    const lastByAction = {};
+
+    function slot(model, action) {
+      return (model && model.kind ? model.kind : "session") + ":" + action;
+    }
+    const extraModels = [];
+
+    function text(value) {
+      if (value === null || value === undefined || value === "") return "—";
+      return String(value);
+    }
+
+    function el(tag, className, content) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (content !== undefined) node.textContent = content;
+      return node;
+    }
+
+    function currentModel() {
+      const models = (dashboard && dashboard.models) || [];
+      return models[selected] || extraModels[selected - models.length] || null;
+    }
+
+    async function loadProviders() {
+      try {
+        const response = await fetch("/api/providers");
+        const payload = await response.json();
+        providerRows = payload.providers || [];
+      } catch (_err) {
+        providerRows = [];
+      }
+    }
+
+    function llmControls() {
+      const provider = document.createElement("select");
+      const offline = document.createElement("option");
+      offline.value = "heuristic";
+      offline.textContent = "heuristic (no network)";
+      provider.appendChild(offline);
+      providerRows.forEach((row) => {
+        const option = document.createElement("option");
+        option.value = row.name;
+        const missing = row.auth_required && !row.key_present ? " — key not set" : "";
+        option.textContent = row.name + missing;
+        provider.appendChild(option);
+      });
+      const model = document.createElement("select");
+      const typed = document.createElement("input");
+      typed.type = "text";
+      typed.placeholder = "or type a model id";
+      function fillModels() {
+        model.innerHTML = "";
+        const row = providerRows.find((item) => item.name === provider.value);
+        const ids = row ? row.suggested_models : [];
+        if (!ids.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "provider default";
+          model.appendChild(option);
+          return;
+        }
+        ids.forEach((id) => {
+          const option = document.createElement("option");
+          option.value = id;
+          option.textContent = id;
+          model.appendChild(option);
+        });
+      }
+      provider.addEventListener("change", fillModels);
+      fillModels();
+      const providerLabel = el("label", "", "provider");
+      providerLabel.appendChild(provider);
+      const modelLabel = el("label", "", "model");
+      modelLabel.appendChild(model);
+      const typedLabel = el("label", "", "model id");
+      typedLabel.appendChild(typed);
+      return {
+        nodes: [providerLabel, modelLabel, typedLabel],
+        value() {
+          const picked = provider.value === "heuristic" ? "" : model.value;
+          return { llm: provider.value, model_id: typed.value.trim() || picked };
+        }
+      };
+    }
+
+    async function loadDashboard() {
+      await loadProviders();
+      const response = await fetch("/api/dashboard");
+      dashboard = await response.json();
+      if (extraModels.length) dashboard.models = dashboard.models.concat(extraModels);
+      renderHost();
+      renderModels();
+      await renderPanel();
+    }
+
+    function renderHost() {
+      const host = dashboard.host || {};
+      const gpu = host.nvidia_present ? "NVIDIA present" : "no NVIDIA";
+      const trt = host.tensorrt_available ? "TensorRT available" : ("TensorRT skipped: " + text(host.tensorrt_reason));
+      const qemu = host.qemu_note ? " QEMU host. " : " ";
+      document.getElementById("host").textContent =
+        text(host.system) + " " + text(host.machine) + " · Python " + text(host.python) +
+        " · " + gpu + " · " + trt + "." + qemu + "fps_claimed is false.";
+    }
+
+    function renderModels() {
+      const list = document.getElementById("models");
+      list.innerHTML = "";
+      (dashboard.models || []).forEach((model, index) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        if (index === selected) button.setAttribute("aria-current", "true");
+        const name = el("span", "", model.kind + " · " + text(model.task));
+        const chip = el("span", "chip " + (model.status || "unmeasured"), model.status || "unmeasured");
+        const role = el("span", "role", model.uav_role || "");
+        button.append(name, document.createTextNode(" "), chip, role);
+        button.addEventListener("click", () => { selected = index; renderModels(); renderPanel(); });
+        item.appendChild(button);
+        list.appendChild(item);
+      });
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById("tabs");
+      tabs.innerHTML = "";
+      SECTIONS.forEach(([id, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.setAttribute("aria-selected", id === section ? "true" : "false");
+        button.addEventListener("click", () => { section = id; renderPanel(); });
+        tabs.appendChild(button);
+      });
+    }
+
+    async function renderPanel() {
+      renderTabs();
+      const root = document.getElementById("panel");
+      root.innerHTML = "";
+      const model = currentModel();
+      if (!model) {
+        root.appendChild(el("p", "", "No model selected."));
+        return;
+      }
+      root.appendChild(el("h2", "", model.kind));
+      root.appendChild(el("p", "note", (model.onnx_present ? "ONNX present. " : "ONNX missing. ") + text(model.path)));
+      if (section === "graph") renderGraph(root, model);
+      if (section === "plan") renderPlan(root, model);
+      if (section === "ranking") renderRanking(root, model);
+      if (section === "report") await renderReport(root);
+      if (section === "remeasure") renderRemeasure(root, model);
+      setBusy(busy);
+    }
+
+    function renderGraph(root, model) {
+      const actions = el("div", "row");
+      actions.appendChild(actionButton("Analyze", "analyze", model));
+      actions.appendChild(actionButton("Prove fusion", "prove-fusion", model));
+      if (model.exportable && !model.onnx_present) actions.appendChild(actionButton("Export", "export", model));
+      root.appendChild(actions);
+      const analyzed = lastByAction[slot(model, "analyze")];
+      const notes = (analyzed && analyzed.notes) || [];
+      if (!notes.length) {
+        root.appendChild(el("p", "", "Analyze this graph to see what the passes are allowed to touch."));
+        return;
+      }
+      const summary = analyzed.summary || {};
+      root.appendChild(el("p", "", "Nodes " + text(summary.node_count)));
+      const list = el("ul", "clean");
+      notes.forEach((note) => list.appendChild(el("li", "", note)));
+      root.appendChild(list);
+      const ops = summary.op_counts || {};
+      root.appendChild(el("p", "", "Ops: " + Object.keys(ops).map((key) => key + " " + ops[key]).join(", ")));
+      const patterns = summary.patterns || {};
+      root.appendChild(el("p", "", "Patterns: conv_relu " + text(patterns.conv_relu) + ", conv_silu " + text(patterns.conv_silu) + ", conv_bn " + text(patterns.conv_bn)));
+      const proof = lastByAction[slot(model, "prove-fusion")];
+      if (proof) {
+        root.appendChild(el("p", "", "Fusion proof: Relu " + proof.relu_before + " → " + proof.relu_after + ", FusedConv " + proof.fused_conv + ", gates " + text(proof.passed)));
+      }
+    }
+
+    function renderPlan(root, model) {
+      const row = el("div", "row");
+      const picker = llmControls();
+      row.append(...picker.nodes, actionButton("Plan", "plan", model, () => picker.value()));
+      root.appendChild(row);
+      const plan = lastByAction[slot(model, "plan")];
+      if (!plan) {
+        root.appendChild(el("p", "", "Plan shows the allowlist, then what survived the verifier."));
+        return;
+      }
+      if (plan.heuristic_fallback) {
+        root.appendChild(el("p", "bad", "HTTP client fell back to the heuristic. This is not an LLM win. " + text(plan.fallback_reason)));
+      } else if (plan.offline_heuristic) {
+        root.appendChild(el("p", "", "Offline heuristic. Not an LLM result."));
+      } else {
+        root.appendChild(el("p", "", "Source " + text(plan.source)));
+      }
+      root.appendChild(el("p", "", "Applicable: " + (plan.applicable || []).join(", ")));
+      root.appendChild(el("p", "", "Will drop unless the pattern exists: " + (plan.skipped_atoms || []).join("; ")));
+      const verified = plan.plan || {};
+      root.appendChild(el("p", "", "Verified " + text(verified.plan_id) + " · steps " + (verified.steps || []).join(", ")));
+      root.appendChild(el("p", "", "Options " + JSON.stringify(verified.options || {})));
+      (plan.attempts || []).forEach((attempt) => {
+        const line = el("p", "", "Attempt " + text(attempt.n) + " " + text(attempt.outcome) + ": " + text(attempt.detail));
+        root.appendChild(line);
+        (attempt.corrections || []).forEach((corr) => {
+          root.appendChild(el("p", "note", text(corr.level) + " " + text(corr.step) + ": " + text(corr.reason)));
+        });
+      });
+      const details = document.createElement("details");
+      details.appendChild(el("summary", "", "Prompt sent to the model"));
+      details.appendChild(el("pre", "", plan.prompt || ""));
+      root.appendChild(details);
+    }
+
+    function renderRanking(root, model) {
+      const row = el("div", "row");
+      const warmup = fieldNumber("warmup", "2");
+      const iters = fieldNumber("iters", "5");
+      const mode = fieldSelect("candidates", [["default", "default"], ["all", "all"]]);
+      const picker = llmControls();
+      row.append(warmup.label, iters.label, mode.label, ...picker.nodes);
+      row.appendChild(actionButton("Optimize", "optimize", model, () => Object.assign({
+        warmup: Number(warmup.input.value),
+        iters: Number(iters.input.value),
+        candidates: mode.input.value
+      }, picker.value()), true));
+      root.appendChild(row);
+      root.appendChild(el("p", "note", "Chosen means the fastest plan that passed gates. A faster plan that failed gates stays visible and is illegal."));
+      const rows = model.candidates || [];
+      if (!rows.length) {
+        root.appendChild(el("p", "", "No measured ranking yet."));
+        return;
+      }
+      const chosen = model.chosen || {};
+      root.appendChild(el("p", "", "Baseline p50 " + text(model.baseline_p50_ms) + " · chosen " + text(chosen.plan_id) + " p50 " + text(chosen.p50_ms) + " · speedup " + text(round3(model.speedup)) + " · llm_rank " + text(model.llm_rank)));
+      const llmRow = model.llm || {};
+      const follow = followText(llmRow);
+      if (follow) root.appendChild(el("p", "", "Follow-up: " + follow));
+      if (llmRow.fallback_reason) root.appendChild(el("p", "", "Fallback: " + llmRow.fallback_reason));
+      root.appendChild(candidateTable(rows, chosen));
+    }
+
+    async function renderReport(root) {
+      const row = el("div", "row");
+      row.appendChild(actionButton("Write report.md", "report", currentModel() || { path: "", kind: "report", task: "" }));
+      root.appendChild(row);
+      if (!report) {
+        const response = await fetch("/api/report");
+        report = await response.json();
+      }
+      if (report.mixed_hosts) {
+        root.appendChild(el("p", "bad", "These rows were measured on more than one machine. Do not treat them as one experiment."));
+      }
+      const rows = report.rows || [];
+      if (!rows.length) {
+        root.appendChild(el("p", "", "Optimize a model first. This table does not require paper_matrix.json."));
+        return;
+      }
+      root.appendChild(reportTable(rows));
+    }
+
+    function renderRemeasure(root, model) {
+      const chosen = model.chosen || {};
+      const row = el("div", "row");
+      const warmup = fieldNumber("warmup", "1");
+      const iters = fieldNumber("iters", "5");
+      row.append(warmup.label, iters.label);
+      row.appendChild(actionButton("Remeasure artifact", "test", model, () => ({
+        warmup: Number(warmup.input.value),
+        iters: Number(iters.input.value)
+      })));
+      root.appendChild(row);
+      if (!chosen.artifact) {
+        root.appendChild(el("p", "", "No artifact yet. Optimize this model first. This does not start Gazebo or PX4."));
+      } else {
+        root.appendChild(el("p", "", "Artifact " + chosen.artifact));
+        root.appendChild(el("p", "", "Ranked p50 " + text(chosen.p50_ms) + " · gates " + text(chosen.passed)));
+      }
+      const measured = lastByAction[slot(model, "test")];
+      if (measured) {
+        root.appendChild(el("p", "", "Remeasured p50 " + text(measured.p50_ms) + " ms · p95 " + text(measured.p95_ms) + " ms · ranked p50 " + text(measured.ranked_p50_ms) + " · gates " + text(measured.gate_passed) + " · fps_claimed false"));
+      }
+    }
+
+    function followText(llm) {
+      const block = llm.revised || llm.improved;
+      if (!block) return "";
+      const which = llm.revised ? "revised" : "improved";
+      if (block.skipped) return which + " skipped: " + block.skipped;
+      return which + " " + text(block.plan_id) + " p50 " + text(block.p50_ms);
+    }
+
+    function round3(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number.toFixed(3) : value;
+    }
+
+    function candidateTable(rows, chosen) {
+      const max = Math.max(...rows.map((row) => Number(row.p50_ms) || 0), 1);
+      const table = document.createElement("table");
+      table.appendChild(headerRow(["origin", "plan", "p50 ms", "", "passed", "nodes", "note"]));
+      rows.forEach((row) => {
+        const line = document.createElement("tr");
+        if (row.origin === chosen.origin && row.plan_id === chosen.plan_id) line.className = "chosen";
+        line.appendChild(cell(row.origin));
+        line.appendChild(cell(row.plan_id));
+        line.appendChild(cell(row.p50_ms));
+        const barCell = document.createElement("td");
+        const bar = el("div", "bar");
+        const fill = document.createElement("span");
+        fill.style.width = ((Number(row.p50_ms) || 0) / max * 100) + "%";
+        bar.appendChild(fill);
+        barCell.appendChild(bar);
+        line.appendChild(barCell);
+        const passed = document.createElement("td");
+        passed.textContent = text(row.passed);
+        passed.className = row.passed ? "ok" : "bad";
+        line.appendChild(passed);
+        line.appendChild(cell(text(row.nodes_before) + "→" + text(row.nodes_after)));
+        const note = row.illegal ? "illegal numerics" : (row.same_as ? "same as " + row.same_as : (row.graph_changed ? "graph changed" : ""));
+        line.appendChild(cell(note));
+        table.appendChild(line);
+      });
+      return table;
+    }
+
+    function reportTable(rows) {
+      const table = document.createElement("table");
+      table.appendChild(headerRow(["kind", "task", "baseline", "chosen", "p50", "speedup", "passed", "llm", "follow-up", "host"]));
+      rows.forEach((row) => {
+        const line = document.createElement("tr");
+        [row.kind, row.task, row.baseline_p50_ms, row.chosen_plan, row.chosen_p50_ms, round3(row.speedup), row.passed, row.llm_source, row.followup, (row.host || {}).machine].forEach((value) => {
+          line.appendChild(cell(value));
+        });
+        table.appendChild(line);
+      });
+      return table;
+    }
+
+    function headerRow(names) {
+      const line = document.createElement("tr");
+      names.forEach((name) => line.appendChild(el("th", "", name)));
+      return line;
+    }
+
+    function cell(value) {
+      return el("td", "", text(value));
+    }
+
+    function fieldNumber(name, value) {
+      const label = el("label", "", name);
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.value = value;
+      label.appendChild(input);
+      return { label, input };
+    }
+
+    function fieldSelect(name, options) {
+      const label = el("label", "", name);
+      const input = document.createElement("select");
+      options.forEach(([id, title]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = title;
+        input.appendChild(option);
+      });
+      label.appendChild(input);
+      return { label, input };
+    }
+
+    function actionButton(label, action, model, extra, primary) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "action" + (primary ? " primary" : "");
+      button.textContent = label;
+      button.addEventListener("click", () => startJob(action, model, extra ? extra() : {}));
+      return button;
+    }
+
+    function setBusy(value) {
+      busy = value;
+      document.querySelectorAll("button.action, #upload, #emit, #use-path").forEach((button) => {
+        button.disabled = value;
+      });
+    }
+
+    function setJobBar(status, detail) {
+      const bar = document.getElementById("jobbar");
+      bar.className = status === "running" || status === "queued" ? "running" : (status === "error" ? "error" : "");
+      if (status === "running" || status === "queued") {
+        bar.textContent = status + " " + detail + ". This can take a long time. A second run waits.";
+      } else if (status === "error") {
+        bar.textContent = "Error: " + detail;
+      } else if (status === "done") {
+        bar.textContent = "Done. fps_claimed is false.";
+      } else {
+        bar.textContent = "Idle. One run at a time. Latency on this page is from this machine. fps_claimed is false.";
+      }
+    }
+
+    async function startJob(action, model, extra) {
+      setBusy(true);
+      setJobBar("queued", action);
+      let keepBusy = false;
+      try {
+        const response = await fetch("/api/jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(Object.assign({
+            action: action,
+            model: model.path,
+            kind: model.kind,
+            task: model.task || "classify"
+          }, extra || {}))
+        });
+        const job = await response.json();
+        if (!response.ok) {
+          setJobBar("error", job.error || "request failed");
+          return;
+        }
+        if (poll) clearInterval(poll);
+        keepBusy = true;
+        poll = setInterval(() => refreshJob(job.id, action), 700);
+        refreshJob(job.id, action);
+      } catch (_err) {
+        setJobBar("error", "console is not reachable");
+      } finally {
+        if (!keepBusy) setBusy(false);
+      }
+    }
+
+    async function refreshJob(id, action) {
+      try {
+        const response = await fetch("/api/jobs/" + id);
+        const job = await response.json();
+        setJobBar(job.status, job.detail || action);
+        if (job.status === "queued" || job.status === "running") return;
+        clearInterval(poll);
+        poll = null;
+        setBusy(false);
+        if (job.status === "done") {
+          lastByAction[slot(currentModel(), action)] = job.result;
+          if (action === "optimize" || action === "report" || action === "export" || action === "emit-fixture") report = null;
+          await loadDashboard();
+        }
+      } catch (_err) {
+        clearInterval(poll);
+        poll = null;
+        setBusy(false);
+        setJobBar("error", "console is not reachable");
+      }
+    }
+
+    document.getElementById("use-path").addEventListener("click", () => {
+      const path = document.getElementById("path").value.trim();
+      if (!path) return;
+      extraModels.push({
+        kind: "path_" + extraModels.length,
+        task: "onnx",
+        path: path,
+        uav_role: "path on this machine",
+        onnx_present: true,
+        status: "unmeasured",
+        exportable: false,
+        candidates: [],
+        chosen: null
+      });
+      dashboard.models = dashboard.models.filter((model) => model.uav_role !== "path on this machine").concat(extraModels);
+      selected = dashboard.models.length - 1;
+      renderModels();
+      renderPanel();
+    });
+
+    document.getElementById("upload").addEventListener("click", async () => {
+      const file = document.getElementById("file").files[0];
+      if (!file) return;
+      setBusy(true);
+      try {
+        const response = await fetch("/api/upload?name=" + encodeURIComponent(file.name), { method: "POST", body: file });
+        const payload = await response.json();
+        if (!response.ok) {
+          setJobBar("error", payload.error || "upload failed");
+          return;
+        }
+        setJobBar("done", "uploaded");
+        await loadDashboard();
+        const index = (dashboard.models || []).findIndex((model) => model.kind === payload.kind);
+        if (index >= 0) selected = index;
+        renderModels();
+        renderPanel();
+      } catch (_err) {
+        setJobBar("error", "console is not reachable");
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    document.getElementById("emit").addEventListener("click", () => startJob("emit-fixture", { path: "", kind: "fixture", task: "classify" }, {}));
+
+    loadDashboard();
+  </script>
+</body>
+</html>

@@ -30,7 +30,7 @@ def groq_chat(
     model: str,
     *,
     api_key: str,
-    timeout: float = 30.0,
+    timeout: float | None = None,
     sleep: Callable[[float], None] | None = None,
     urlopen: Callable[..., Any] | None = None,
 ) -> str:

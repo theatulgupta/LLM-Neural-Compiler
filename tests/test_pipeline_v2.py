@@ -35,3 +35,43 @@ def test_pipeline_v2_int8_does_not_raise(tiny_path, tmp_path) -> None:
     )
     assert "compile" in record
     assert record.get("fps_claimed") is False
+
+
+def test_reuses_loaded_graph_and_native_session(tiny_path, tmp_path, monkeypatch) -> None:
+    from compiler.graph.graph_loader import load_graph
+    from nnc.backends.base import BackendOptions
+    from nnc.backends.ort_cpu import OrtCpuBackend
+
+    loaded = load_graph(tiny_path)
+    calls = {"n": 0}
+    real = OrtCpuBackend.compile
+
+    def wrapped(self, model_bytes, **kwargs):
+        calls["n"] += 1
+        return real(self, model_bytes, **kwargs)
+
+    monkeypatch.setattr(OrtCpuBackend, "compile", wrapped)
+    native = OrtCpuBackend().compile(
+        loaded.model.SerializeToString(), options=BackendOptions(graph_opt="disable")
+    )
+    before = calls["n"]
+
+    def refuse_reload(*_args, **_kwargs):
+        raise AssertionError("load_graph should not run when loaded= is set")
+
+    monkeypatch.setattr("compiler.pipeline.compile.load_graph", refuse_reload)
+    for name in ("baseline", "graph_fuse"):
+        record = compile_verify_profile(
+            tiny_path,
+            plan=get_plan(name),
+            kind="fixture",
+            task="classify",
+            results_dir=tmp_path,
+            warmup=0,
+            iters=1,
+            loaded=loaded,
+            native=native,
+        )
+        assert record["compile"]["ok"] is True
+        assert record["verification"]["passed"] is True
+    assert calls["n"] == before + 2

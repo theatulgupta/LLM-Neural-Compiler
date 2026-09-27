@@ -53,6 +53,16 @@ def _format_feedback(feedback: list[dict[str, Any]]) -> str:
         outcome = item.get("outcome", "")
         detail = item.get("detail", "")
         lines.append(f"- attempt {n} {outcome}: {detail}")
+        corrections = item.get("corrections") or []
+        if not isinstance(corrections, list):
+            continue
+        for corr in corrections:
+            if not isinstance(corr, dict):
+                continue
+            step = corr.get("step", "*")
+            reason = corr.get("reason", "")
+            level = corr.get("level", "")
+            lines.append(f"  - {level} {step}: {reason}")
     outcomes = {str(item.get("outcome") or "") for item in feedback}
     if "measured_not_best" in outcomes:
         lines.append(
@@ -93,6 +103,9 @@ def build_messages(
         )
     else:
         hist = "none"
+    skipped = int(ctx.get("history_skipped") or 0)
+    if skipped:
+        hist = f"{hist}\n({skipped} corrupt history lines were skipped)"
     presets = "\n".join(f"- {name}: {s.description}" for name, s in ALLOWED_STRATEGIES.items())
     user = (
         "Plan allowlisted passes for a UAV companion. No invented metrics.\n\n"

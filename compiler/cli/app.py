@@ -82,12 +82,13 @@ def cmd_plan(args: argparse.Namespace) -> int:
     for item in getattr(args, "constraint", []) or []:
         key, _, value = item.partition("=")
         constraints[key] = value
-    rec = recommend_plan(
-        summary, hardware, constraints, history=history_for_model(args.kind or loaded.sha256)
-    )
+    history = history_for_model(args.kind or loaded.sha256)
+    rec = recommend_plan(summary, hardware, constraints, history=history)
     payload = rec.outcome.to_dict() if rec.outcome is not None else rec.strategy.to_dict()
     if args.show_prompt:
-        payload["prompt"] = build_messages(summary, hardware=hardware, constraints=constraints)[1]["content"]
+        payload["prompt"] = build_messages(
+            summary, hardware=hardware, constraints=constraints, history=history
+        )[1]["content"]
     _print(payload)
     return 0
 
@@ -116,6 +117,19 @@ def cmd_optimize(args: argparse.Namespace) -> int:
 def cmd_report(args: argparse.Namespace) -> int:
     path = write_report(Path(args.results))
     _print({"wrote": str(path)})
+    return 0
+
+
+def cmd_ui(args: argparse.Namespace) -> int:
+    from compiler.ui.server import require_loopback, serve
+
+    try:
+        require_loopback(args.host)
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(f"operator UI http://127.0.0.1:{args.port}/", file=sys.stderr)
+    serve(args.host, args.port, Path(args.results))
     return 0
 
 
@@ -399,6 +413,12 @@ def build_parser() -> argparse.ArgumentParser:
     report_p = sub.add_parser("report", help="Write report.md from paper_matrix.json")
     report_p.add_argument("--results", default=str(DEFAULT_RESULTS))
     report_p.set_defaults(func=cmd_report)
+
+    ui = sub.add_parser("ui", help="Local operator console on 127.0.0.1")
+    ui.add_argument("--host", default="127.0.0.1")
+    ui.add_argument("--port", type=int, default=8765)
+    ui.add_argument("--results", default=str(DEFAULT_RESULTS))
+    ui.set_defaults(func=cmd_ui)
 
     infer = sub.add_parser("infer", help="Load an ORT CPU artifact and measure real latency")
     infer.add_argument("model")

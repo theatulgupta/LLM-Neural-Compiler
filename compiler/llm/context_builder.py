@@ -29,10 +29,16 @@ def build_context(
             }
         )
     history_lines = []
+    history_skipped = 0
     for row in (history or [])[:5]:
+        if row.get("history_skipped"):
+            history_skipped = int(row["history_skipped"])
+        plan_id = row.get("plan_id") or row.get("strategy")
+        if not plan_id and row.get("p50_ms") is None:
+            continue
         history_lines.append(
             {
-                "plan_id": row.get("plan_id") or row.get("strategy") or row.get("kind"),
+                "plan_id": plan_id or row.get("kind"),
                 "p50_ms": row.get("p50_ms"),
                 "passed": row.get("passed"),
             }
@@ -57,6 +63,7 @@ def build_context(
         "constraints": dict(constraints or {}),
         "allowlisted_atoms": atoms,
         "history": history_lines,
+        "history_skipped": history_skipped,
     }
 
 

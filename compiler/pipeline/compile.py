@@ -17,7 +17,7 @@ from compiler.exporters import skip_run_record
 from compiler.graph.graph_loader import LoadedGraph, load_graph
 from compiler.graph.graph_summary import GraphSummary, summarize_graph
 from compiler.hardware.profile import probe_hardware
-from compiler.history import append_history, new_run_record, write_run_json
+from compiler.history import append_history, history_for_model, new_run_record, write_run_json
 from compiler.optimization.engine import apply_plan_on_graph
 from compiler.optimization.passes import graph_ir_snapshot
 from compiler.planner.plan import Plan
@@ -153,14 +153,17 @@ def compile_verify_profile(
     iters: int = 50,
     seed: int = 0,
     verify_plan_first: bool = True,
+    loaded: LoadedGraph | None = None,
+    native: CompiledModel | None = None,
 ) -> dict[str, Any]:
     hardware = probe_hardware()
-    try:
-        loaded = load_graph(model_path, check=False)
-    except FrontendSkip as exc:
-        return _frontend_skip_record(
-            model_path, exc, backend_name=backend_name, kind=kind, results_dir=results_dir
-        )
+    if loaded is None:
+        try:
+            loaded = load_graph(model_path, check=False)
+        except FrontendSkip as exc:
+            return _frontend_skip_record(
+                model_path, exc, backend_name=backend_name, kind=kind, results_dir=results_dir
+            )
     summary = summarize_graph(loaded)
     verified = verify_plan(plan, summary, hardware, backend_name=backend_name) if verify_plan_first else None
     active = verified.plan if verified and verified.accepted else plan
@@ -236,13 +239,14 @@ def compile_verify_profile(
     native_backend = get_backend(backend_name)
     compile_error = None
     compiled: CompiledModel | None = None
-    native_compiled: CompiledModel | None = None
+    native_compiled = native
     t0 = time.perf_counter()
     try:
         compiled = backend.compile(runtime_bytes, options=options)
-        native_compiled = native_backend.compile(
-            loaded.model.SerializeToString(), options=BackendOptions(graph_opt="disable")
-        )
+        if native_compiled is None:
+            native_compiled = native_backend.compile(
+                loaded.model.SerializeToString(), options=BackendOptions(graph_opt="disable")
+            )
         trial_feeds = _input_feeds(compiled, optimized, np.random.default_rng(seed))
         backend.infer(compiled, trial_feeds)
     except Exception as exc:  # noqa: BLE001
@@ -369,6 +373,7 @@ def compile_and_benchmark(
 ) -> dict[str, Any]:
     """Compile through an allowlisted plan. Delegates to compile_verify_profile."""
 
+    loaded: LoadedGraph | None = None
     if strategy_name:
         from compiler.planner.plan import get_plan
 
@@ -377,7 +382,10 @@ def compile_and_benchmark(
         from compiler.llm.recommendation_engine import recommend_plan
 
         loaded = load_graph(model_path, check=False)
-        plan = recommend_plan(summarize_graph(loaded)).strategy
+        plan = recommend_plan(
+            summarize_graph(loaded),
+            history=history_for_model(model_kind),
+        ).strategy
     if task is None:
         if model_kind == "tiny_depth" or "depth" in model_kind:
             task = "depth"
@@ -395,6 +403,7 @@ def compile_and_benchmark(
         warmup=warmup,
         iters=iters,
         seed=seed,
+        loaded=loaded,
     )
 
 

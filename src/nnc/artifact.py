@@ -130,6 +130,16 @@ def infer_once(artifact: LoadedArtifact, feeds: dict[str, np.ndarray]) -> InferS
     return InferSample(latency_ms=latency_ms, output_shapes=shapes, outputs=tuple(outputs))
 
 
+def _percentile(ordered: list[float], q: float) -> float:
+    if len(ordered) == 1:
+        return float(ordered[0])
+    pos = q * (len(ordered) - 1)
+    lo = int(pos)
+    hi = min(lo + 1, len(ordered) - 1)
+    frac = pos - lo
+    return float(ordered[lo] * (1.0 - frac) + ordered[hi] * frac)
+
+
 def benchmark_artifact(
     artifact: LoadedArtifact,
     *,
@@ -167,6 +177,7 @@ def benchmark_artifact(
             "min": float(ordered[0]),
             "max": float(ordered[-1]),
             "p50": float(ordered[len(ordered) // 2]),
+            "p95": _percentile(ordered, 0.95),
         },
         "throughput_ips": (1000.0 / mean) if mean > 0 else 0.0,
         "source": "synthetic",

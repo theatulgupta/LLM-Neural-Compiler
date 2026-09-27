@@ -114,6 +114,7 @@ class HeuristicLlmClient:
             steps.append(
                 {"atom": "quantize_dynamic_int8", "params": {"per_channel": True, "weight_type": "qint8"}}
             )
+        has_int8 = any(step["atom"] == "quantize_dynamic_int8" for step in steps)
         if summary.node_count <= 8:
             payload = {
                 "plan_id": "baseline",
@@ -122,6 +123,20 @@ class HeuristicLlmClient:
                 "rationale": "Tiny graph; keep the native DAG so the Flatten/Gemm contract is visible.",
                 "expected_effects": ["none"],
                 "confidence": 0.9,
+                "source": self.name,
+            }
+        elif has_int8:
+            payload = {
+                "plan_id": "uav_int8_threads",
+                "steps": steps,
+                "options": {
+                    "ort_graph_opt": "extended",
+                    "intra_op_threads": min(4, cpu_count),
+                    "execution_mode": "sequential",
+                },
+                "rationale": "Large convolutional DAG on a dotprod CPU: dynamic INT8 plus a thread cap.",
+                "expected_effects": ["smaller_model", "lower_latency"],
+                "confidence": 0.6,
                 "source": self.name,
             }
         elif int(summary.op_counts.get("Conv", 0) or 0) >= 1:
@@ -187,11 +202,11 @@ def build_client() -> LlmClient:
         return MockLlmClient()
     if mode == "heuristic":
         return HeuristicLlmClient()
-    from compiler.llm.provider import HttpLlmClient, get_provider, known_providers, load_api_key
+    from compiler.llm.provider import HttpLlmClient, auto_provider_names, get_provider, load_api_key
 
     choice = mode or named
     if choice in {"auto", ""}:
-        for name in known_providers():
+        for name in auto_provider_names():
             if load_api_key(get_provider(name)):
                 return HttpLlmClient(provider=name)
         return HeuristicLlmClient()

@@ -8,7 +8,11 @@ Attach a new host with env only:
     NNC_LLM_API_KEY_ENV=MY_KEY   # or NNC_LLM_API_KEY / ~/.config/nnc/llm.env
 
 A built-in name (groq, openai, …) only fills URL/key-env defaults. Model is
-always overridable with NNC_LLM_MODEL. Keys are never logged or written to JSON.
+always overridable with NNC_LLM_MODEL. Request knobs (timeout, temperature,
+max tokens, JSON mode) come from the preset and are overridden by
+NNC_LLM_TIMEOUT, NNC_LLM_TEMPERATURE, NNC_LLM_MAX_TOKENS,
+NNC_LLM_MAX_TOKENS_FIELD, and NNC_LLM_JSON_OBJECT. Keys are never logged
+or written to JSON.
 """
 
 from __future__ import annotations
@@ -76,9 +80,17 @@ class ProviderSpec:
     auth_required: bool = True
     auth_header: str = "Authorization"
     auth_prefix: str = "Bearer "
+    timeout_s: float = 30.0
+    temperature: float | None = 0.0
+    max_tokens: int | None = None
+    max_tokens_field: str = "max_tokens"
+    suggested_models: tuple[str, ...] = ()
 
 
 _PROVIDERS: dict[str, ProviderSpec] = {}
+_AUTO_PRIORITY = ("groq", "openai", "openrouter")
+_LOCAL_PROVIDERS = frozenset({"ollama", "lmstudio"})
+_TOKEN_FIELDS = {"max_tokens", "max_completion_tokens"}
 
 
 def register_provider(spec: ProviderSpec) -> ProviderSpec:
@@ -90,6 +102,34 @@ def known_providers() -> tuple[str, ...]:
     return tuple(sorted(_PROVIDERS))
 
 
+def auto_provider_names() -> tuple[str, ...]:
+    """Keyed presets for NNC_LLM=auto. Local hosts are excluded."""
+
+    known = [name for name in known_providers() if name not in _LOCAL_PROVIDERS]
+    head = [name for name in _AUTO_PRIORITY if name in known]
+    rest = sorted(name for name in known if name not in head)
+    return tuple(head + rest)
+
+
+def provider_catalog() -> list[dict[str, Any]]:
+    """Names and model ids for the operator page. Never includes a key value."""
+
+    rows: list[dict[str, Any]] = []
+    for name in known_providers():
+        spec = get_provider(name)
+        models = spec.suggested_models or (spec.default_model,)
+        rows.append(
+            {
+                "name": spec.name,
+                "default_model": spec.default_model,
+                "suggested_models": list(models),
+                "auth_required": spec.auth_required,
+                "key_present": (not spec.auth_required) or bool(load_api_key(spec)),
+            }
+        )
+    return rows
+
+
 def get_provider(name: str) -> ProviderSpec:
     spec = _PROVIDERS.get(name)
     if spec is None:
@@ -99,87 +139,200 @@ def get_provider(name: str) -> ProviderSpec:
     return spec
 
 
-register_provider(
-    ProviderSpec(
-        name="groq",
-        chat_url="https://api.groq.com/openai/v1/chat/completions",
-        default_model="openai/gpt-oss-20b",
-        api_key_env="GROQ_API_KEY",
-        extra_headers=(("User-Agent", _CF_UA),),
+def _preset(
+    name: str,
+    chat_url: str,
+    default_model: str,
+    api_key_env: str,
+    suggested: tuple[str, ...],
+    *,
+    auth_required: bool = True,
+    extra_headers: tuple[tuple[str, str], ...] = (),
+) -> None:
+    models = (default_model, *tuple(item for item in suggested if item != default_model))
+    register_provider(
+        ProviderSpec(
+            name=name,
+            chat_url=chat_url,
+            default_model=default_model,
+            api_key_env=api_key_env,
+            extra_headers=extra_headers,
+            auth_required=auth_required,
+            suggested_models=models,
+        )
     )
+
+
+_preset(
+    "groq",
+    "https://api.groq.com/openai/v1/chat/completions",
+    "openai/gpt-oss-20b",
+    "GROQ_API_KEY",
+    ("llama-3.3-70b-versatile", "openai/gpt-oss-20b"),
+    extra_headers=(("User-Agent", _CF_UA),),
 )
-register_provider(
-    ProviderSpec(
-        name="openai",
-        chat_url="https://api.openai.com/v1/chat/completions",
-        default_model="gpt-4o-mini",
-        api_key_env="OPENAI_API_KEY",
-    )
+_preset(
+    "openai",
+    "https://api.openai.com/v1/chat/completions",
+    "gpt-4o-mini",
+    "OPENAI_API_KEY",
+    ("gpt-4o", "gpt-4.1-mini", "o4-mini"),
 )
-register_provider(
-    ProviderSpec(
-        name="together",
-        chat_url="https://api.together.xyz/v1/chat/completions",
-        default_model="meta-llama/Llama-3.1-8B-Instruct-Turbo",
-        api_key_env="TOGETHER_API_KEY",
-    )
+_preset(
+    "together",
+    "https://api.together.xyz/v1/chat/completions",
+    "meta-llama/Llama-3.1-8B-Instruct-Turbo",
+    "TOGETHER_API_KEY",
+    ("meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",),
 )
-register_provider(
-    ProviderSpec(
-        name="fireworks",
-        chat_url="https://api.fireworks.ai/inference/v1/chat/completions",
-        default_model="accounts/fireworks/models/llama-v3p1-8b-instruct",
-        api_key_env="FIREWORKS_API_KEY",
-    )
+_preset(
+    "fireworks",
+    "https://api.fireworks.ai/inference/v1/chat/completions",
+    "accounts/fireworks/models/llama-v3p1-8b-instruct",
+    "FIREWORKS_API_KEY",
+    ("accounts/fireworks/models/llama-v3p1-70b-instruct",),
 )
-register_provider(
-    ProviderSpec(
-        name="openrouter",
-        chat_url="https://openrouter.ai/api/v1/chat/completions",
-        default_model="openai/gpt-4o-mini",
-        api_key_env="OPENROUTER_API_KEY",
-    )
+_preset(
+    "openrouter",
+    "https://openrouter.ai/api/v1/chat/completions",
+    "openai/gpt-4o-mini",
+    "OPENROUTER_API_KEY",
+    ("anthropic/claude-3.5-sonnet", "deepseek/deepseek-r1"),
 )
-register_provider(
-    ProviderSpec(
-        name="ollama",
-        chat_url="http://127.0.0.1:11434/v1/chat/completions",
-        default_model="llama3.2",
-        api_key_env="OLLAMA_API_KEY",
-        auth_required=False,
-    )
+_preset(
+    "ollama",
+    "http://127.0.0.1:11434/v1/chat/completions",
+    "llama3.2",
+    "OLLAMA_API_KEY",
+    ("llama3.1", "qwen2.5"),
+    auth_required=False,
 )
-register_provider(
-    ProviderSpec(
-        name="gemini",
-        chat_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-        default_model="gemini-2.0-flash",
-        api_key_env="GEMINI_API_KEY",
-    )
+_preset(
+    "gemini",
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    "gemini-2.0-flash",
+    "GEMINI_API_KEY",
+    ("gemini-2.5-flash", "gemini-2.0-flash"),
 )
-register_provider(
-    ProviderSpec(
-        name="deepseek",
-        chat_url="https://api.deepseek.com/chat/completions",
-        default_model="deepseek-chat",
-        api_key_env="DEEPSEEK_API_KEY",
-    )
+_preset(
+    "deepseek",
+    "https://api.deepseek.com/chat/completions",
+    "deepseek-chat",
+    "DEEPSEEK_API_KEY",
+    ("deepseek-reasoner",),
 )
-register_provider(
-    ProviderSpec(
-        name="mistral",
-        chat_url="https://api.mistral.ai/v1/chat/completions",
-        default_model="mistral-small-latest",
-        api_key_env="MISTRAL_API_KEY",
-    )
+_preset(
+    "mistral",
+    "https://api.mistral.ai/v1/chat/completions",
+    "mistral-small-latest",
+    "MISTRAL_API_KEY",
+    ("mistral-large-latest",),
 )
-register_provider(
-    ProviderSpec(
-        name="xai",
-        chat_url="https://api.x.ai/v1/chat/completions",
-        default_model="grok-2-latest",
-        api_key_env="XAI_API_KEY",
-    )
+_preset(
+    "xai",
+    "https://api.x.ai/v1/chat/completions",
+    "grok-2-latest",
+    "XAI_API_KEY",
+    ("grok-3", "grok-2-latest"),
+)
+_preset(
+    "anthropic",
+    "https://api.anthropic.com/v1/chat/completions",
+    "claude-3-5-haiku-latest",
+    "ANTHROPIC_API_KEY",
+    ("claude-sonnet-4-5", "claude-3-5-haiku-latest"),
+)
+_preset(
+    "perplexity",
+    "https://api.perplexity.ai/chat/completions",
+    "sonar",
+    "PERPLEXITY_API_KEY",
+    ("sonar-pro",),
+)
+_preset(
+    "cerebras",
+    "https://api.cerebras.ai/v1/chat/completions",
+    "llama3.1-8b",
+    "CEREBRAS_API_KEY",
+    ("llama-3.3-70b",),
+)
+_preset(
+    "sambanova",
+    "https://api.sambanova.ai/v1/chat/completions",
+    "Meta-Llama-3.1-8B-Instruct",
+    "SAMBANOVA_API_KEY",
+    ("Meta-Llama-3.3-70B-Instruct",),
+)
+_preset(
+    "nvidia",
+    "https://integrate.api.nvidia.com/v1/chat/completions",
+    "meta/llama-3.1-8b-instruct",
+    "NVIDIA_API_KEY",
+    ("meta/llama-3.1-70b-instruct",),
+)
+_preset(
+    "huggingface",
+    "https://router.huggingface.co/v1/chat/completions",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "HF_TOKEN",
+    ("Qwen/Qwen2.5-7B-Instruct",),
+)
+_preset(
+    "github",
+    "https://models.inference.ai.azure.com/chat/completions",
+    "gpt-4o-mini",
+    "GITHUB_MODELS_TOKEN",
+    ("gpt-4o", "Meta-Llama-3.1-8B-Instruct"),
+)
+_preset(
+    "deepinfra",
+    "https://api.deepinfra.com/v1/openai/chat/completions",
+    "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "DEEPINFRA_API_KEY",
+    ("meta-llama/Meta-Llama-3.1-70B-Instruct",),
+)
+_preset(
+    "novita",
+    "https://api.novita.ai/v3/openai/chat/completions",
+    "meta-llama/llama-3.1-8b-instruct",
+    "NOVITA_API_KEY",
+    ("deepseek/deepseek-r1",),
+)
+_preset(
+    "moonshot",
+    "https://api.moonshot.ai/v1/chat/completions",
+    "moonshot-v1-8k",
+    "MOONSHOT_API_KEY",
+    ("moonshot-v1-32k", "kimi-latest"),
+)
+_preset(
+    "dashscope",
+    "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "qwen-plus",
+    "DASHSCOPE_API_KEY",
+    ("qwen-turbo", "qwen-max"),
+)
+_preset(
+    "zhipu",
+    "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    "glm-4-flash",
+    "ZHIPU_API_KEY",
+    ("glm-4-plus",),
+)
+_preset(
+    "cohere",
+    "https://api.cohere.ai/compatibility/v1/chat/completions",
+    "command-r",
+    "COHERE_API_KEY",
+    ("command-r-plus",),
+)
+_preset(
+    "lmstudio",
+    "http://127.0.0.1:1234/v1/chat/completions",
+    "local-model",
+    "LMSTUDIO_API_KEY",
+    ("local-model",),
+    auth_required=False,
 )
 
 
@@ -201,6 +354,69 @@ def _json_object_from_env(default: bool) -> bool:
     if raw in {"1", "true", "yes", "on"}:
         return True
     return default
+
+
+def _timeout_from_env(default: float) -> float:
+    raw = os.environ.get("NNC_LLM_TIMEOUT", "").strip()
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError as exc:
+        raise SchemaError(f"NNC_LLM_TIMEOUT must be a number, got {raw!r}") from exc
+    if value <= 0:
+        raise SchemaError(f"NNC_LLM_TIMEOUT must be positive, got {raw!r}")
+    return value
+
+
+def _temperature_from_env(default: float | None) -> float | None:
+    raw = os.environ.get("NNC_LLM_TEMPERATURE")
+    if raw is None:
+        return default
+    text = raw.strip().lower()
+    if text in {"", "omit", "none", "off"}:
+        return None
+    try:
+        return float(text)
+    except ValueError as exc:
+        raise SchemaError(f"NNC_LLM_TEMPERATURE must be a number or omit, got {raw!r}") from exc
+
+
+def _max_tokens_from_env(default: int | None) -> int | None:
+    raw = os.environ.get("NNC_LLM_MAX_TOKENS", "").strip()
+    if not raw:
+        return default
+    if raw.lower() in {"omit", "none", "off"}:
+        return None
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise SchemaError(f"NNC_LLM_MAX_TOKENS must be an integer, got {raw!r}") from exc
+    if value < 1:
+        raise SchemaError(f"NNC_LLM_MAX_TOKENS must be >= 1, got {raw!r}")
+    return value
+
+
+def _max_tokens_field_from_env(default: str) -> str:
+    raw = os.environ.get("NNC_LLM_MAX_TOKENS_FIELD", "").strip()
+    if not raw:
+        return default
+    if raw not in _TOKEN_FIELDS:
+        raise SchemaError(f"NNC_LLM_MAX_TOKENS_FIELD must be one of {sorted(_TOKEN_FIELDS)}, got {raw!r}")
+    return raw
+
+
+def apply_request_env(spec: ProviderSpec) -> ProviderSpec:
+    """Env overrides preset request knobs. Unset variables keep the preset."""
+
+    return replace(
+        spec,
+        timeout_s=_timeout_from_env(spec.timeout_s),
+        temperature=_temperature_from_env(spec.temperature),
+        max_tokens=_max_tokens_from_env(spec.max_tokens),
+        max_tokens_field=_max_tokens_field_from_env(spec.max_tokens_field),
+        json_object=_json_object_from_env(spec.json_object),
+    )
 
 
 def _parse_env_file(path: Path) -> dict[str, str]:
@@ -259,12 +475,12 @@ def spec_from_env(name: str | None = None) -> ProviderSpec:
             chat_url=url,
             default_model=model,
             api_key_env=key_env or "NNC_LLM_API_KEY",
-            json_object=_json_object_from_env(True),
+            json_object=True,
             auth_required=bool(key_env or os.environ.get("NNC_LLM_API_KEY")),
             auth_header=auth_header or "Authorization",
             auth_prefix="Bearer " if auth_prefix is None else auth_prefix,
         )
-        return spec
+        return apply_request_env(spec)
     if raw not in _PROVIDERS:
         raise SchemaError(
             f"unknown LLM provider {raw!r}; known={list(known_providers())} "
@@ -276,11 +492,45 @@ def spec_from_env(name: str | None = None) -> ProviderSpec:
         chat_url=url or spec.chat_url,
         default_model=model or spec.default_model,
         api_key_env=key_env or spec.api_key_env,
-        json_object=_json_object_from_env(spec.json_object),
         auth_header=auth_header or spec.auth_header,
         auth_prefix=spec.auth_prefix if auth_prefix is None else auth_prefix,
     )
-    return spec
+    return apply_request_env(spec)
+
+
+def _content_to_text(content: Any) -> str:
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                text = item.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+                elif isinstance(item.get("content"), str):
+                    parts.append(item["content"])
+        return "".join(parts)
+    return ""
+
+
+def extract_message_text(message: Any) -> str:
+    """Prefer message.content. Fall back to reasoning fields when content is empty."""
+
+    if not isinstance(message, dict):
+        raise SchemaError("LLM response missing choices[0].message")
+    text = _content_to_text(message.get("content"))
+    if text.strip():
+        return text
+    for key in ("reasoning_content", "reasoning"):
+        alt = _content_to_text(message.get(key))
+        if alt.strip():
+            return alt
+    raise SchemaError("LLM response missing choices[0].message.content")
 
 
 def extract_json_object(text: str) -> dict[str, Any]:
@@ -316,23 +566,34 @@ def strip_invented_metrics(rationale: str) -> tuple[str, bool]:
     return cleaned, True
 
 
+def _request_body(spec: ProviderSpec, model: str, messages: list[dict[str, str]]) -> dict[str, Any]:
+    body_obj: dict[str, Any] = {"model": model, "messages": messages}
+    if spec.temperature is not None:
+        body_obj["temperature"] = spec.temperature
+    if spec.max_tokens is not None:
+        body_obj[spec.max_tokens_field] = spec.max_tokens
+    if spec.json_object:
+        body_obj["response_format"] = {"type": "json_object"}
+    return body_obj
+
+
 def chat_completions(
     messages: list[dict[str, str]],
     spec: ProviderSpec,
     *,
     model: str,
     api_key: str | None,
-    timeout: float = 30.0,
+    timeout: float | None = None,
     sleep: SleepFn | None = None,
     urlopen: UrlOpen | None = None,
 ) -> str:
     """POST /v1/chat/completions. Retries URLError/timeout/408/429/5xx three times."""
 
+    spec = apply_request_env(spec)
+    limit = spec.timeout_s if timeout is None else timeout
     sleeper = sleep or time.sleep
     opener = urlopen or urllib.request.urlopen
-    body_obj: dict[str, Any] = {"model": model, "temperature": 0, "messages": messages}
-    if spec.json_object:
-        body_obj["response_format"] = {"type": "json_object"}
+    body_obj = _request_body(spec, model, messages)
     body = json.dumps(body_obj).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
@@ -345,13 +606,14 @@ def chat_completions(
     last_error: Exception | None = None
     for attempt in range(3):
         try:
-            with opener(request, timeout=timeout) as response:
+            with opener(request, timeout=limit) as response:
                 raw = response.read().decode("utf-8")
             parsed = json.loads(raw)
             try:
-                return str(parsed["choices"][0]["message"]["content"])
+                message = parsed["choices"][0]["message"]
             except (KeyError, IndexError, TypeError) as exc:
                 raise SchemaError("LLM response missing choices[0].message.content") from exc
+            return extract_message_text(message)
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")[:2000]
             last_error = SchemaError(_http_error_message(exc.code, detail))
@@ -381,7 +643,8 @@ class HttpLlmClient:
         chat: ChatFn | None = None,
         api_key: str | None = None,
     ) -> None:
-        self.spec = spec or spec_from_env(provider)
+        resolved = spec if spec is not None else spec_from_env(provider)
+        self.spec = apply_request_env(resolved)
         self.name = self.spec.name
         self.model = model or os.environ.get("NNC_LLM_MODEL", "").strip() or self.spec.default_model
         self._chat = chat

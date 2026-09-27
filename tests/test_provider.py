@@ -10,6 +10,41 @@ from compiler.llm.provider import HttpLlmClient, ProviderSpec, known_providers
 from compiler.schema import SchemaError
 
 
+def test_catalog_lists_coded_hosts_without_key_values(monkeypatch) -> None:
+    from compiler.llm.provider import provider_catalog
+
+    monkeypatch.setattr("compiler.llm.provider.load_api_key", lambda _spec: None)
+    rows = {row["name"]: row for row in provider_catalog()}
+    for name in (
+        "groq",
+        "openai",
+        "anthropic",
+        "perplexity",
+        "cerebras",
+        "sambanova",
+        "nvidia",
+        "huggingface",
+        "github",
+        "deepinfra",
+        "novita",
+        "moonshot",
+        "dashscope",
+        "zhipu",
+        "cohere",
+        "lmstudio",
+    ):
+        assert name in rows
+        assert rows[name]["default_model"]
+        assert rows[name]["suggested_models"]
+    assert rows["openai"]["key_present"] is False
+    assert rows["openai"]["suggested_models"][0] == "gpt-4o-mini"
+    assert rows["lmstudio"]["auth_required"] is False
+    assert rows["lmstudio"]["key_present"] is True
+    blob = json.dumps(rows)
+    assert "sk-" not in blob
+    assert "gsk_" not in blob
+
+
 def test_known_providers_include_groq_and_openai() -> None:
     names = known_providers()
     assert "groq" in names
@@ -198,3 +233,97 @@ def test_azure_style_auth_header() -> None:
     assert captured["api-key"] == "secret-azure"
     assert captured["authorization"] == ""
     assert "ok" in text
+
+
+def test_auto_prefers_groq_over_alphabetical(monkeypatch) -> None:
+    from compiler.llm.provider import auto_provider_names
+
+    names = auto_provider_names()
+    assert names[0] == "groq"
+    assert names[1] == "openai"
+    assert names[2] == "openrouter"
+    assert "ollama" not in names
+    assert "lmstudio" not in names
+    assert names.index("groq") < names.index("deepseek")
+
+    keys = {"deepseek": "present", "groq": "present"}
+
+    def fake_key(spec):
+        return keys.get(spec.name)
+
+    monkeypatch.setattr("compiler.llm.provider.load_api_key", fake_key)
+    monkeypatch.setenv("NNC_LLM", "auto")
+    client = build_client()
+    assert client.name == "groq"
+
+
+def test_auto_skips_ollama_without_other_keys(monkeypatch) -> None:
+    from compiler.llm.llm_client import HeuristicLlmClient
+
+    def fake_key(spec):
+        return "local" if spec.name == "ollama" else None
+
+    monkeypatch.setattr("compiler.llm.provider.load_api_key", fake_key)
+    monkeypatch.setenv("NNC_LLM", "auto")
+    assert isinstance(build_client(), HeuristicLlmClient)
+
+
+def test_request_env_omits_temperature_and_sets_tokens(monkeypatch) -> None:
+    from compiler.llm.provider import chat_completions
+
+    monkeypatch.setenv("NNC_LLM_TEMPERATURE", "omit")
+    monkeypatch.setenv("NNC_LLM_MAX_TOKENS", "2048")
+    monkeypatch.setenv("NNC_LLM_MAX_TOKENS_FIELD", "max_completion_tokens")
+    monkeypatch.setenv("NNC_LLM_TIMEOUT", "90")
+    monkeypatch.setenv("NNC_LLM_JSON_OBJECT", "0")
+    spec = ProviderSpec(
+        name="lab",
+        chat_url="https://example.invalid/v1/chat/completions",
+        default_model="reasoner",
+        api_key_env="LAB_KEY",
+        auth_required=False,
+    )
+    captured: dict[str, object] = {}
+
+    class _Resp:
+        def read(self) -> bytes:
+            return json.dumps(
+                {"choices": [{"message": {"content": None, "reasoning_content": '{"ok": true}'}}]}
+            ).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args) -> None:
+            return None
+
+    def fake_urlopen(request, timeout=30.0):
+        captured["timeout"] = timeout
+        captured["body"] = json.loads(request.data.decode())
+        return _Resp()
+
+    text = chat_completions(
+        [{"role": "user", "content": "hi"}],
+        spec,
+        model="reasoner",
+        api_key=None,
+        urlopen=fake_urlopen,
+    )
+    body = captured["body"]
+    assert isinstance(body, dict)
+    assert "temperature" not in body
+    assert body["max_completion_tokens"] == 2048
+    assert "response_format" not in body
+    assert captured["timeout"] == 90.0
+    assert "ok" in text
+
+
+def test_message_parts_and_reasoning_list() -> None:
+    from compiler.llm.provider import extract_message_text
+
+    parts = extract_message_text({"content": [{"type": "text", "text": '{"plan_id":"baseline"}'}]})
+    assert "plan_id" in parts
+    reasoned = extract_message_text(
+        {"content": "", "reasoning": [{"text": "thinking "}, {"text": '{"a": 1}'}]}
+    )
+    assert '{"a": 1}' in reasoned

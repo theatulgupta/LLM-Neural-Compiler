@@ -55,11 +55,15 @@ packages = [
   "compiler.profiling",
   "compiler.report",
   "compiler.schema",
+  "compiler.ui",
   "compiler.utils",
   "compiler.verification",
   "nnc",
   "nnc.backends",
 ]
+
+[tool.setuptools.package-data]
+"compiler.ui" = ["static/*"]
 
 [tool.setuptools.package-dir]
 "" = "."

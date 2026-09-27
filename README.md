@@ -43,6 +43,7 @@ python -m compiler plan fixtures/tiny_cnn.onnx
 python -m compiler optimize fixtures/tiny_cnn.onnx --kind fixture --task classify --candidates default --warmup 2 --iters 5
 python -m compiler matrix --candidates default --warmup 3 --iters 8
 python -m compiler report
+python -m compiler ui
 ```
 
 Native = unrewritten ONNX (`baseline`, ORT graph opt off). Optimized = schema-bound

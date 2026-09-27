@@ -34,9 +34,7 @@ def _followup_cell(llm: dict) -> str:
                 text += f" same_as={block['same_as']}"
             return text
         if block.get("plan_id"):
-            return (
-                f"{key}:{block.get('plan_id')} p50={block.get('p50_ms')} rank={block.get('rank')}"
-            )
+            return f"{key}:{block.get('plan_id')} p50={block.get('p50_ms')} rank={block.get('rank')}"
     return ""
 
 

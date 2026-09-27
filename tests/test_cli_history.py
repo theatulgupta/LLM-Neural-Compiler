@@ -26,6 +26,17 @@ def test_history_roundtrip(tmp_path) -> None:
     assert len(lines) == 1
 
 
+def test_plan_show_prompt_includes_history(tiny_path, monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        "compiler.cli.app.history_for_model",
+        lambda kind: [{"plan_id": "graph_fuse", "p50_ms": 1.5, "passed": True}],
+    )
+    assert main(["plan", str(tiny_path), "--show-prompt", "--kind", "fixture"]) == 0
+    text = capsys.readouterr().out
+    assert "graph_fuse" in text
+    assert "1.5" in text
+
+
 def test_cli_emit_and_analyze(tmp_path) -> None:
     fixture = tmp_path / "tiny.onnx"
     assert main(["emit-fixture", "--out", str(fixture)]) == 0

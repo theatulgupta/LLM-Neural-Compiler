@@ -18,10 +18,28 @@ from compiler.llm.session import propose_plan
 from compiler.pipeline.compile import compile_verify_profile
 from compiler.planner.candidates import generate_candidates, json_key
 from compiler.planner.plan import Plan
+from nnc.backends import get_backend
+from nnc.backends.base import BackendOptions, CompiledModel
 from nnc.probe import probe_host
 
 DEFAULT_RESULTS = REPO_ROOT / "experiments" / "results"
 _OFFLINE_LLM = frozenset({"heuristic", "mock"})
+
+
+def _native_session(loaded) -> CompiledModel | None:
+    """One native ORT session for numeric comparison. Optimized plans compile fresh."""
+
+    backend = get_backend("ort_cpu")
+    ready, _reason = backend.available()
+    if not ready:
+        return None
+    try:
+        return backend.compile(
+            loaded.model.SerializeToString(),
+            options=BackendOptions(graph_opt="disable"),
+        )
+    except (RuntimeError, ValueError, OSError):
+        return None
 
 
 def _row_from_record(cand, record: dict[str, Any], *, measured: bool) -> dict[str, Any]:
@@ -205,6 +223,8 @@ def _compile_followup(
     iters: int,
     origin: str,
     feedback: list[dict[str, Any]],
+    loaded,
+    native: CompiledModel | None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     extra = propose_plan(
         summary,
@@ -212,7 +232,6 @@ def _compile_followup(
         {},
         history,
         client,
-        max_attempts=1,
         feedback=feedback,
     )
     if extra.source in _OFFLINE_LLM:
@@ -231,6 +250,8 @@ def _compile_followup(
         results_dir=results,
         warmup=warmup,
         iters=iters,
+        loaded=loaded,
+        native=native,
     )
     follow = _Followup(origin, extra.plan)
     extra_row = _row_from_record(follow, record, measured=True)
@@ -271,6 +292,7 @@ def optimize_model(
         record["fps_claimed"] = False
         return record
     summary = summarize_graph(loaded)
+    native = _native_session(loaded)
     hardware = probe_hardware()
     history = history_for_model(kind)
     active = client or build_client()
@@ -291,6 +313,8 @@ def optimize_model(
             results_dir=results,
             warmup=warmup,
             iters=iters,
+            loaded=loaded,
+            native=native,
         )
         row = _row_from_record(cand, record, measured=True)
         rows.append(row)
@@ -318,6 +342,8 @@ def optimize_model(
         "results": results,
         "warmup": warmup,
         "iters": iters,
+        "loaded": loaded,
+        "native": native,
     }
     if kind_follow == "revised" and llm_row is not None:
         err = _gate_error(llm_row)

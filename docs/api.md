@@ -11,8 +11,8 @@ API surface:
 
 - `python -m compiler emit-fixture` (`--kind cnn|depth`)
 - `python -m compiler analyze <model.onnx>`
-- `python -m compiler plan <model.onnx>` (verified plan JSON)
-- `python -m compiler recommend <model.onnx>` (legacy name → preset)
+- `python -m compiler plan <model.onnx>` (verified plan JSON, `schemas/llm-plan.schema.json`)
+- `python -m compiler recommend <model.onnx>` (legacy preset name only, `schemas/llm-proposal.schema.json`; not the atom plan)
 - `python -m compiler infer <model.onnx>` (ORT CPU load + measured latency)
 - `python -m compiler compile <model.onnx> --backend ort_cpu|tensorrt --strategy PRESET`
 - `python -m compiler optimize <model.onnx> --kind KIND [--candidates default|all]`
@@ -21,6 +21,7 @@ API surface:
 - `python -m compiler export [--kind KIND]`
 - `python -m compiler matrix [--candidates all]`
 - `python -m compiler report`
+- `python -m compiler ui` (loopback console: inspect results, then analyze / plan / optimize / report)
 - `python -m compiler baseline`
 - `python -m compiler probe`
 - `python -m compiler formats` (frontends / backends / `llm_providers` / GraphIR)

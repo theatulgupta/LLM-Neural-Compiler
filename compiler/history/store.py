@@ -31,17 +31,26 @@ def new_run_record(**kwargs: Any) -> dict[str, Any]:
     return record
 
 
-def load_history(history_path: Path) -> list[dict[str, Any]]:
+def read_history(history_path: Path) -> tuple[list[dict[str, Any]], int]:
+    """Parsed rows and the count of non-empty lines that were not JSON."""
+
     if not history_path.is_file():
-        return []
+        return [], 0
     rows: list[dict[str, Any]] = []
+    skipped = 0
     for line in history_path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         try:
             rows.append(json.loads(line))
         except json.JSONDecodeError:
-            continue
+            skipped += 1
+    return rows, skipped
+
+
+def load_history(history_path: Path) -> list[dict[str, Any]]:
+    rows, skipped = read_history(history_path)
+    load_history.last_skipped = skipped  # type: ignore[attr-defined]
     return rows
 
 
@@ -51,8 +60,9 @@ def history_for_model(
     from compiler.catalog import REPO_ROOT
 
     path = history_path or (REPO_ROOT / "experiments" / "results" / "history.jsonl")
+    parsed, skipped = read_history(path)
     matched: list[dict[str, Any]] = []
-    for row in reversed(load_history(path)):
+    for row in reversed(parsed):
         model = row.get("model") or {}
         kind = str(model.get("kind") or "")
         sha = str(model.get("sha256") or "")
@@ -66,10 +76,22 @@ def history_for_model(
                 "p50_ms": bench.get("p50"),
                 "passed": (row.get("verification") or {}).get("passed"),
                 "kind": kind,
-                "origin": (row.get("plan") or {}).get("source")
-                or (row.get("strategy") or {}).get("source"),
+                "origin": (row.get("plan") or {}).get("source") or (row.get("strategy") or {}).get("source"),
             }
         )
         if len(matched) >= k:
             break
+    if skipped and matched:
+        matched[-1] = {**matched[-1], "history_skipped": skipped}
+    elif skipped:
+        matched.append(
+            {
+                "plan_id": None,
+                "p50_ms": None,
+                "passed": None,
+                "kind": "",
+                "origin": None,
+                "history_skipped": skipped,
+            }
+        )
     return matched

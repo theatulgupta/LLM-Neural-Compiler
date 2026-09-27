@@ -304,7 +304,7 @@ Dedup key is `json.dumps({steps, options})`. Duplicate latency is copied; `measu
 
 For each unique plan, `compile_verify_profile`:
 
-1. `verify_plan` again (clamps threads to `min(4, cpu_count)`; drops `parallel` → `sequential` on `ort_cpu`).
+1. `verify_plan` again (clamps `intra_op_threads` to `[1, cpu_count]`; leaves `execution_mode=parallel` alone).
 2. `apply_plan_on_graph` runs remaining **pass** atoms in order. Options are **not** graph passes; they become `BackendOptions` on the ORT session.
 3. Writes `experiments/artifacts/<kind>/<plan_id>.onnx` plus a sidecar JSON (`plan`, `options`, `sha256`).
 4. Compiles rewritten bytes with plan options; compiles **native** bytes with `graph_opt=disable`.
@@ -318,7 +318,7 @@ Passed rows with a p50 are sorted ascending. `chosen` is the first **after**
 any follow-up compile.
 
 HTTP clients (`outcome.source` not heuristic/mock — Groq, OpenAI, custom, …)
-get **one** extra `propose_plan` (`max_attempts=1`). Feedback includes a compact
+get **one** extra `propose_plan` (same default `max_attempts=3` as the first plan; still one compile). Feedback includes a compact
 measured table (origin, plan_id, atoms, options, p50, passed, gate error):
 
 - compile or gates failed → `outcome=measured_failure`, origin `llm_revised`;
@@ -394,7 +394,7 @@ Presets exist so `--strategy graph_fuse` still works and so the matrix has an or
 | --- | --- |
 | System prompt | Invented FPS language (also stripped from the reply) |
 | JSON schema | Extra keys, unknown atoms, more than 8 steps |
-| Verifier | Pattern/hardware mismatch; thread blow-up; parallel ORT CPU |
+| Verifier | Pattern/hardware mismatch; `intra_op_threads` above `cpu_count` |
 | Engine | Unknown pass name (`ValueError`) |
 | Gates | INT8 that no longer matches native boxes / cosine |
 | ROS | No setpoint publisher |

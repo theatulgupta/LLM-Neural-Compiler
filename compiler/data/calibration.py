@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -10,17 +11,30 @@ from compiler.catalog import REPO_ROOT
 from compiler.errors import CalibrationUnavailable
 
 CALIB_NPZ = REPO_ROOT / "experiments" / "calib" / "gz_frames.npz"
-ASSET_DIRS = [
-    REPO_ROOT / ".venv" / "lib" / "python3.12" / "site-packages" / "ultralytics" / "assets",
-    Path.home()
-    / "LLM-Neural-Compiler"
-    / ".venv"
-    / "lib"
-    / "python3.12"
-    / "site-packages"
-    / "ultralytics"
-    / "assets",
-]
+
+
+def calib_npz_path() -> Path:
+    """NNC_CALIB_NPZ wins; otherwise experiments/calib/gz_frames.npz."""
+
+    override = os.environ.get("NNC_CALIB_NPZ", "").strip()
+    if override:
+        return Path(override)
+    return CALIB_NPZ
+
+
+def ultralytics_asset_dirs() -> list[Path]:
+    """Installed package assets, plus NNC_ULTRALYTICS_ASSETS when set."""
+
+    found: list[Path] = []
+    override = os.environ.get("NNC_ULTRALYTICS_ASSETS", "").strip()
+    if override:
+        found.append(Path(override))
+    try:
+        import ultralytics
+    except ImportError:
+        return found
+    found.append(Path(ultralytics.__file__).resolve().parent / "assets")
+    return found
 
 
 def _letterbox_nchw(rgb: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
@@ -48,7 +62,7 @@ def _letterbox_nchw(rgb: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
 
 def _load_asset_rgbs(limit: int) -> list[np.ndarray]:
     frames: list[np.ndarray] = []
-    for folder in ASSET_DIRS:
+    for folder in ultralytics_asset_dirs():
         if not folder.is_dir():
             continue
         for path in sorted(folder.glob("*.jpg")) + sorted(folder.glob("*.png")):
@@ -64,8 +78,9 @@ def _load_asset_rgbs(limit: int) -> list[np.ndarray]:
 
 
 def load_calibration_rgb(*, source: str = "gz_frames", limit: int = 16) -> tuple[list[np.ndarray], str]:
-    if source == "gz_frames" and CALIB_NPZ.is_file():
-        data = np.load(CALIB_NPZ)
+    npz = calib_npz_path()
+    if source == "gz_frames" and npz.is_file():
+        data = np.load(npz)
         stacked = data["frames"]
         frames = [np.asarray(stacked[i]) for i in range(min(limit, stacked.shape[0]))]
         if frames:

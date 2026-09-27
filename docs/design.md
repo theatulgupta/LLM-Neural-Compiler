@@ -296,7 +296,7 @@ Uses the first LLM row’s p50 **even if that row failed gates**. Negative gap +
 rank = faster but illegal numerics. Not a win.
 
 **`llm_revised`:** HTTP client (not heuristic/mock) and `compile_ok` is false
-or `passed` is false. One `propose_plan` with `outcome=measured_failure` and a
+or `passed` is false. One `propose_plan` (default three schema/verifier attempts, one compile) with `outcome=measured_failure` and a
 compact measured table (origin, plan_id, atoms, options, p50, passed, gate
 error). Skip compile if not accepted, if `source` is heuristic/mock
 (`{skipped: "fallback: …"}`), or if `json_key` already seen
@@ -414,10 +414,9 @@ Never name an INT8 plan `graph_fuse`.
    missing `requires` pattern → drop; missing hardware / FP16 on `ort_cpu` → drop.
 3. If any structural pass kept and shape infer missing → insert shape infer first.
 4. Order: shape infer, other non-quant, then quant/FP16.
-5. Clamp `intra_op_threads` to `[1, min(4, cpu_count)]`.
-6. Default options: graph opt disable, sequential.
-7. `ort_cpu` + parallel → sequential (drop).
-8. Return `accepted=true` with the **new** Plan. `numerics=approx` if any kept
+5. Clamp `intra_op_threads` to `[1, cpu_count]`. A value above `cpu_count` is a drop and is rewritten. `execution_mode=parallel` is kept; the MiDaS row in the proposal compiled that way.
+6. Default options: graph opt disable, sequential, when the plan omitted them.
+7. Return `accepted=true` with the **new** Plan. `numerics=approx` if any kept
    approx atom.
 
 Structural set: identity, dropout, constant_folding, fuse_bn_into_conv,

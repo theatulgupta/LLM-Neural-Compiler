@@ -52,6 +52,90 @@ def test_propose_plan_retries_garbage_then_unknown_atom(tiny_path) -> None:
     assert "Reply again with a corrected plan" in seen[2][1]["content"]
 
 
+def test_propose_plan_verifier_rejected_retries(tiny_path, monkeypatch) -> None:
+    from compiler.planner.verifier import VerifiedPlan, verify_plan
+
+    calls = {"n": 0}
+    real = verify_plan
+
+    def flaky(plan, summary, hardware, backend_name="ort_cpu", constraints=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return VerifiedPlan(
+                plan=plan,
+                accepted=False,
+                rejections=(
+                    {"step": "fuse_conv_relu", "reason": "pattern conv_relu absent", "level": "reject"},
+                ),
+            )
+        return real(plan, summary, hardware, backend_name=backend_name, constraints=constraints)
+
+    monkeypatch.setattr("compiler.llm.session.verify_plan", flaky)
+    replies = [
+        json.dumps({"strategy": "graph_fuse", "rationale": "first", "source": "groq"}),
+        json.dumps({"strategy": "baseline", "rationale": "second", "source": "groq"}),
+    ]
+    seen: list[list[dict[str, str]]] = []
+
+    def fake_chat(messages, model):
+        seen.append(messages)
+        return replies[len(seen) - 1]
+
+    summary = summarize_graph(load_graph(tiny_path))
+    client = GroqLlmClient(chat=fake_chat, api_key="unused")
+    outcome = propose_plan(summary, probe_hardware(), {}, [], client, max_attempts=3)
+    assert outcome.accepted is True
+    assert outcome.attempts[0].outcome == "rejected"
+    assert outcome.attempts[0].corrections[0]["level"] == "reject"
+    prompt = seen[1][1]["content"]
+    assert "reject fuse_conv_relu" in prompt
+    assert "pattern conv_relu absent" in prompt
+
+
+def test_transport_error_outcome(tiny_path) -> None:
+    calls = {"n": 0}
+
+    class Flaky:
+        name = "openai"
+
+        def propose(self, summary, context=None, feedback=None):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise SchemaError("LLM HTTP 429 (rate_limit_exceeded)")
+            return MockLlmClient().propose(summary, context, feedback)
+
+    summary = summarize_graph(load_graph(tiny_path))
+    outcome = propose_plan(summary, probe_hardware(), {}, [], Flaky(), max_attempts=2)
+    assert outcome.accepted is True
+    assert outcome.attempts[0].outcome == "transport_error"
+    assert "429" in outcome.attempts[0].detail
+
+
+def test_heuristic_int8_plan_id_is_not_graph_fuse(tiny_path) -> None:
+    from dataclasses import replace
+
+    from compiler.llm.llm_client import HeuristicLlmClient
+
+    summary = summarize_graph(load_graph(tiny_path))
+    wide = replace(summary, node_count=40, flops_total=2_000_000_000, op_counts={"Conv": 4})
+    int8_ctx = {"hardware": {"features": ["asimddp"], "cpu_count": 8}}
+    named = HeuristicLlmClient().propose(wide, int8_ctx)
+    assert named.plan["plan_id"] == "uav_int8_threads"
+    assert any(step["atom"] == "quantize_dynamic_int8" for step in named.plan["steps"])
+    fuse = HeuristicLlmClient().propose(wide, {"hardware": {"features": [], "cpu_count": 8}})
+    assert fuse.plan["plan_id"] == "graph_fuse"
+    tiny = replace(wide, node_count=4)
+    assert HeuristicLlmClient().propose(tiny, int8_ctx).plan["plan_id"] == "baseline"
+
+
+def test_calib_npz_env_override(tmp_path, monkeypatch) -> None:
+    from compiler.data.calibration import calib_npz_path
+
+    target = tmp_path / "frames.npz"
+    monkeypatch.setenv("NNC_CALIB_NPZ", str(target))
+    assert calib_npz_path() == target
+
+
 def test_all_bad_replies_fall_back_and_optimize_still_chooses(tiny_path, tmp_path) -> None:
     def fake_chat(messages, model):
         return "definitely not a plan"
