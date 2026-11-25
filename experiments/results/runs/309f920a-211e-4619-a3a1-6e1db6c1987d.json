@@ -1,0 +1,93 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "iters": 50,
+    "latency_ms": {
+      "max": 0.014374999864230631,
+      "mean": 0.004840859996875224,
+      "min": 0.004249999847161234,
+      "p50": 0.004540999952951097,
+      "p95": 0.00570800011701067
+    },
+    "measured_at": "2026-09-16T16:33:12.400854+00:00",
+    "throughput_ips": 206574.8649300951,
+    "warmup": 10
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "disable",
+    "ms": 11.715717000015502,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "created_at": "2026-09-16T16:33:12.388786+00:00",
+  "graph": {
+    "estimated_flops": 5632,
+    "initializer_bytes": 2240,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "input",
+        "shape": [
+          1,
+          1,
+          8,
+          8
+        ]
+      }
+    ],
+    "ir_version": 8,
+    "node_count": 5,
+    "notes": [
+      "classifier head is Flatten+Gemm; Gemm K must match Flatten width",
+      "conv without BatchNormalization; BN fusion is not applicable",
+      "tiny parameter count; CPU latency is dominated by overhead"
+    ],
+    "op_counts": {
+      "Conv": 1,
+      "Flatten": 1,
+      "Gemm": 1,
+      "MaxPool": 1,
+      "Relu": 1
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "logits",
+        "shape": [
+          1,
+          8
+        ]
+      }
+    ],
+    "param_count": 560,
+    "producer": "llm-neural-compiler",
+    "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/fixtures/tiny_cnn.onnx"
+  },
+  "host": {
+    "machine": "aarch64",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3"
+  },
+  "model": {
+    "kind": "fixture",
+    "opset": 13,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/fixtures/tiny_cnn.onnx",
+    "sha256": "8d79544ac366391d697b561415ac234800f6861913b727b4c1bd4cf75afe6819"
+  },
+  "run_id": "309f920a-211e-4619-a3a1-6e1db6c1987d",
+  "schema_version": 1,
+  "skip": null,
+  "strategy": {
+    "rationale": "caller override",
+    "source": "override",
+    "strategy": "baseline"
+  }
+}

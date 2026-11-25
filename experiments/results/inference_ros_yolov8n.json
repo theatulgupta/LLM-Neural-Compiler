@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "source": "synthetic",
+  "fps_claimed": false,
+  "backend": "ort_cpu",
+  "providers": ["CPUExecutionProvider"],
+  "graph_opt": "extended",
+  "model": {
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n.onnx",
+    "sha256": "1d883eedafc9024446074d0b642ef8220a0466e3eb27267888c060c5df7a2e87",
+    "bytes": 12824019,
+    "kind": "yolov8n"
+  },
+  "input_shape": [1, 3, 640, 640],
+  "output_shapes": [[1, 84, 8400]],
+  "samples_ms": [84.10495999987688, 78.50655099991855],
+  "note": "Measured by llm_uav_core inference_node while PX4 SITL gz_x500 was also running on this aarch64 QEMU host. Not comparable to the unloaded baseline (~66 ms)."
+}

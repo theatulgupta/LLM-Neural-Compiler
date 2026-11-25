@@ -1,0 +1,174 @@
+[
+  {
+    "model": "fixtures/tiny_cnn.onnx",
+    "unconstrained": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 694.0580579994275,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 1,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    },
+    "structured_api": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 701.4929320002921,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 1,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    }
+  },
+  {
+    "model": "experiments/models/mobilenet_v3_small.onnx",
+    "unconstrained": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 944.9664939993454,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 4,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    },
+    "structured_api": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 1631.0613790001298,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 4,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    }
+  },
+  {
+    "model": "experiments/models/mobilenet_v2.onnx",
+    "unconstrained": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    },
+    "structured_api": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    }
+  },
+  {
+    "model": "experiments/models/shufflenet_v2_x1_0.onnx",
+    "unconstrained": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 906.7650140004844,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 4,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    },
+    "structured_api": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    }
+  },
+  {
+    "model": "experiments/models/resnet18.onnx",
+    "unconstrained": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    },
+    "structured_api": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    }
+  },
+  {
+    "model": "experiments/models/efficientnet_b0.onnx",
+    "unconstrained": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 644.6327069998006,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 4,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    },
+    "structured_api": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    }
+  },
+  {
+    "model": "experiments/models/yolov8n.onnx",
+    "unconstrained": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    },
+    "structured_api": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    }
+  },
+  {
+    "model": "experiments/models/yolov8s.onnx",
+    "unconstrained": {
+      "ok": false,
+      "error": "HTTP Error 429: Too Many Requests"
+    },
+    "structured_api": {
+      "ok": true,
+      "first_try_valid": true,
+      "attempts": 1,
+      "decision_ms": 682.6447559997177,
+      "strategy": "ort_extended",
+      "config": {
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "precision": "fp32",
+        "execution_mode": "sequential",
+        "intra_op_num_threads": 4,
+        "inter_op_num_threads": 1,
+        "enable_mem_pattern": true
+      }
+    }
+  }
+]

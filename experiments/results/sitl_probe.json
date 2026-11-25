@@ -1,0 +1,273 @@
+{
+  "gazebo": {
+    "gz_bin": "/opt/ros/jazzy/opt/gz_tools_vendor/bin/gz",
+    "probe": {
+      "cmd": [
+        "gz",
+        "sim",
+        "--version"
+      ],
+      "ok": true,
+      "returncode": 0,
+      "stderr_head": "",
+      "stdout_head": "Gazebo Sim, version 8.15.0\nCopyright (C) 2018 Open Source Robotics Foundation.\nReleased under the Apache 2.0 License."
+    }
+  },
+  "nvidia": {
+    "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+    "present": false
+  },
+  "platform": {
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "release": "7.0.0-31-generic",
+    "system": "Linux"
+  },
+  "position_sample": {
+    "changed_xyz": true,
+    "message_count": 602,
+    "ok": true,
+    "reason": "x,y,z changed on /fmu/out/vehicle_local_position_v1",
+    "returncode": 0,
+    "ros_topics_head": [
+      "/fmu/in/actuator_motors",
+      "/fmu/in/actuator_servos_v1",
+      "/fmu/in/arming_check_reply_v1",
+      "/fmu/in/aux_global_position_v1",
+      "/fmu/in/config_overrides_request_v1",
+      "/fmu/in/distance_sensor",
+      "/fmu/in/fixed_wing_lateral_setpoint",
+      "/fmu/in/fixed_wing_longitudinal_setpoint",
+      "/fmu/in/goto_setpoint",
+      "/fmu/in/landing_gear",
+      "/fmu/in/lateral_control_configuration",
+      "/fmu/in/longitudinal_control_configuration",
+      "/fmu/in/manual_control_input_v1",
+      "/fmu/in/message_format_request",
+      "/fmu/in/mode_completed",
+      "/fmu/in/obstacle_distance",
+      "/fmu/in/offboard_control_mode",
+      "/fmu/in/onboard_computer_status",
+      "/fmu/in/register_ext_component_request_v2",
+      "/fmu/in/rover_attitude_setpoint",
+      "/fmu/in/rover_position_setpoint",
+      "/fmu/in/rover_rate_setpoint",
+      "/fmu/in/rover_speed_setpoint",
+      "/fmu/in/rover_steering_setpoint",
+      "/fmu/in/rover_throttle_setpoint",
+      "/fmu/in/sensor_optical_flow",
+      "/fmu/in/setpoint_config",
+      "/fmu/in/telemetry_status",
+      "/fmu/in/trajectory_setpoint",
+      "/fmu/in/unregister_ext_component",
+      "/fmu/in/vehicle_attitude_setpoint_v1",
+      "/fmu/in/vehicle_command",
+      "/fmu/in/vehicle_command_mode_executor",
+      "/fmu/in/vehicle_mocap_odometry",
+      "/fmu/in/vehicle_rates_setpoint",
+      "/fmu/in/vehicle_thrust_setpoint",
+      "/fmu/in/vehicle_torque_setpoint",
+      "/fmu/in/vehicle_visual_odometry",
+      "/fmu/out/airspeed_validated_v1",
+      "/fmu/out/arming_check_request_v1"
+    ],
+    "samples_head": [
+      {
+        "t": 1789578436.2679212,
+        "timestamp": 1789578436260009,
+        "x": 0.012606943026185036,
+        "xy_valid": true,
+        "y": 0.011077146977186203,
+        "z": -0.0268096923828125,
+        "z_valid": true
+      },
+      {
+        "t": 1789578436.2879183,
+        "timestamp": 1789578436284009,
+        "x": 0.012450355105102062,
+        "xy_valid": true,
+        "y": 0.010606498457491398,
+        "z": -0.026634663343429565,
+        "z_valid": true
+      },
+      {
+        "t": 1789578436.3078651,
+        "timestamp": 1789578436300009,
+        "x": 0.012350457720458508,
+        "xy_valid": true,
+        "y": 0.010311448946595192,
+        "z": -0.026549234986305237,
+        "z_valid": true
+      },
+      {
+        "t": 1789578436.327888,
+        "timestamp": 1789578436324009,
+        "x": 0.012195288203656673,
+        "xy_valid": true,
+        "y": 0.009894151240587234,
+        "z": -0.026417121291160583,
+        "z_valid": true
+      },
+      {
+        "t": 1789578436.347816,
+        "timestamp": 1789578436340009,
+        "x": 0.012079997919499874,
+        "xy_valid": true,
+        "y": 0.009631907567381859,
+        "z": -0.026336491107940674,
+        "z_valid": true
+      }
+    ],
+    "samples_tail": [
+      {
+        "t": 1789578448.2081819,
+        "timestamp": 1789578448204003,
+        "x": -0.026962576434016228,
+        "xy_valid": true,
+        "y": -0.00635954225435853,
+        "z": -0.02784039080142975,
+        "z_valid": true
+      },
+      {
+        "t": 1789578448.2285035,
+        "timestamp": 1789578448228003,
+        "x": -0.027447238564491272,
+        "xy_valid": true,
+        "y": -0.0067130946554243565,
+        "z": -0.027592822909355164,
+        "z_valid": true
+      },
+      {
+        "t": 1789578448.2482588,
+        "timestamp": 1789578448244003,
+        "x": -0.02774067036807537,
+        "xy_valid": true,
+        "y": -0.006976311095058918,
+        "z": -0.027423173189163208,
+        "z_valid": true
+      },
+      {
+        "t": 1789578448.2676358,
+        "timestamp": 1789578448260003,
+        "x": -0.02803819626569748,
+        "xy_valid": true,
+        "y": -0.007234659045934677,
+        "z": -0.027248233556747437,
+        "z_valid": true
+      },
+      {
+        "t": 1789578448.287838,
+        "timestamp": 1789578448284003,
+        "x": -0.028450537472963333,
+        "xy_valid": true,
+        "y": -0.007646691985428333,
+        "z": -0.026968732476234436,
+        "z_valid": true
+      }
+    ],
+    "seconds": 12.0,
+    "stderr_head": "",
+    "topic": "/fmu/out/vehicle_local_position_v1",
+    "topic_count": 71,
+    "x": {
+      "max": 0.012606943026185036,
+      "min": -0.028450537472963333
+    },
+    "y": {
+      "max": 0.012059945613145828,
+      "min": -0.018132105469703674
+    },
+    "z": {
+      "max": -0.022267863154411316,
+      "min": -0.06879526376724243
+    }
+  },
+  "px4": {
+    "build_dir": "/home/theatulgupta/PX4-Autopilot/build/px4_sitl_default",
+    "build_exists": true,
+    "legacy_third_party_exists": false,
+    "legacy_third_party_tree": "/home/theatulgupta/LLM-Neural-Compiler/third_party/PX4-Autopilot",
+    "px4_bin": "/home/theatulgupta/PX4-Autopilot/build/px4_sitl_default/bin/px4",
+    "tree": "/home/theatulgupta/PX4-Autopilot",
+    "tree_exists": true
+  },
+  "ros2": {
+    "distro": "jazzy",
+    "llm_uav_core_built": true,
+    "llm_uav_core_setup": "/home/theatulgupta/LLM-Neural-Compiler/ros2_ws/install/setup.bash",
+    "probe": {
+      "cmd": [
+        "ros2",
+        "--help"
+      ],
+      "ok": true,
+      "returncode": 0,
+      "stderr_head": "",
+      "stdout_head": "usage: ros2 [-h] [--use-python-default-buffering]\n            Call `ros2 <command> -h` for more detailed usage. ...\n\nros2 is an extensible command-line tool for ROS 2.\n\noptions:\n  -h, --help            show this help message and exit\n  --use-python-default-buffering\n                        Do not force line buffering in stdout and instead use\n                        the python default buffering, which might be affected\n                        by PYTHONUNBUFFERED/-u and depends on whatever stdout\n                        is interactive or not\n\nCommands:\n  action     Various action related sub-commands\n  bag        Various rosbag related sub-commands\n  component  Various component related sub-commands\n  daemon     Various daemon related sub-commands\n  doctor     Check ROS setup and other potential issues\n  interface  Show information about ROS interfaces\n  launch     Run a launch file\n  lifecycle  Various lifecycle related sub-commands\n  multicast  Various multicast related sub-commands\n  node       Various node related sub-commands\n  param      Various param related sub-commands\n  pkg        Various package related sub-commands\n  plugin     Various plugin related sub-commands\n  run        Run a package specific executable\n  security   Various security related sub-commands\n  service    Various service related sub-commands\n  topic      Various topic related sub-commands\n  wtf        Use `wtf` as alias to `doctor`\n\n  Call `ros2 <command> -h` for more detailed usage."
+    },
+    "px4_msgs_present": true,
+    "px4_msgs_setup": "/home/theatulgupta/ros2_px4_ws/install/setup.bash",
+    "ros2_bin": "/opt/ros/jazzy/bin/ros2"
+  },
+  "ros2_topics": {
+    "has_local_position": true,
+    "local_position_topics": [
+      "/fmu/out/vehicle_local_position_v1"
+    ],
+    "ok": true,
+    "returncode": 0,
+    "stderr_head": "",
+    "topic_count": 71,
+    "topics_head": [
+      "/fmu/in/actuator_motors",
+      "/fmu/in/actuator_servos_v1",
+      "/fmu/in/arming_check_reply_v1",
+      "/fmu/in/aux_global_position_v1",
+      "/fmu/in/config_overrides_request_v1",
+      "/fmu/in/distance_sensor",
+      "/fmu/in/fixed_wing_lateral_setpoint",
+      "/fmu/in/fixed_wing_longitudinal_setpoint",
+      "/fmu/in/goto_setpoint",
+      "/fmu/in/landing_gear",
+      "/fmu/in/lateral_control_configuration",
+      "/fmu/in/longitudinal_control_configuration",
+      "/fmu/in/manual_control_input_v1",
+      "/fmu/in/message_format_request",
+      "/fmu/in/mode_completed",
+      "/fmu/in/obstacle_distance",
+      "/fmu/in/offboard_control_mode",
+      "/fmu/in/onboard_computer_status",
+      "/fmu/in/register_ext_component_request_v2",
+      "/fmu/in/rover_attitude_setpoint",
+      "/fmu/in/rover_position_setpoint",
+      "/fmu/in/rover_rate_setpoint",
+      "/fmu/in/rover_speed_setpoint",
+      "/fmu/in/rover_steering_setpoint",
+      "/fmu/in/rover_throttle_setpoint",
+      "/fmu/in/sensor_optical_flow",
+      "/fmu/in/setpoint_config",
+      "/fmu/in/telemetry_status",
+      "/fmu/in/trajectory_setpoint",
+      "/fmu/in/unregister_ext_component",
+      "/fmu/in/vehicle_attitude_setpoint_v1",
+      "/fmu/in/vehicle_command",
+      "/fmu/in/vehicle_command_mode_executor",
+      "/fmu/in/vehicle_mocap_odometry",
+      "/fmu/in/vehicle_rates_setpoint",
+      "/fmu/in/vehicle_thrust_setpoint",
+      "/fmu/in/vehicle_torque_setpoint",
+      "/fmu/in/vehicle_visual_odometry",
+      "/fmu/out/airspeed_validated_v1",
+      "/fmu/out/arming_check_request_v1"
+    ]
+  },
+  "uxrce_agent": {
+    "bin": "/home/theatulgupta/px4_ros_uxrce_dds_ws/install/microxrcedds_agent/bin/MicroXRCEAgent",
+    "present": true
+  },
+  "verdict": {
+    "reason": "x,y,z changed on /fmu/out/vehicle_local_position_v1",
+    "sitl_running_with_telemetry": true,
+    "xyz_changed": true
+  }
+}

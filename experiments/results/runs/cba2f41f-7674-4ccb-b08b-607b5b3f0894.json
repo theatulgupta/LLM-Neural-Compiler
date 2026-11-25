@@ -1,0 +1,104 @@
+{
+  "backend": "ort_cpu",
+  "benchmark": {
+    "iters": 25,
+    "latency_ms": {
+      "max": 143.31856100011464,
+      "mean": 66.24596092000502,
+      "min": 51.30568499998844,
+      "p50": 60.96894600000269,
+      "p95": 92.97961100014618
+    },
+    "measured_at": "2026-09-16T16:37:37.002640+00:00",
+    "throughput_ips": 15.095259939055682,
+    "warmup": 5
+  },
+  "compile": {
+    "error": null,
+    "graph_opt": "extended",
+    "ms": 85.03508500007229,
+    "ok": true,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "created_at": "2026-09-16T16:37:34.932279+00:00",
+  "graph": {
+    "estimated_flops": 6292352,
+    "initializer_bytes": 12607616,
+    "inputs": [
+      {
+        "dtype": "float",
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          640,
+          640
+        ]
+      }
+    ],
+    "ir_version": 7,
+    "node_count": 263,
+    "notes": [
+      "conv without BatchNormalization; BN fusion is not applicable"
+    ],
+    "op_counts": {
+      "Add": 9,
+      "Concat": 17,
+      "Constant": 24,
+      "Conv": 64,
+      "Div": 2,
+      "Gather": 1,
+      "MaxPool": 3,
+      "Mul": 60,
+      "Reshape": 8,
+      "Resize": 2,
+      "Shape": 1,
+      "Sigmoid": 58,
+      "Slice": 2,
+      "Softmax": 1,
+      "Split": 8,
+      "Sub": 2,
+      "Transpose": 1
+    },
+    "opset": 13,
+    "outputs": [
+      {
+        "dtype": "float",
+        "name": "output0",
+        "shape": [
+          1,
+          84,
+          8400
+        ]
+      }
+    ],
+    "param_count": 3151904,
+    "producer": "pytorch",
+    "sha256": "1d883eedafc9024446074d0b642ef8220a0466e3eb27267888c060c5df7a2e87",
+    "source": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n.onnx"
+  },
+  "host": {
+    "machine": "aarch64",
+    "nvidia": {
+      "detail": "no NVIDIA device: nvidia-smi not on PATH and /dev/nvidia0 missing (this host is aarch64 QEMU with a Virtio GPU)",
+      "present": false
+    },
+    "python": "3.12.3"
+  },
+  "model": {
+    "kind": "yolov8n",
+    "opset": 13,
+    "path": "/home/theatulgupta/LLM-Neural-Compiler/experiments/models/yolov8n.onnx",
+    "sha256": "1d883eedafc9024446074d0b642ef8220a0466e3eb27267888c060c5df7a2e87"
+  },
+  "run_id": "cba2f41f-7674-4ccb-b08b-607b5b3f0894",
+  "schema_version": 1,
+  "skip": null,
+  "strategy": {
+    "rationale": "caller override",
+    "source": "override",
+    "strategy": "ort_extended"
+  }
+}

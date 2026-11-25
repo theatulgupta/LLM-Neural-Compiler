@@ -60,6 +60,7 @@ def run_oracle_and_baselines(
         include_tensorrt=False,
         include_fp16=False,
         include_int8_static=include_int8_static,
+        only_available_eps=True,
     )
 
     # 1. Exhaustive Oracle over space

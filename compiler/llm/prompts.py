@@ -9,23 +9,23 @@ from compiler.graph.graph_summary import GraphSummary
 from compiler.strategies import (
     ALLOWED_ENABLE_MEM_PATTERN,
     ALLOWED_EXECUTION_MODES,
-    ALLOWED_EXECUTION_PROVIDERS,
     ALLOWED_GRAPH_OPT_LEVELS,
     ALLOWED_INTER_OP_THREADS,
     ALLOWED_INTRA_OP_THREADS,
     ALLOWED_PRECISIONS,
     ALLOWED_STRATEGIES,
+    available_execution_providers,
 )
 
 SYSTEM_PROMPT = """You are a neural-compiler advisor for ONNX models targeting real-time UAV edge inference.
 
-You MUST choose only from the allowlisted strategy dimensions and JSON schema. Do NOT invent
-custom compiler flags, TensorRT tactics, or unsupported providers.
+You MUST choose only from the allowlisted strategy dimensions and available execution providers listed
+in the user prompt. Do NOT invent custom compiler flags, TensorRT tactics, or unavailable providers.
 Return ONLY valid JSON matching:
 {
   "strategy": "baseline" | "ort_basic" | "ort_extended" | "ort_all",
   "config": {
-    "execution_provider": "CPUExecutionProvider" | "XNNPACKExecutionProvider",
+    "execution_provider": "<one of the available execution providers listed below>",
     "graph_optimization_level": "disable" | "basic" | "extended" | "all",
     "precision": "fp32" | "int8_dynamic" | "int8_static",
     "execution_mode": "sequential" | "parallel",
@@ -40,6 +40,7 @@ Return ONLY valid JSON matching:
 
 
 def allowlist_block() -> str:
+    avail_eps = list(available_execution_providers())
     lines = ["Allowlisted preset strategies:"]
     for name, strategy in ALLOWED_STRATEGIES.items():
         lines.append(f"- {name}: {strategy.description}")
@@ -47,7 +48,7 @@ def allowlist_block() -> str:
         [
             "",
             "Allowlisted multi-dimensional configuration space:",
-            f"- execution_provider: {list(ALLOWED_EXECUTION_PROVIDERS[:2])} (TensorRTExecutionProvider only if GPU present)",
+            f"- execution_provider (installed on this host): {avail_eps}",
             f"- graph_optimization_level: {list(ALLOWED_GRAPH_OPT_LEVELS)}",
             f"- precision: {list(ALLOWED_PRECISIONS[:3])} (fp16 only if converter available)",
             f"- execution_mode: {list(ALLOWED_EXECUTION_MODES)}",

@@ -1,57 +1,49 @@
-# ==========================================
-# ROS2
-# ==========================================
-
-ros2_ws/build/
-ros2_ws/install/
-ros2_ws/log/
-
-# ==========================================
-# Python
-# ==========================================
-
+# Python & virtual environments
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
+*.egg-info/
+.venv/
+venv/
+.pixi/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# ==========================================
-# VSCode
-# ==========================================
+# Secrets & environment variables
+.env
+*.env
+!.env.example
 
-.vscode/
-
-experiments/results/sitl_logs/
-
-# ==========================================
-# Models
-# ==========================================
-
+# Neural network weights & exported artifacts
 *.pt
 *.pth
 *.onnx
+*.onnx.data
 *.engine
+*.plan
+*.trt
 
-# ==========================================
-# Dataset
-# ==========================================
-
+# Datasets & simulation logs
 data/
+experiments/results/sitl_logs/
 
-# ==========================================
-# External repositories
-# ==========================================
+# ROS 2 workspaces
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+log/
 
+# External dependencies
 third_party/PX4-Autopilot/
 third_party/Micro-XRCE-DDS-Agent/
 
-# ==========================================
-# Local tooling
-# ==========================================
-
-.venv/
-.pixi/
-.pytest_cache/
-.mypy_cache/
-*.egg-info/
-dist/
-build/
+# Editors & OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo

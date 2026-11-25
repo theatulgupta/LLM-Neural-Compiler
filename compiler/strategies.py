@@ -186,15 +186,33 @@ def strategy_from_config(base_name: str, config: dict[str, Any]) -> Strategy:
     )
 
 
+def available_execution_providers() -> tuple[ExecutionProvider, ...]:
+    """Return allowlisted execution providers actually supported by the installed ORT wheel."""
+    try:
+        import onnxruntime as ort
+
+        installed = set(ort.get_available_providers())
+    except Exception:
+        installed = {"CPUExecutionProvider"}
+    supported = tuple(ep for ep in ALLOWED_EXECUTION_PROVIDERS if ep in installed)
+    return supported or ("CPUExecutionProvider",)
+
+
 def enumerate_strategy_space(
     *,
     include_tensorrt: bool = False,
     include_fp16: bool = False,
     include_int8_static: bool = False,
+    only_available_eps: bool = False,
 ) -> list[Strategy]:
     """Generate the closed, multi-dimensional allowlisted strategy universe."""
 
-    eps: list[ExecutionProvider] = ["CPUExecutionProvider", "XNNPACKExecutionProvider"]
+    if only_available_eps:
+        eps: list[ExecutionProvider] = [
+            ep for ep in available_execution_providers() if ep != "TensorRTExecutionProvider"
+        ]
+    else:
+        eps = ["CPUExecutionProvider", "XNNPACKExecutionProvider"]
     if include_tensorrt:
         eps.append("TensorRTExecutionProvider")
 

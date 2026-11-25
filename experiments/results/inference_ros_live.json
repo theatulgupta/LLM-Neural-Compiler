@@ -1,0 +1,24 @@
+{
+  "deadline_ms": 80.0,
+  "error": null,
+  "fps_claimed": false,
+  "graph_opt": "extended",
+  "latency_ms": 237.79927899977338,
+  "missed_deadline_pct": 100.0,
+  "missed_deadlines": 50,
+  "n_samples": 50,
+  "ok": true,
+  "providers": [
+    "CPUExecutionProvider"
+  ],
+  "source": "synthetic",
+  "stats": {
+    "max": 483.53146299996297,
+    "mean": 193.81297206002273,
+    "min": 129.12873899949773,
+    "p50": 176.8549010002971,
+    "p95": 317.8775839996888,
+    "p99": 483.53146299996297
+  },
+  "wall_ms": 237.8230699996493
+}
