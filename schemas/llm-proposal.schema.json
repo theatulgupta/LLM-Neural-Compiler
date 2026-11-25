@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NNCLlmProposal",
+  "type": "object",
+  "required": ["strategy", "rationale", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "strategy": {
+      "type": "string",
+      "enum": ["baseline", "ort_basic", "ort_extended", "ort_all"]
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "execution_provider",
+        "graph_optimization_level",
+        "precision",
+        "execution_mode",
+        "intra_op_num_threads",
+        "inter_op_num_threads",
+        "enable_mem_pattern"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "execution_provider": {
+          "type": "string",
+          "enum": ["CPUExecutionProvider", "XNNPACKExecutionProvider", "TensorRTExecutionProvider"]
+        },
+        "graph_optimization_level": {
+          "type": "string",
+          "enum": ["disable", "basic", "extended", "all"]
+        },
+        "precision": {
+          "type": "string",
+          "enum": ["fp32", "int8_dynamic", "int8_static", "fp16"]
+        },
+        "execution_mode": {
+          "type": "string",
+          "enum": ["sequential", "parallel"]
+        },
+        "intra_op_num_threads": {
+          "type": "integer",
+          "enum": [0, 1, 2, 4, 8]
+        },
+        "inter_op_num_threads": {
+          "type": "integer",
+          "enum": [0, 1, 2]
+        },
+        "enable_mem_pattern": {
+          "type": "boolean"
+        }
+      }
+    },
+    "rationale": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 }
+  }
+}
