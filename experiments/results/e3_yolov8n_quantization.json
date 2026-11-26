@@ -1,0 +1,65 @@
+[
+  {
+    "precision": "fp32",
+    "model_path": "experiments/models/yolov8n.onnx",
+    "model_size_mb": 12.23,
+    "warmup": 5,
+    "iters": 30,
+    "latency_ms": {
+      "mean": 84.42692399999412,
+      "p50": 79.30051599998933,
+      "p95": 137.10779099994852,
+      "p99": 162.97474400005285,
+      "min": 67.27234200002385,
+      "max": 162.97474400005285
+    },
+    "peak_rss_mb": 650.35546875,
+    "accuracy": {
+      "map50": 0.6057068935717902,
+      "map50_95": 0.45142370677011007,
+      "dataset": "/home/theatulgupta/LLM-Neural-Compiler/experiments/data/coco128/coco128.yaml"
+    }
+  },
+  {
+    "precision": "int8_dynamic",
+    "model_path": "experiments/models/yolov8n_int8_dynamic.onnx",
+    "model_size_mb": 3.331,
+    "warmup": 5,
+    "iters": 30,
+    "latency_ms": {
+      "mean": 107.18725823332231,
+      "p50": 92.88586599996052,
+      "p95": 188.8947659999758,
+      "p99": 208.61071100000572,
+      "min": 67.68762499996228,
+      "max": 208.61071100000572
+    },
+    "peak_rss_mb": 982.58203125,
+    "accuracy": {
+      "map50": 0.588339113192336,
+      "map50_95": 0.4328807405465337,
+      "dataset": "/home/theatulgupta/LLM-Neural-Compiler/experiments/data/coco128/coco128.yaml"
+    }
+  },
+  {
+    "precision": "int8_static",
+    "model_path": "experiments/models/yolov8n_int8_static.onnx",
+    "model_size_mb": 3.506,
+    "warmup": 5,
+    "iters": 30,
+    "latency_ms": {
+      "mean": 72.4678775666689,
+      "p50": 60.671706999983144,
+      "p95": 124.60289600005581,
+      "p99": 175.00698900005318,
+      "min": 50.18338499996844,
+      "max": 175.00698900005318
+    },
+    "peak_rss_mb": 996.12109375,
+    "accuracy": {
+      "map50": 0.0,
+      "map50_95": 0.0,
+      "dataset": "/home/theatulgupta/LLM-Neural-Compiler/experiments/data/coco128/coco128.yaml"
+    }
+  }
+]

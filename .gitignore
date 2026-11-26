@@ -47,3 +47,4 @@ third_party/Micro-XRCE-DDS-Agent/
 .DS_Store
 *.swp
 *.swo
+experiments/data/

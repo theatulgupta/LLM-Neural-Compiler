@@ -5,16 +5,16 @@
         "enable_mem_pattern": false,
         "execution_mode": "sequential",
         "execution_provider": "CPUExecutionProvider",
-        "graph_optimization_level": "basic",
+        "graph_optimization_level": "extended",
         "inter_op_num_threads": 2,
         "intra_op_num_threads": 4,
         "precision": "fp32"
       },
       "evals": 12,
-      "kind": "local_search_fallback",
-      "latency_ms": 3.0458410001301672,
-      "regret": 0.13494982068993894,
-      "search_time_s": 5.110606344000189
+      "kind": "optuna_tpe",
+      "latency_ms": 3.0932260000327005,
+      "regret": 0.14984513727566248,
+      "search_time_s": 5.1431247789999475
     },
     "heuristic": {
       "config": {
@@ -28,9 +28,9 @@
       },
       "evals": 1,
       "fidelity": null,
-      "latency_ms": 3.002215000378783,
-      "regret": 0.11869377823954938,
-      "search_time_s": 0.8271595900005195
+      "latency_ms": 3.1995379999898432,
+      "regret": 0.1893645051406289,
+      "search_time_s": 0.6785495990000072
     },
     "llm_advisor": {
       "config": {
@@ -45,25 +45,41 @@
       "evals": 1,
       "fallback_triggered": false,
       "fidelity": null,
-      "latency_ms": 3.0639229998996598,
-      "regret": 0.14168758618565067,
-      "search_time_s": 1.6112746660000994
+      "latency_ms": 2.9833350000103565,
+      "regret": 0.1089953474430682,
+      "search_time_s": 1.756972693000023
+    },
+    "llm_multi_turn": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 3,
+      "fidelity": null,
+      "latency_ms": 2.9833350000103565,
+      "regret": 0.1089953474430682,
+      "search_time_s": 2.7455946259999564
     },
     "oracle": {
       "config": {
         "enable_mem_pattern": true,
         "execution_mode": "sequential",
         "execution_provider": "CPUExecutionProvider",
-        "graph_optimization_level": "disable",
+        "graph_optimization_level": "basic",
         "inter_op_num_threads": 2,
         "intra_op_num_threads": 4,
         "precision": "fp32"
       },
       "evals": 256,
       "fidelity": null,
-      "latency_ms": 2.683679000256234,
+      "latency_ms": 2.6901239999688187,
       "regret": 0.0,
-      "search_time_s": 186.76036933999967
+      "search_time_s": 186.62983300400003
     },
     "ort_default": {
       "config": {
@@ -77,9 +93,9 @@
       },
       "evals": 1,
       "fidelity": null,
-      "latency_ms": 2.8160509991721483,
-      "regret": 0.049324825697587435,
-      "search_time_s": 0.7515999670004021
+      "latency_ms": 2.7785249999965345,
+      "regret": 0.032861310493025764,
+      "search_time_s": 0.7310852489999888
     },
     "random_search": {
       "config": {
@@ -93,9 +109,9 @@
       },
       "evals": 12,
       "fidelity": null,
-      "latency_ms": 3.5874180002792855,
-      "regret": 0.3367537622557556,
-      "search_time_s": 3.0416460119995463
+      "latency_ms": 2.89306900003794,
+      "regret": 0.07544076037813634,
+      "search_time_s": 2.512451218000024
     }
   },
   "metric": "p95",

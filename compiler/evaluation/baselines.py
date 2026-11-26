@@ -193,7 +193,7 @@ def run_oracle_and_baselines(
         "config": bo_best_cfg,
     }
 
-    # 6. Optional Live LLM Advisor
+    # 6. Optional Live LLM Advisor (1-shot + 3-shot closed-loop)
     if llm_client is not None:
         t0 = time.perf_counter()
         llm_rec = compile_and_benchmark(
@@ -213,6 +213,49 @@ def run_oracle_and_baselines(
             "fallback_triggered": llm_rec["strategy"].get("fallback_triggered", False),
             "config": llm_rec["strategy"].get("config"),
             "fidelity": llm_rec.get("fidelity"),
+        }
+
+        # 7. Closed-loop 3-shot LLM optimization with empirical history feedback
+        t_mt0 = time.perf_counter()
+        mt_history: list[dict[str, Any]] = [llm_rec]
+        best_mt_ms = llm_ms
+        best_mt_rec = llm_rec
+        for _shot in range(2):
+            from compiler.graph.graph_loader import load_graph
+            from compiler.graph.graph_summary import summarize_graph
+            from compiler.llm.recommendation_engine import recommend_strategy
+
+            loaded = load_graph(model_path, check=False)
+            summary = summarize_graph(loaded)
+            rec_obj = recommend_strategy(
+                summary,
+                client=llm_client,
+                history_feedback=mt_history,
+                fallback_on_error=True,
+            )
+            shot_rec = compile_and_benchmark(
+                model_path,
+                strategy_obj=rec_obj.strategy,
+                check_fidelity=True,
+                warmup=warmup,
+                iters=iters,
+                results_dir=None,
+            )
+            shot_rec["strategy"] = rec_obj.to_dict()
+            mt_history.append(shot_rec)
+            if shot_rec["compile"]["ok"]:
+                s_ms = float(shot_rec["benchmark"]["latency_ms"][metric])
+                if s_ms < best_mt_ms:
+                    best_mt_ms = s_ms
+                    best_mt_rec = shot_rec
+
+        methods["llm_multi_turn"] = {
+            "latency_ms": best_mt_ms,
+            "regret": compute_regret(best_mt_ms, oracle_ms),
+            "search_time_s": time.perf_counter() - t_mt0,
+            "evals": len(mt_history),
+            "config": best_mt_rec["strategy"].get("config"),
+            "fidelity": best_mt_rec.get("fidelity"),
         }
 
     report = {

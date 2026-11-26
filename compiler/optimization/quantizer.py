@@ -29,6 +29,7 @@ def quantize_model_bytes(
     precision: str,
     *,
     calibration_samples: list[np.ndarray] | None = None,
+    calibration_images: list[Path | str] | None = None,
 ) -> bytes:
     """Transform serialized ONNX bytes according to an allowlisted precision mode."""
 
@@ -72,16 +73,24 @@ def quantize_model_bytes(
                     int(d.dim_value) if d.HasField("dim_value") and d.dim_value > 0 else 1
                     for d in inp.type.tensor_type.shape.dim
                 ]
-                samples = calibration_samples
-                if not samples:
-                    rng = np.random.default_rng(0)
-                    samples = [rng.random(shape, dtype=np.float32) for _ in range(8)]
-                reader = _ArrayCalibrationReader(inp.name, samples)
+                if calibration_images:
+                    from compiler.evaluation.image_calibration import ImageCalibrationDataReader
+
+                    th = shape[2] if len(shape) == 4 else 640
+                    tw = shape[3] if len(shape) == 4 else 640
+                    reader = ImageCalibrationDataReader(calibration_images, inp.name, target_hw=(th, tw))
+                else:
+                    samples = calibration_samples
+                    if not samples:
+                        rng = np.random.default_rng(0)
+                        samples = [rng.random(shape, dtype=np.float32) for _ in range(8)]
+                    reader = _ArrayCalibrationReader(inp.name, samples)
                 quantize_static(
                     model_input=str(in_path),
                     model_output=str(out_path),
                     calibration_data_reader=reader,
                     quant_format=QuantFormat.QDQ,
+                    per_channel=True,
                     weight_type=QuantType.QInt8,
                     activation_type=QuantType.QUInt8,
                 )

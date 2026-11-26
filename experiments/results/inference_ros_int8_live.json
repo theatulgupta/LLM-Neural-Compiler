@@ -1,0 +1,24 @@
+{
+  "deadline_ms": 80.0,
+  "error": null,
+  "fps_claimed": false,
+  "graph_opt": "extended",
+  "latency_ms": 77.18301499994595,
+  "missed_deadline_pct": 48.0,
+  "missed_deadlines": 72,
+  "n_samples": 150,
+  "ok": true,
+  "providers": [
+    "CPUExecutionProvider"
+  ],
+  "source": "camera",
+  "stats": {
+    "max": 159.62303700007396,
+    "mean": 83.46723112000215,
+    "min": 47.68645199999355,
+    "p50": 79.21684500001902,
+    "p95": 122.20504499998697,
+    "p99": 154.09906999991563
+  },
+  "wall_ms": 77.20347700001184
+}

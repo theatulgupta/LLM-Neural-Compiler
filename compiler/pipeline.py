@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import resource
 import time
 import uuid
 from pathlib import Path
@@ -230,6 +231,7 @@ def compile_and_benchmark(
         "iters": iters,
         "latency_ms": latency,
         "throughput_ips": throughput,
+        "peak_rss_mb": float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0),
         "measured_at": utc_now_iso(),
     }
     if fidelity is not None:

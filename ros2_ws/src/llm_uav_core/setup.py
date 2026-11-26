@@ -27,6 +27,7 @@ setup(
             'telemetry_node = llm_uav_core.nodes.telemetry_node:main',
             'inference_node = llm_uav_core.nodes.inference_node:main',
             'offboard_node = llm_uav_core.nodes.offboard_node:main',
+            'image_replayer_node = llm_uav_core.nodes.image_replayer_node:main',
         ],
     },
 )
