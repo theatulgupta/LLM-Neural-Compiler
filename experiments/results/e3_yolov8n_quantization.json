@@ -44,21 +44,21 @@
   {
     "precision": "int8_static",
     "model_path": "experiments/models/yolov8n_int8_static.onnx",
-    "model_size_mb": 3.506,
+    "model_size_mb": 5.996,
     "warmup": 5,
     "iters": 30,
     "latency_ms": {
-      "mean": 72.4678775666689,
-      "p50": 60.671706999983144,
-      "p95": 124.60289600005581,
-      "p99": 175.00698900005318,
-      "min": 50.18338499996844,
-      "max": 175.00698900005318
+      "mean": 72.9327484666707,
+      "p50": 70.96326900000349,
+      "p95": 85.82798900010857,
+      "p99": 109.56192200001169,
+      "min": 60.10002000016357,
+      "max": 109.56192200001169
     },
-    "peak_rss_mb": 996.12109375,
+    "peak_rss_mb": 645.8671875,
     "accuracy": {
-      "map50": 0.0,
-      "map50_95": 0.0,
+      "map50": 0.5920302541890807,
+      "map50_95": 0.4402827542297493,
       "dataset": "/home/theatulgupta/LLM-Neural-Compiler/experiments/data/coco128/coco128.yaml"
     }
   }

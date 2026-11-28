@@ -1,0 +1,120 @@
+{
+  "methods": {
+    "bayesian_opt": {
+      "config": {
+        "enable_mem_pattern": false,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 2,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 12,
+      "kind": "optuna_tpe",
+      "latency_ms": 6.680607000362215,
+      "regret": 0.13744501647701218,
+      "search_time_s": 5.112331452000035
+    },
+    "heuristic": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 0,
+        "intra_op_num_threads": 0,
+        "precision": "fp32"
+      },
+      "evals": 1,
+      "fidelity": null,
+      "latency_ms": 5.6687950000196,
+      "regret": -0.03482683207491515,
+      "search_time_s": 0.7247682070001247
+    },
+    "llm_advisor": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 1,
+      "fallback_triggered": false,
+      "fidelity": null,
+      "latency_ms": 11.053996000100597,
+      "regret": 0.8820614147471237,
+      "search_time_s": 1.4728428009998424
+    },
+    "llm_multi_turn": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 3,
+      "fidelity": null,
+      "latency_ms": 7.522361000155797,
+      "regret": 0.2807626659230715,
+      "search_time_s": 2.699554423000336
+    },
+    "oracle": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "disable",
+        "inter_op_num_threads": 2,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 256,
+      "fidelity": null,
+      "latency_ms": 5.873345000054542,
+      "regret": 0.0,
+      "search_time_s": 290.02796969899987
+    },
+    "ort_default": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "all",
+        "inter_op_num_threads": 0,
+        "intra_op_num_threads": 0,
+        "precision": "fp32"
+      },
+      "evals": 1,
+      "fidelity": null,
+      "latency_ms": 12.220523999985744,
+      "regret": 1.0806753221328325,
+      "search_time_s": 0.7377712970001085
+    },
+    "random_search": {
+      "config": {
+        "enable_mem_pattern": false,
+        "execution_mode": "parallel",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 2,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 12,
+      "fidelity": null,
+      "latency_ms": 7.579126000109682,
+      "regret": 0.29042751618358864,
+      "search_time_s": 2.501386829999774
+    }
+  },
+  "metric": "p95",
+  "model": "experiments/models/mobilenet_v2.onnx",
+  "space_size": 256
+}

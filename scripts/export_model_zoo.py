@@ -18,6 +18,7 @@ def export_torchvision_models(out_dir: Path, names: list[str]) -> list[str]:
         "efficientnet_b0": (lambda: models.efficientnet_b0(weights=None), (1, 3, 224, 224)),
         "shufflenet_v2_x1_0": (lambda: models.shufflenet_v2_x1_0(weights=None), (1, 3, 224, 224)),
         "vit_b_16": (lambda: models.vit_b_16(weights=None), (1, 3, 224, 224)),
+        "swin_t": (lambda: models.swin_t(weights=None), (1, 3, 224, 224)),
     }
 
     exported: list[str] = []
@@ -64,14 +65,17 @@ def main() -> int:
     if args.include_yolo:
         from ultralytics import YOLO
 
-        for variant in ("yolov8n", "yolov8s"):
-            yolo = YOLO(f"{variant}.pt")
-            onnx_file = Path(yolo.export(format="onnx", imgsz=640, opset=17, simplify=False))
-            dest = args.out_dir / f"{variant}.onnx"
-            if onnx_file.resolve() != dest.resolve():
-                dest.write_bytes(onnx_file.read_bytes())
-            exported.append(str(dest))
-            print(f"Exported {dest}")
+        for variant in ("yolov8n", "yolov8s", "yolo11n", "yolo12n", "yolo26n"):
+            try:
+                yolo = YOLO(f"{variant}.pt")
+                onnx_file = Path(yolo.export(format="onnx", imgsz=640, opset=17, simplify=False))
+                dest = args.out_dir / f"{variant}.onnx"
+                if onnx_file.resolve() != dest.resolve():
+                    dest.write_bytes(onnx_file.read_bytes())
+                exported.append(str(dest))
+                print(f"Exported {dest}")
+            except Exception as exc:
+                print(f"Warning: skipped {variant}: {exc}")
 
     print(f"Total exported: {len(exported)}")
     return 0

@@ -85,6 +85,9 @@ def quantize_model_bytes(
                         rng = np.random.default_rng(0)
                         samples = [rng.random(shape, dtype=np.float32) for _ in range(8)]
                     reader = _ArrayCalibrationReader(inp.name, samples)
+                exclude_nodes = [
+                    n.name for n in model.graph.node if n.name and ("model.22" in n.name or n.op_type == "Softmax")
+                ]
                 quantize_static(
                     model_input=str(in_path),
                     model_output=str(out_path),
@@ -93,6 +96,7 @@ def quantize_model_bytes(
                     per_channel=True,
                     weight_type=QuantType.QInt8,
                     activation_type=QuantType.QUInt8,
+                    nodes_to_exclude=exclude_nodes,
                 )
             return out_path.read_bytes()
 

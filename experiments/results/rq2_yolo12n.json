@@ -1,0 +1,144 @@
+{
+  "methods": {
+    "bayesian_opt": {
+      "config": {
+        "enable_mem_pattern": false,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 2,
+        "precision": "int8_dynamic"
+      },
+      "evals": 12,
+      "kind": "optuna_tpe",
+      "latency_ms": 72.13948399976289,
+      "regret": 0.2652504681485287,
+      "search_time_s": 0.047992198999963875
+    },
+    "heuristic": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 0,
+        "intra_op_num_threads": 0,
+        "precision": "fp32"
+      },
+      "evals": 1,
+      "fidelity": {
+        "cosine_similarity": 0.9999999999999951,
+        "mae": 5.825948975388966e-07,
+        "max_abs_error": 0.00042724609375
+      },
+      "latency_ms": 79.38650400001279,
+      "regret": 0.3923555559535382,
+      "search_time_s": 1.6891579490002187
+    },
+    "llm_advisor": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 1,
+      "fallback_triggered": false,
+      "fidelity": {
+        "cosine_similarity": 0.9999999999999949,
+        "mae": 6.02518273792029e-07,
+        "max_abs_error": 0.000274658203125
+      },
+      "latency_ms": 111.09795299989855,
+      "regret": 0.9485409272393313,
+      "search_time_s": 2.7105853379998734
+    },
+    "llm_multi_turn": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "all",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 4,
+        "precision": "fp32"
+      },
+      "evals": 3,
+      "fidelity": {
+        "cosine_similarity": 0.9999999999999947,
+        "mae": 6.65343436254125e-07,
+        "max_abs_error": 0.000335693359375
+      },
+      "latency_ms": 84.41661699998804,
+      "regret": 0.4805784330132022,
+      "search_time_s": 5.565784047000307
+    },
+    "oracle": {
+      "config": {
+        "enable_mem_pattern": false,
+        "execution_mode": "parallel",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "all",
+        "inter_op_num_threads": 1,
+        "intra_op_num_threads": 4,
+        "precision": "int8_dynamic"
+      },
+      "evals": 256,
+      "fidelity": {
+        "cosine_similarity": 0.9991403814108957,
+        "mae": 0.2576096182020884,
+        "max_abs_error": 148.72653198242188
+      },
+      "latency_ms": 57.01597100005529,
+      "regret": 0.0,
+      "search_time_s": 641.3274538720002
+    },
+    "ort_default": {
+      "config": {
+        "enable_mem_pattern": true,
+        "execution_mode": "sequential",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "all",
+        "inter_op_num_threads": 0,
+        "intra_op_num_threads": 0,
+        "precision": "fp32"
+      },
+      "evals": 1,
+      "fidelity": {
+        "cosine_similarity": 0.9999999999999938,
+        "mae": 6.701980554868305e-07,
+        "max_abs_error": 0.000396728515625
+      },
+      "latency_ms": 100.35547799998312,
+      "regret": 0.7601292451879108,
+      "search_time_s": 1.7414704859997983
+    },
+    "random_search": {
+      "config": {
+        "enable_mem_pattern": false,
+        "execution_mode": "parallel",
+        "execution_provider": "CPUExecutionProvider",
+        "graph_optimization_level": "extended",
+        "inter_op_num_threads": 2,
+        "intra_op_num_threads": 2,
+        "precision": "int8_dynamic"
+      },
+      "evals": 12,
+      "fidelity": {
+        "cosine_similarity": 0.9991403814108957,
+        "mae": 0.2576096182020884,
+        "max_abs_error": 148.72653198242188
+      },
+      "latency_ms": 75.94626399986737,
+      "regret": 0.33201737456674596,
+      "search_time_s": 0.00012812099976144964
+    }
+  },
+  "metric": "p95",
+  "model": "experiments/models/yolo12n.onnx",
+  "space_size": 256
+}
